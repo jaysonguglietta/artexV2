@@ -1,0 +1,34 @@
+# Known unavailable URLs read by check-external-links.py.
+#
+# A DOWN result for a listed URL is reported as ALLOWED and does not fail --strict.
+# Include only historical attribution/reference links outside our control, with
+# an explanation. Repair broken curated documentation links whenever possible.
+# Format: one URL per line; empty lines and text after # are ignored.
+
+# Contributor profile credited in the upstream release history (CHANGELOG.zh.md).
+# The historical check on 2026-10-07 returned 404; the account may have been
+# renamed or removed. Preserve the attribution rather than guess a replacement.
+https://github.com/begininvoke
+
+# Upstream ARTEX repository, demo, release/compare pages and norma reference.
+# Recorded unavailable during the October 2026 review; this is not a new live
+# availability check. These links identify upstream authorship and release history.
+# The history is now translated into English while retaining its versions, dates,
+# contributor links and relevant original technical data. Translation does not
+# authorize inventing replacement URLs or removing attribution. These assets are
+# controlled upstream, so record their status here until a verified replacement
+# becomes available.
+https://artex-demo.vercel.app/
+https://github.com/Autumn-27/ARTEX
+https://github.com/Autumn-27/norma
+https://github.com/Autumn-27/ARTEX/releases
+https://github.com/Autumn-27/ARTEX/compare/v0.3.1...v0.3.2
+https://github.com/Autumn-27/ARTEX/compare/v0.3.2...v0.3.3
+https://github.com/Autumn-27/ARTEX/compare/v0.3.3...v0.3.4
+https://github.com/Autumn-27/ARTEX/compare/v0.3.4...v0.3.5
+https://github.com/Autumn-27/ARTEX/compare/v0.3.5...v0.3.6
+https://github.com/Autumn-27/ARTEX/compare/v0.3.6...v0.3.7
+https://github.com/Autumn-27/ARTEX/compare/v0.3.7...v0.3.8
+https://github.com/Autumn-27/ARTEX/compare/v0.3.8...v0.3.9
+https://github.com/Autumn-27/ARTEX/compare/v0.3.9...v0.3.10
+https://github.com/Autumn-27/ARTEX/compare/v0.3.10...HEAD

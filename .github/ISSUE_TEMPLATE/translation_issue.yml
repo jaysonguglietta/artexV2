@@ -1,0 +1,31 @@
+name: English copy issue
+description: Report untranslated or incorrect English interface text, comments or documentation.
+title: "[English] "
+labels: [i18n]
+body:
+  - type: markdown
+    attributes:
+      value: This edition is English-only. Preserve original evidence, test inputs, commands and compatibility identifiers when reporting copy issues. Do not include secrets or private target data.
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Issue type
+      options: [Untranslated text, Incorrect meaning, Unclear wording, Inconsistent terminology, Evidence or identifier changed incorrectly]
+    validations:
+      required: true
+  - type: textarea
+    id: current
+    attributes:
+      label: Current wording and location
+      description: Include the page, workflow or file and line number.
+    validations:
+      required: true
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested English wording
+  - type: input
+    id: key
+    attributes:
+      label: Message key or file path
+      placeholder: "web/messages/en.json: dashboard.title"

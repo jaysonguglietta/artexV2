@@ -1,0 +1,22 @@
+{
+  "_comment": "Copy to config.json, or set ARTEX_CONFIG to another path. Database, skill directory and the fixed English presentation locale are supported; configure LLM providers through the application.",
+  "_comment_database": "PostgreSQL connection. ARTEX_PG_DSN overrides this object. Supply individual fields or a complete database.dsn. Local plaintext database transport is for a private development network only.",
+  "database": {
+    "host": "127.0.0.1",
+    "port": 5433,
+    "user": "artex",
+    "password": "",
+    "dbname": "artex",
+    "sslmode": "disable"
+  },
+  "_comment_database_dsn": "Alternative: replace database with a nonempty dsn; individual fields are then ignored.",
+  "_example_database_dsn": {
+    "database": {
+      "dsn": "postgres://user:pass@db.example.com:5432/artex?sslmode=require"
+    }
+  },
+  "_comment_skill_dir": "Skill root: one directory containing SKILL.md per skill. ARTEX_SKILL_DIR overrides this value; otherwise the default is skills/ beside the executable. Relative paths resolve against the current working directory.",
+  "skill_dir": "/opt/artex/skills",
+  "_comment_language": "This edition supports English only. Other saved language preferences resolve to English.",
+  "language": "en"
+}

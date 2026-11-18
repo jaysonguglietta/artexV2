@@ -1,0 +1,73 @@
+name: Go checks
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+        with:
+          go-version: "1.27.4"
+          cache: true
+      - run: go build ./...
+      - run: go vet ./...
+      - run: go test ./... -count=1
+      - name: Reachable Go vulnerabilities
+        run: go run golang.org/x/vuln/cmd/govulncheck@v1.10.0 ./...
+  integration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+        with:
+          go-version: "1.27.4"
+          cache: true
+      - name: Isolated PostgreSQL suites
+        run: ./scripts/test-isolated.sh
+  recon-policy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: skills/api-recon/scripts
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "22"
+      - run: npm ci --ignore-scripts
+      - run: npm test
+      - run: npm audit --omit=dev
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "22"
+      - run: npm --prefix web ci --ignore-scripts
+      - run: python3 scripts/check-english.py
+      - run: python3 scripts/check-doc-links.py
+      - run: python3 scripts/test-prepare-upload.py
+      - run: python3 scripts/test-setup-workers.py
+      - run: python3 scripts/test-audit-npm.py
+      - run: python3 scripts/audit-npm.py
+      - run: npm --prefix web run typecheck
+      - run: npm --prefix web run check
+      - run: npm --prefix web run check:i18n
+      - run: npm --prefix web run test -- --run
+      - run: npm --prefix web run build:static
+      - run: python3 scripts/check-web-cjk.py
+
+  worker-boundary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - run: docker build --target worker -f Dockerfile.source -t artex-local:worker .
+      - run: docker build --target broker -f Dockerfile.source -t artex-local:broker .
+      - run: docker build --target application -f Dockerfile.source -t artex-local:hardened .
+      - run: python3 scripts/test-workers.py
+      - run: python3 scripts/test-compose.py

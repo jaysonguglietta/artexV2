@@ -1,0 +1,74 @@
+name: detections
+# Reproduce eight detection suites and three supporting gates on relevant changes.
+# Suites cover Sigma validity/matching/lint/backend conversion, offline Suricata
+# captures, ATT&CK coverage, source indicator drift, and MISP/CSV consistency.
+# Gates check harness registration, host-triage behavior, and the defense guide's
+# inline Sigma template. Tests run in containers with source mounted read-only.
+# Relevant source changes also trigger this workflow to detect fingerprint drift.
+on:
+  push:
+    paths:
+      - "detections/**"
+      - "enrich/enrich.go"
+      - "selfupdate/github.go"
+      - "selfupdate/stage.go"
+      - "guard/guard.go"
+      - "db/db.go"
+      - "db/schema.sql"
+      - "cmd/artex/main.go"
+      - "traffic/traffic.go"
+      # Recheck the inline defense template when either retained document path changes.
+      - "docs/defense-ko.md"
+      - "docs/defense-en.md"
+      - ".github/workflows/detections.yml"
+  pull_request:
+    paths:
+      - "detections/**"
+      - "enrich/enrich.go"
+      - "selfupdate/github.go"
+      - "selfupdate/stage.go"
+      - "guard/guard.go"
+      - "db/db.go"
+      - "db/schema.sql"
+      - "cmd/artex/main.go"
+      - "traffic/traffic.go"
+      - "docs/defense-ko.md"
+      - "docs/defense-en.md"
+      - ".github/workflows/detections.yml"
+
+permissions:
+  contents: read
+
+# Cancel superseded runs on the same branch.
+concurrency:
+  group: detections-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  detections:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Harness registry consistency
+        run: detections/tests/check-harness-sync.sh
+      - name: Host triage self-test
+        run: detections/tests/triage-selftest.sh
+      - name: Defense guide Sigma template consistency
+        run: detections/tests/check-defense-template.sh
+      - name: Sigma rule validity and conversion
+        run: detections/tests/sigma/run.sh
+      - name: Sigma event matching and benign specificity
+        run: detections/tests/sigma_match/run.sh
+      - name: SigmaHQ convention lint
+        run: detections/tests/sigma_lint/run.sh
+      - name: Sigma backend portability
+        run: detections/tests/sigma_backends/run.sh
+      - name: Suricata synthetic capture assertions
+        run: detections/tests/suricata/run.sh
+      - name: ATT&CK layer consistency
+        run: detections/tests/attack/run.sh
+      - name: Indicator and source consistency
+        run: detections/tests/indicators/run.sh
+      - name: MISP export and CSV consistency
+        run: detections/tests/misp/run.sh

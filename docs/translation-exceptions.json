@@ -1,0 +1,1056 @@
+{
+  "scope": "Reviewed frontend, documentation, detection, side-question and recon-helper data only. Other components require their own review.",
+  "matching": "An exemption matches only an exact path, current line number and SHA256 of the complete UTF-8 line, excluding newline. It is never a blanket file exemption.",
+  "entries": [
+    {
+      "path": "web/src/lib/builtin-tool-sources.json",
+      "line": 2,
+      "line_sha256": "6e8dcdac08ad6e8649c9da1611b1d46283fc0a5acba03cb193024321e6b7193c",
+      "reason": "Exact historical tool-description lookup input; active English text is in en.json."
+    },
+    {
+      "path": "web/src/lib/builtin-tool-sources.json",
+      "line": 3,
+      "line_sha256": "7c5243ef15bb1d39af5ec386098e10a21c8278f5c25bfbadb1471e38422c9839",
+      "reason": "Exact historical tool-description lookup input; active English text is in en.json."
+    },
+    {
+      "path": "web/src/lib/builtin-tool-sources.json",
+      "line": 4,
+      "line_sha256": "ea8b3ee01f793b03a8e36aeba8dd779ff39d2188f0a85bf00c0db04e4b56687e",
+      "reason": "Exact historical tool-description lookup input; active English text is in en.json."
+    },
+    {
+      "path": "web/src/lib/builtin-tool-sources.json",
+      "line": 5,
+      "line_sha256": "1460be2ad6675889eee9e2f2fe944224535d14fb4198424170f62c80f85df678",
+      "reason": "Exact historical tool-description lookup input; active English text is in en.json."
+    },
+    {
+      "path": "web/src/lib/builtin-tool-sources.json",
+      "line": 6,
+      "line_sha256": "8f42b51bb1567431d2ff3ef0c1cf1dcee3f9b57368218fe84f1bd9cba5775863",
+      "reason": "Exact historical tool-description lookup input; active English text is in en.json."
+    },
+    {
+      "path": "web/src/lib/builtin-tool-sources.json",
+      "line": 7,
+      "line_sha256": "2f65380dc94e76cdeef04283b7b6f73c02a23d2ab454dd47042e74b57dad20a3",
+      "reason": "Exact historical tool-description lookup input; active English text is in en.json."
+    },
+    {
+      "path": "web/src/lib/builtin-tool-sources.json",
+      "line": 8,
+      "line_sha256": "e39ebf4e9c945cf2065e731807ec6d614e7ba87713eda49804dc9bb8366a360c",
+      "reason": "Exact historical tool-description lookup input; active English text is in en.json."
+    },
+    {
+      "path": "web/src/lib/builtin-tool-sources.json",
+      "line": 9,
+      "line_sha256": "93164bcad9bddd8649026a696e45f7dd3896d9c3ea5c7ba63fd6df1f37ae1999",
+      "reason": "Exact historical tool-description lookup input; active English text is in en.json."
+    },
+    {
+      "path": "web/src/lib/builtin-tool-sources.json",
+      "line": 10,
+      "line_sha256": "eeba4822763bb9566aa6364b56b5dc23533542ccab281db702a4d6a1b80f5a54",
+      "reason": "Exact historical tool-description lookup input; active English text is in en.json."
+    },
+    {
+      "path": "web/src/lib/builtin-tool-sources.json",
+      "line": 11,
+      "line_sha256": "315443803e8c0e0b1622a3f3f46033b58eafc2f6aacfda3be5e5efacd5ecf654",
+      "reason": "Exact historical tool-description lookup input; active English text is in en.json."
+    },
+    {
+      "path": "web/src/lib/builtin-tool-sources.json",
+      "line": 12,
+      "line_sha256": "86ebffccdcd471bf93d75d7a8e369e1d0adfdaebdeb22d282d315a6d458d7c1a",
+      "reason": "Exact historical tool-description lookup input; active English text is in en.json."
+    },
+    {
+      "path": "web/src/lib/builtin-tool-sources.json",
+      "line": 13,
+      "line_sha256": "a0c57995c671da90e2282c389d7913cfe6a3cc77ba04ad2f9d669c8e87822904",
+      "reason": "Exact historical tool-description lookup input; active English text is in en.json."
+    },
+    {
+      "path": "web/src/lib/builtin-tool-sources.json",
+      "line": 14,
+      "line_sha256": "38e877cb3b5482e7e78a652590ebc0e7dd70bf63dc85aec8cb564f30bafd573a",
+      "reason": "Exact historical tool-description lookup input; active English text is in en.json."
+    },
+    {
+      "path": "web/src/lib/builtin-tool-sources.json",
+      "line": 15,
+      "line_sha256": "25ece06d97e891b075474be324f445262dee30db98732e2978325c596647535e",
+      "reason": "Exact historical tool-description lookup input; active English text is in en.json."
+    },
+    {
+      "path": "web/src/lib/builtin-tool-sources.json",
+      "line": 16,
+      "line_sha256": "5836853aee5e6d45dec2777ca5d1d07592cebe98a81cbf7087e943f85cd30276",
+      "reason": "Exact historical tool-description lookup input; active English text is in en.json."
+    },
+    {
+      "path": "web/src/lib/builtin-tool-sources.json",
+      "line": 17,
+      "line_sha256": "8bc4f82a52cd7c86956ba63eb901276b1f214d05b2b8ee0c65774ea428b3d30b",
+      "reason": "Exact historical tool-description lookup input; active English text is in en.json."
+    },
+    {
+      "path": "web/src/lib/builtin-tool-sources.json",
+      "line": 18,
+      "line_sha256": "7926627cd8689c497816be45bd094a1d9e21b67eec40b2283cb63c55fb4e6bc4",
+      "reason": "Exact historical tool-description lookup input; active English text is in en.json."
+    },
+    {
+      "path": "web/src/lib/builtin-tool-sources.json",
+      "line": 19,
+      "line_sha256": "cb0eda608363b20e75e2bba948e878a1441a1eeb73eea40dbbca1eb64cafe825",
+      "reason": "Exact historical tool-description lookup input; active English text is in en.json."
+    },
+    {
+      "path": "web/src/lib/builtin-tool-sources.json",
+      "line": 20,
+      "line_sha256": "fd473c9abeae19f6984874e2905a38563a4adb6e86de98ef5a881bba6518c736",
+      "reason": "Exact historical tool-description lookup input; active English text is in en.json."
+    },
+    {
+      "path": "web/src/lib/builtin-tool-sources.json",
+      "line": 21,
+      "line_sha256": "0cb68630dd6b336199b891cbef01538c4d4f293107c1f74798c5888fca2b7bf2",
+      "reason": "Exact historical tool-description lookup input; active English text is in en.json."
+    },
+    {
+      "path": "web/src/lib/builtin-tool-sources.json",
+      "line": 22,
+      "line_sha256": "da61a2aa392aa1239452fd483e3b4533b50aaf1cf4c6b429ebf460abc215e3b3",
+      "reason": "Exact historical tool-description lookup input; active English text is in en.json."
+    },
+    {
+      "path": "web/src/lib/builtin-tool-sources.json",
+      "line": 23,
+      "line_sha256": "e964e8a64b7aabae87ab6bf3f66bb49f0aac85bd216b660bb1a23092ac4e0938",
+      "reason": "Exact historical tool-description lookup input; active English text is in en.json."
+    },
+    {
+      "path": "web/src/lib/builtin-tool-sources.json",
+      "line": 24,
+      "line_sha256": "444502d74d3e0d7e8d77d4216ac6fbd52ca32e6887220dd649fc98784558d1e7",
+      "reason": "Exact historical tool-description lookup input; active English text is in en.json."
+    },
+    {
+      "path": "web/src/lib/builtin-tool-sources.json",
+      "line": 25,
+      "line_sha256": "3b33b87ff2352a1ecec0ef7eaf3ee8da4505aa0bb6f24134fab52cfc37d904d6",
+      "reason": "Exact historical tool-description lookup input; active English text is in en.json."
+    },
+    {
+      "path": "web/src/lib/builtin-tool-sources.json",
+      "line": 26,
+      "line_sha256": "2329e9bbe0a059debdbc014fef156014b112f82699a35013ba9e57a6d43f0223",
+      "reason": "Exact historical tool-description lookup input; active English text is in en.json."
+    },
+    {
+      "path": "web/src/lib/builtin-tool-sources.json",
+      "line": 27,
+      "line_sha256": "46ca47ffad46b99e602e77a944ed407948c4156ddcf2f6c54b3316c83e59b685",
+      "reason": "Exact historical tool-description lookup input; active English text is in en.json."
+    },
+    {
+      "path": "web/src/lib/builtin-tool-sources.json",
+      "line": 28,
+      "line_sha256": "93b27ffc2cf6f4519cea0316b50626a97feb673582928039d737140239d0000d",
+      "reason": "Exact historical tool-description lookup input; active English text is in en.json."
+    },
+    {
+      "path": "web/src/lib/builtin-tool-sources.json",
+      "line": 29,
+      "line_sha256": "65534d1d0053b61d2339c2861addf314337859f77c11477c24dff80d3fa8f599",
+      "reason": "Exact historical tool-description lookup input; active English text is in en.json."
+    },
+    {
+      "path": "web/src/lib/builtin-tool-sources.json",
+      "line": 30,
+      "line_sha256": "cdce7edd47fa0327202d1d50082ab802ab996311f4f35517783394fc2316ffc1",
+      "reason": "Exact historical tool-description lookup input; active English text is in en.json."
+    },
+    {
+      "path": "web/src/lib/builtin-tool-sources.json",
+      "line": 31,
+      "line_sha256": "31dc6aac43e3a5101b25af37b8f4a2298e7a6b431e3bc40b8cb75e727f1bc359",
+      "reason": "Exact historical tool-description lookup input; active English text is in en.json."
+    },
+    {
+      "path": "web/src/lib/builtin-tool-sources.json",
+      "line": 32,
+      "line_sha256": "6e4b9457cab4e7b2be57edd1a7cf489b98950a8ad7121d1222fcf366abcb3be0",
+      "reason": "Exact historical tool-description lookup input; active English text is in en.json."
+    },
+    {
+      "path": "web/src/lib/builtin-tool-sources.json",
+      "line": 33,
+      "line_sha256": "1cdbb54441462e9764c89470404d5940893c485551f59a316d060c582be4fc9b",
+      "reason": "Exact historical tool-description lookup input; active English text is in en.json."
+    },
+    {
+      "path": "web/src/lib/builtin-tool-sources.json",
+      "line": 34,
+      "line_sha256": "649eafe4db9527ac8ed154dd8079a5f5177eb100897474316bf18bf5774eb5b5",
+      "reason": "Exact historical tool-description lookup input; active English text is in en.json."
+    },
+    {
+      "path": "web/src/lib/builtin-tool-sources.json",
+      "line": 35,
+      "line_sha256": "b9f488a12bb9b91f4d1409ed247335875189007002fce5575ea7a53de9ea41da",
+      "reason": "Exact historical tool-description lookup input; active English text is in en.json."
+    },
+    {
+      "path": "web/src/lib/builtin-tool-sources.json",
+      "line": 36,
+      "line_sha256": "f61c3673cbdd3f6d1e5c11ba9a66d32f2e5202ce6c0dff5f1eb0eb62770ff1db",
+      "reason": "Exact historical tool-description lookup input; active English text is in en.json."
+    },
+    {
+      "path": "web/src/lib/builtin-tool-sources.json",
+      "line": 37,
+      "line_sha256": "3d781485bddc78b0d0b66882dfe9f28124fffca12a128758cf14dc22797e6019",
+      "reason": "Exact historical tool-description lookup input; active English text is in en.json."
+    },
+    {
+      "path": "web/src/lib/builtin-tool-sources.json",
+      "line": 38,
+      "line_sha256": "bbb6a7654774cf6df2f2cc30282448f815eae8a46f115bf78cf7dc2da03026c2",
+      "reason": "Exact historical tool-description lookup input; active English text is in en.json."
+    },
+    {
+      "path": "web/src/lib/builtin-tool-sources.json",
+      "line": 39,
+      "line_sha256": "d0ece4ccec86391fb6516bfd06b262c5e006f4c012873fc71c5a1de1fb074017",
+      "reason": "Exact historical tool-description lookup input; active English text is in en.json."
+    },
+    {
+      "path": "web/src/lib/builtin-tool-sources.json",
+      "line": 40,
+      "line_sha256": "3d7f980960f0965bae5c33c85111d11984e0d80ab0fe609a5928c3d7c12b7cfe",
+      "reason": "Exact historical tool-description lookup input; active English text is in en.json."
+    },
+    {
+      "path": "web/src/lib/builtin-tool-sources.json",
+      "line": 41,
+      "line_sha256": "9f6c8f312a2f0c06c7e07534d8dcc4b3af7dacd08b5886ae05322ea1c771ef45",
+      "reason": "Exact historical tool-description lookup input; active English text is in en.json."
+    },
+    {
+      "path": "web/src/lib/builtin-tool-sources.json",
+      "line": 42,
+      "line_sha256": "f2c315a3068a4896b9224456b9bce4774fff4f14db6e384be9e877438cb1dc48",
+      "reason": "Exact historical tool-description lookup input; active English text is in en.json."
+    },
+    {
+      "path": "web/src/lib/builtin-tool-sources.json",
+      "line": 43,
+      "line_sha256": "834587d36f9e492dadec758e5c084f8af8f14ef9073e046190d48d9f0ca4f583",
+      "reason": "Exact historical tool-description lookup input; active English text is in en.json."
+    },
+    {
+      "path": "web/src/lib/builtin-tool-sources.json",
+      "line": 44,
+      "line_sha256": "e5248d766dd10ab983ee9f9f16e66e83514d92c1bc70abd2a1306ec0bb3021b5",
+      "reason": "Exact historical tool-description lookup input; active English text is in en.json."
+    },
+    {
+      "path": "web/src/lib/builtin-tool-sources.json",
+      "line": 45,
+      "line_sha256": "934c242ec0b958405f4a452ed7f239d828a80537a27be9b4e1920e575441ccec",
+      "reason": "Exact historical tool-description lookup input; active English text is in en.json."
+    },
+    {
+      "path": "web/src/lib/builtin-tool-sources.json",
+      "line": 46,
+      "line_sha256": "677df63eaea5b18a73ab25c558cbfee6237d4b5e63f29f4f4556202170bd17da",
+      "reason": "Exact historical tool-description lookup input; active English text is in en.json."
+    },
+    {
+      "path": "web/src/lib/builtin-tool-sources.json",
+      "line": 47,
+      "line_sha256": "f4f928b7835c47b68d5b4e832df5d0671bf90d78e0d4452e8c0fe291b21a4c17",
+      "reason": "Exact historical tool-description lookup input; active English text is in en.json."
+    },
+    {
+      "path": "web/src/lib/builtin-tool-sources.json",
+      "line": 48,
+      "line_sha256": "3a6c13e52f4e038a0a1ab745aec7a8192c1ead1495b57c85812561f0a0ce31b0",
+      "reason": "Exact historical tool-description lookup input; active English text is in en.json."
+    },
+    {
+      "path": "web/src/lib/builtin-tool-sources.json",
+      "line": 49,
+      "line_sha256": "d755c1ae9e3fd693b6ae6dcb57d1f5e89e66ff2e82db09f201faf6ab7add0cf7",
+      "reason": "Exact historical tool-description lookup input; active English text is in en.json."
+    },
+    {
+      "path": "web/src/lib/builtin-tool-sources.json",
+      "line": 50,
+      "line_sha256": "dd0f7d6a55ec7ce2061e51e00df35013d80de3937fa5dab75bb8a17db84da086",
+      "reason": "Exact historical tool-description lookup input; active English text is in en.json."
+    },
+    {
+      "path": "web/src/lib/builtin-tool-sources.json",
+      "line": 51,
+      "line_sha256": "d2110e785f376f9da7eabf671e660a9bdfc75f43d77887e6e58ceb0b48f8277b",
+      "reason": "Exact historical tool-description lookup input; active English text is in en.json."
+    },
+    {
+      "path": "web/src/lib/builtin-tool-sources.json",
+      "line": 52,
+      "line_sha256": "5c04599dfc9feebef98ffab04dae169f439efabe0b9d9bd079a5baa1c0bcfc7f",
+      "reason": "Exact historical tool-description lookup input; active English text is in en.json."
+    },
+    {
+      "path": "web/src/lib/builtin-i18n.ts",
+      "line": 12,
+      "line_sha256": "56ac343b0ac1124ee15c2f001ceda6c9d0088449e68195ed742021fa88d066be",
+      "reason": "Exact historical rule/report-heading lookup key, preserved for saved data."
+    },
+    {
+      "path": "web/src/lib/builtin-i18n.ts",
+      "line": 13,
+      "line_sha256": "e15ce8a82e1ea819b02866cfca414bfe4eccb4f0af3b5da254263613f4017fa2",
+      "reason": "Exact historical rule/report-heading lookup key, preserved for saved data."
+    },
+    {
+      "path": "web/src/lib/builtin-i18n.ts",
+      "line": 14,
+      "line_sha256": "830623d9553a4e7c8c9aace321ee62f8847d67037165d5114c29bf0bc42e5b88",
+      "reason": "Exact historical rule/report-heading lookup key, preserved for saved data."
+    },
+    {
+      "path": "web/src/lib/builtin-i18n.ts",
+      "line": 15,
+      "line_sha256": "d6b2a57417c40d990cc2318b7df18b39788902ddd92f9e4ce568a242024673c5",
+      "reason": "Exact historical rule/report-heading lookup key, preserved for saved data."
+    },
+    {
+      "path": "web/src/lib/builtin-i18n.ts",
+      "line": 16,
+      "line_sha256": "e59d3df87767de74e5229559dca76686630e75856c9a40eb586df772a1bb1f94",
+      "reason": "Exact historical rule/report-heading lookup key, preserved for saved data."
+    },
+    {
+      "path": "web/src/lib/builtin-i18n.ts",
+      "line": 17,
+      "line_sha256": "a6de5013c68f2d8f7f4962f39785e07dd9d0ceb3b0054a0c2e18fc066a9ce262",
+      "reason": "Exact historical rule/report-heading lookup key, preserved for saved data."
+    },
+    {
+      "path": "web/src/lib/builtin-i18n.ts",
+      "line": 18,
+      "line_sha256": "706d4b2070bb6c525223d0c97ffe3466c7e69317caf7dde0228d3b17444a15ef",
+      "reason": "Exact historical rule/report-heading lookup key, preserved for saved data."
+    },
+    {
+      "path": "web/src/lib/builtin-i18n.ts",
+      "line": 19,
+      "line_sha256": "69676a43b74e23fde77f6b21938a23d1453221362c6f41097a1a95d44bb06dd4",
+      "reason": "Exact historical rule/report-heading lookup key, preserved for saved data."
+    },
+    {
+      "path": "web/src/lib/builtin-i18n.ts",
+      "line": 20,
+      "line_sha256": "a686b310c91fdf9cf41b38cdab5e4221c6afece93643784a6d270cc8084782c2",
+      "reason": "Exact historical rule/report-heading lookup key, preserved for saved data."
+    },
+    {
+      "path": "web/src/lib/builtin-i18n.ts",
+      "line": 21,
+      "line_sha256": "73d93a3db44c69e3434fde64744ce427470377dd8ef91a696cc57cb64c07d6de",
+      "reason": "Exact historical rule/report-heading lookup key, preserved for saved data."
+    },
+    {
+      "path": "web/src/lib/builtin-i18n.ts",
+      "line": 22,
+      "line_sha256": "531f7aaf11ec7f592d6047d18913d743b2d0cb7cdae5ca304d9129dfb44070ef",
+      "reason": "Exact historical rule/report-heading lookup key, preserved for saved data."
+    },
+    {
+      "path": "web/src/lib/builtin-i18n.ts",
+      "line": 23,
+      "line_sha256": "e75816241334584cbe4213655f9781835520192a6935aab0b8749ff9beeeeb83",
+      "reason": "Exact historical rule/report-heading lookup key, preserved for saved data."
+    },
+    {
+      "path": "web/src/lib/builtin-i18n.ts",
+      "line": 24,
+      "line_sha256": "9554c685c02199775e8edd89296bc9ef26dbdc4933ba23ecc5dab70588f71a03",
+      "reason": "Exact historical rule/report-heading lookup key, preserved for saved data."
+    },
+    {
+      "path": "web/src/lib/builtin-i18n.ts",
+      "line": 25,
+      "line_sha256": "80b151678e6efff29733abf2038d9d55bf14dbc8aa57684e5348a9a60972538d",
+      "reason": "Exact historical rule/report-heading lookup key, preserved for saved data."
+    },
+    {
+      "path": "web/src/lib/builtin-i18n.ts",
+      "line": 26,
+      "line_sha256": "fe0f3c8a4606402bc4dc74570d014eb8c5bc6d3c0b51e83e6ba729d7cce752b1",
+      "reason": "Exact historical rule/report-heading lookup key, preserved for saved data."
+    },
+    {
+      "path": "web/src/lib/builtin-i18n.ts",
+      "line": 27,
+      "line_sha256": "db5cf018c10b019b87560ff410e1e1809b0709abdcc367ed53a90499f1339262",
+      "reason": "Exact historical rule/report-heading lookup key, preserved for saved data."
+    },
+    {
+      "path": "web/src/lib/builtin-i18n.ts",
+      "line": 28,
+      "line_sha256": "99b76ea74540fa6f13bc455a33fe118aa9be72ebda7ce5b9ebe778a4743b0664",
+      "reason": "Exact historical rule/report-heading lookup key, preserved for saved data."
+    },
+    {
+      "path": "web/src/lib/builtin-i18n.ts",
+      "line": 29,
+      "line_sha256": "b82c609a030bbcf946f3e33a375f4bd87de6a7f712fc18917c06937f0c128049",
+      "reason": "Exact historical rule/report-heading lookup key, preserved for saved data."
+    },
+    {
+      "path": "web/src/lib/builtin-i18n.ts",
+      "line": 30,
+      "line_sha256": "f875e5a6d931b8391e16af2a276a78c869595480df043518ea6f27261f01faaa",
+      "reason": "Exact historical rule/report-heading lookup key, preserved for saved data."
+    },
+    {
+      "path": "web/src/lib/builtin-i18n.ts",
+      "line": 31,
+      "line_sha256": "e125eaa10c3badfa76a532d973e98e2f52069e2c7692302649af39427b09bb4e",
+      "reason": "Exact historical rule/report-heading lookup key, preserved for saved data."
+    },
+    {
+      "path": "web/src/lib/builtin-i18n.ts",
+      "line": 35,
+      "line_sha256": "e9a9968f61879d6af702a51997e0a4a93795a5bd859e7fccb2a274bd842e8b2d",
+      "reason": "Exact historical rule/report-heading lookup key, preserved for saved data."
+    },
+    {
+      "path": "web/src/lib/builtin-i18n.ts",
+      "line": 36,
+      "line_sha256": "fa00a39aed8beec7169f0913b0a12dd42dc935d73ddb061d126b88aabb192904",
+      "reason": "Exact historical rule/report-heading lookup key, preserved for saved data."
+    },
+    {
+      "path": "web/src/lib/builtin-i18n.ts",
+      "line": 37,
+      "line_sha256": "0636b88f4cb8b39c63feb2cf667306acd9cfeb968a86e6c8c6621e7648741385",
+      "reason": "Exact historical rule/report-heading lookup key, preserved for saved data."
+    },
+    {
+      "path": "web/src/lib/builtin-i18n.ts",
+      "line": 38,
+      "line_sha256": "373e96e9b1931ad23ac17eabb42680a5f2700b0efe3623c3b2f5fce8e5982126",
+      "reason": "Exact historical rule/report-heading lookup key, preserved for saved data."
+    },
+    {
+      "path": "web/src/lib/builtin-i18n.ts",
+      "line": 46,
+      "line_sha256": "7960e6ec3f90b469de2eeddd57fbe2cdc2b54c3dbdc85767c955526c1fc9b175",
+      "reason": "Exact historical rule/report-heading lookup key, preserved for saved data."
+    },
+    {
+      "path": "web/src/lib/builtin-i18n.ts",
+      "line": 47,
+      "line_sha256": "3704086b30957d32717e9a76c56f4ae22281c4f9864e647a2e20932afde3adb3",
+      "reason": "Exact historical rule/report-heading lookup key, preserved for saved data."
+    },
+    {
+      "path": "web/src/lib/builtin-i18n.ts",
+      "line": 48,
+      "line_sha256": "c85522eff93f703516906bf8bb5181f5a7e4f633da1fa1f3898ccaa882fa8c7d",
+      "reason": "Exact historical rule/report-heading lookup key, preserved for saved data."
+    },
+    {
+      "path": "web/src/lib/builtin-i18n.ts",
+      "line": 49,
+      "line_sha256": "0fa2aa564bb582f708f2827b60b3659a577a21053acd767d7edbb68a87504362",
+      "reason": "Exact historical rule/report-heading lookup key, preserved for saved data."
+    },
+    {
+      "path": "web/src/lib/builtin-i18n.ts",
+      "line": 50,
+      "line_sha256": "10bd5c4c62b973729215de1b941b0cb34a446f09cd299ef3fd6ec1bdad2cbdb6",
+      "reason": "Exact historical rule/report-heading lookup key, preserved for saved data."
+    },
+    {
+      "path": "web/src/lib/builtin-i18n.ts",
+      "line": 51,
+      "line_sha256": "72827fbc2ed8281cd2bd7f505fdc60233705868ba188d255121bd7b15deefecc",
+      "reason": "Exact historical rule/report-heading lookup key, preserved for saved data."
+    },
+    {
+      "path": "web/src/lib/builtin-i18n.ts",
+      "line": 52,
+      "line_sha256": "caf44c41aef0d34a70e0853b8e5608b524e5716deea06bf1b6d84a61148a75aa",
+      "reason": "Exact historical rule/report-heading lookup key, preserved for saved data."
+    },
+    {
+      "path": "web/src/lib/agent-i18n.ts",
+      "line": 28,
+      "line_sha256": "d78749b34a52e0511bae3b89e64b570e92be2432e9ce17eb7b981c354d157f96",
+      "reason": "Exact historical editable reporter seed; user-authored changes must not be overwritten."
+    },
+    {
+      "path": "web/src/lib/agent-i18n.ts",
+      "line": 30,
+      "line_sha256": "bbaa784b6ab0d4ec17527e2833e7cf0b48c316f305609373ab5e227db7a6ca54",
+      "reason": "Exact historical editable reporter seed; user-authored changes must not be overwritten."
+    },
+    {
+      "path": "web/src/lib/chat-mentions.ts",
+      "line": 2,
+      "line_sha256": "89a021f975c47e205e49c3e109cac194fccda21b57ac89dfda267d44b04f596a",
+      "reason": "Legacy mention protocol category/token parser bytes shared with the backend."
+    },
+    {
+      "path": "web/src/lib/chat-mentions.ts",
+      "line": 3,
+      "line_sha256": "e0a7c71be5bbd7cea222ed98fb62f394edfc35c93a53b0b6f2c2086c14d2a286",
+      "reason": "Legacy mention protocol category/token parser bytes shared with the backend."
+    },
+    {
+      "path": "web/src/lib/chat-mentions.ts",
+      "line": 4,
+      "line_sha256": "79766b7c7a4a9d158ce3faa0a6e99dd9102228252a278ed425661bd073de9ab7",
+      "reason": "Legacy mention protocol category/token parser bytes shared with the backend."
+    },
+    {
+      "path": "web/src/lib/chat-mentions.ts",
+      "line": 5,
+      "line_sha256": "184569fb11ced6a17488dbb1932eecd6301a3fec0dfec9c6330b92d06804d845",
+      "reason": "Legacy mention protocol category/token parser bytes shared with the backend."
+    },
+    {
+      "path": "web/src/lib/chat-mentions.ts",
+      "line": 7,
+      "line_sha256": "e84b61f706ddacdc6f03544fe255afab5b74dbf6cc4f9bfb5092b200ac7f6bf2",
+      "reason": "Legacy mention protocol category/token parser bytes shared with the backend."
+    },
+    {
+      "path": "web/src/lib/chat-mentions.ts",
+      "line": 8,
+      "line_sha256": "f188b6023f947ca83d0f0e1a251c0f7e71eaddb4773fc203ac1f18a34e84c1b9",
+      "reason": "Legacy mention protocol category/token parser bytes shared with the backend."
+    },
+    {
+      "path": "web/src/lib/chat-mentions.ts",
+      "line": 9,
+      "line_sha256": "3d153cd8d4b5d7ea2c61e323900eb7aca87561493c744939d41bbd78a895ce9a",
+      "reason": "Legacy mention protocol category/token parser bytes shared with the backend."
+    },
+    {
+      "path": "web/src/lib/chat-mentions.ts",
+      "line": 10,
+      "line_sha256": "b89e4fd6fa0c7ea56e0bee879385b93de934c394df9f0a8cacebb6f1f108d865",
+      "reason": "Legacy mention protocol category/token parser bytes shared with the backend."
+    },
+    {
+      "path": "web/src/lib/chat-mentions.ts",
+      "line": 46,
+      "line_sha256": "555643f712a7f338b05681b4850ce1937c5fd7e88e0816ab91931518a9c12e6d",
+      "reason": "Legacy mention protocol category/token parser bytes shared with the backend."
+    },
+    {
+      "path": "web/src/lib/chat-mentions.ts",
+      "line": 66,
+      "line_sha256": "c679a521c2b7a86dcac9fb70b242f70462efaa8136c537b51eea5feee1f84b57",
+      "reason": "Legacy mention protocol category/token parser bytes shared with the backend."
+    },
+    {
+      "path": "web/src/lib/chat-mentions.test.mjs",
+      "line": 7,
+      "line_sha256": "2896038ee74144f2569a7d57e4bdc26c9bb1ef230c24f7f0284cc2d5dd64106e",
+      "reason": "Unicode and legacy mention protocol input/expected-output fixture."
+    },
+    {
+      "path": "web/src/lib/chat-mentions.test.mjs",
+      "line": 8,
+      "line_sha256": "8cf30018a72f2a4f64fa970ecf703253ca6fadc9d9a3b9c6598b5aa1be1a42fc",
+      "reason": "Unicode and legacy mention protocol input/expected-output fixture."
+    },
+    {
+      "path": "web/src/lib/chat-mentions.test.mjs",
+      "line": 9,
+      "line_sha256": "e7a03ca308ddbdabe9cdc1a66320cbb4ce70621c60911fbf277c7f41bf2a5f84",
+      "reason": "Unicode and legacy mention protocol input/expected-output fixture."
+    },
+    {
+      "path": "web/src/lib/chat-mentions.test.mjs",
+      "line": 14,
+      "line_sha256": "ceac1e4fa229824e4bde2b0c7c1b9cac11634407ac34893489884bcc35b932de",
+      "reason": "Unicode and legacy mention protocol input/expected-output fixture."
+    },
+    {
+      "path": "web/src/lib/chat-mentions.test.mjs",
+      "line": 15,
+      "line_sha256": "7c2bc33ed6c31960f71d1c3490f93deea38f15f6b94b3ebb3eba704c9a737f29",
+      "reason": "Unicode and legacy mention protocol input/expected-output fixture."
+    },
+    {
+      "path": "web/src/lib/chat-mentions.test.mjs",
+      "line": 16,
+      "line_sha256": "7354361f35b1e584e7dce57908a454785637869f4d4f2e6b6c58d32e733613aa",
+      "reason": "Unicode and legacy mention protocol input/expected-output fixture."
+    },
+    {
+      "path": "web/src/lib/chat-mentions.test.mjs",
+      "line": 18,
+      "line_sha256": "2b11b17cf7e5af79974397e8a7017a2fb5b1b38dd19064cdcc78f2e5ee1926ca",
+      "reason": "Unicode and legacy mention protocol input/expected-output fixture."
+    },
+    {
+      "path": "web/src/lib/chat-mentions.test.mjs",
+      "line": 23,
+      "line_sha256": "2ea21539618571907a35ad2a93bcb9fee88a4b30d50802bcfe2bb3ca645ec572",
+      "reason": "Unicode and legacy mention protocol input/expected-output fixture."
+    },
+    {
+      "path": "web/src/lib/chat-mentions.test.mjs",
+      "line": 25,
+      "line_sha256": "80cfa4ef0117a983ca34369e9ebbbdb18ff7b1f7c69d6a38018d3d7bd0712792",
+      "reason": "Unicode and legacy mention protocol input/expected-output fixture."
+    },
+    {
+      "path": "web/src/lib/chat-mentions.test.mjs",
+      "line": 30,
+      "line_sha256": "f8629ed4f7791fe252a43c5b34938cb7952191a4987b6bd47c1c187669381af8",
+      "reason": "Unicode and legacy mention protocol input/expected-output fixture."
+    },
+    {
+      "path": "web/src/lib/builtin-i18n.test.tsx",
+      "line": 28,
+      "line_sha256": "6de2858065e8e6044d9dd7d207e69583b2f19b4a71ff238eedd28216416d3574",
+      "reason": "Legacy seed and Unicode evidence-preservation test input/expected output; test descriptions are English."
+    },
+    {
+      "path": "web/src/lib/builtin-i18n.test.tsx",
+      "line": 29,
+      "line_sha256": "ad598b3849752fe1586287680e77e5922c8036363fd07a72aa0ab1b885d86068",
+      "reason": "Legacy seed and Unicode evidence-preservation test input/expected output; test descriptions are English."
+    },
+    {
+      "path": "web/src/lib/builtin-i18n.test.tsx",
+      "line": 33,
+      "line_sha256": "d8c27abcb8429b695d53088b00e18cbfc5b24f8a429aed047f69431b5c0d4a40",
+      "reason": "Legacy seed and Unicode evidence-preservation test input/expected output; test descriptions are English."
+    },
+    {
+      "path": "web/src/lib/builtin-i18n.test.tsx",
+      "line": 34,
+      "line_sha256": "1939f825a0cd561951655b681f4281dca554135a9a6aef0119f407875d34112b",
+      "reason": "Legacy seed and Unicode evidence-preservation test input/expected output; test descriptions are English."
+    },
+    {
+      "path": "web/src/lib/builtin-i18n.test.tsx",
+      "line": 35,
+      "line_sha256": "870a7d82f417d854017f61091b61cfe92146aa21d48429e0d60c12237a7be25d",
+      "reason": "Legacy seed and Unicode evidence-preservation test input/expected output; test descriptions are English."
+    },
+    {
+      "path": "web/src/lib/builtin-i18n.test.tsx",
+      "line": 39,
+      "line_sha256": "5b9091850b6fba07f4c9fb4ac823fbdef4322a3b39ee7c682e0d249dc4a20863",
+      "reason": "Legacy seed and Unicode evidence-preservation test input/expected output; test descriptions are English."
+    },
+    {
+      "path": "web/src/lib/builtin-i18n.test.tsx",
+      "line": 41,
+      "line_sha256": "86607fb339820117a85c014971b1f92c13a346fa0c6be32bc507ee937b916991",
+      "reason": "Legacy seed and Unicode evidence-preservation test input/expected output; test descriptions are English."
+    },
+    {
+      "path": "web/src/lib/builtin-i18n.test.tsx",
+      "line": 62,
+      "line_sha256": "fbe7f621c436cb466f9ad3f34e2f98032a5c3b26c0e9cae87e977ceab0ac19c2",
+      "reason": "Legacy seed and Unicode evidence-preservation test input/expected output; test descriptions are English."
+    },
+    {
+      "path": "web/src/lib/builtin-i18n.test.tsx",
+      "line": 63,
+      "line_sha256": "312c7d5b20275febfcaaf74670e5ebfeb4bcb0e2ea31b1512b6c5aa2ddc30731",
+      "reason": "Legacy seed and Unicode evidence-preservation test input/expected output; test descriptions are English."
+    },
+    {
+      "path": "web/src/lib/builtin-i18n.test.tsx",
+      "line": 64,
+      "line_sha256": "f531ca094fea0e00e62162bab3bc1a6053dd18f9893d0b399fa3f1e79147ca85",
+      "reason": "Legacy seed and Unicode evidence-preservation test input/expected output; test descriptions are English."
+    },
+    {
+      "path": "web/src/components/approval-records.tsx",
+      "line": 58,
+      "line_sha256": "7d2aa7bb6f459a3f74c8b9d0b9155d73b32087e22f73a098c92347b4854b5c81",
+      "reason": "Exact historical model-review prefix classifier/stripper for old audit records."
+    },
+    {
+      "path": "web/src/components/approval-records.tsx",
+      "line": 120,
+      "line_sha256": "603572d27dddc9bf1435c51c738cdf12fd0274d5581822a644c024529fe31448",
+      "reason": "Exact historical model-review prefix classifier/stripper for old audit records."
+    },
+    {
+      "path": "web/src/components/approval-records.tsx",
+      "line": 385,
+      "line_sha256": "06e9e8bdab9861624d428d51408c7bc40c28abd23b381673578822eec796c552",
+      "reason": "Exact historical model-review prefix classifier/stripper for old audit records."
+    },
+    {
+      "path": "web/src/components/approval-records.tsx",
+      "line": 501,
+      "line_sha256": "8210dffe31cf679d7768db5989c880f32a30376f9fc5fef1f96020ff6a43f0e1",
+      "reason": "Exact historical model-review prefix classifier/stripper for old audit records."
+    },
+    {
+      "path": "web/src/components/transcript.tsx",
+      "line": 193,
+      "line_sha256": "2677dd456015c037171f4a1abdfcfe571a1c2cc95e1cf9b8760048aac2bd5c7b",
+      "reason": "Exact historical approval-summary parsing signature."
+    },
+    {
+      "path": "web/src/lib/company-scope.ts",
+      "line": 207,
+      "line_sha256": "65e87c35b8726854f6b5354a5f53cf7d0996c8c2292052dfefe4fbb9679f991e",
+      "reason": "Accepted ICP input marker in a parser regex, not presentation text."
+    },
+    {
+      "path": "web/src/lib/mock/data.ts",
+      "line": 3580,
+      "line_sha256": "5647275153666d1ba3fadef29472463e46bcae7dcce621a1d70260039a8f786e",
+      "reason": "Historical model-review prefix in synthetic audit fixture; UI strips/translates it."
+    },
+    {
+      "path": "web/src/lib/mock/data.ts",
+      "line": 3609,
+      "line_sha256": "eb964f6e45ae32da99a9817f72ccf9ed0e0d54e399cca2f5b752058ae97fc981",
+      "reason": "Historical model-review prefix in synthetic audit fixture; UI strips/translates it."
+    },
+    {
+      "path": "web/src/lib/mock/data.ts",
+      "line": 3630,
+      "line_sha256": "a2a067bfe55be4639f6f0652643cbf2345b84bb6845f39bf5a5de50c58bafa8a",
+      "reason": "Historical model-review prefix in synthetic audit fixture; UI strips/translates it."
+    },
+    {
+      "path": "web/src/lib/mock/data.ts",
+      "line": 3664,
+      "line_sha256": "adcc999c3fecb6af15edb158ef4836017c79f7653f0ae97c90cad81888aa04ab",
+      "reason": "Historical model-review prefix in synthetic audit fixture; UI strips/translates it."
+    },
+    {
+      "path": "web/src/lib/mock/data.ts",
+      "line": 3681,
+      "line_sha256": "986421b8fe8d30dc655f99bf403d921add1ce5e17a6f8bc93c3d485726a256f4",
+      "reason": "Historical model-review prefix in synthetic audit fixture; UI strips/translates it."
+    },
+    {
+      "path": "web/src/lib/mock/handler.ts",
+      "line": 2497,
+      "line_sha256": "8a141789ef0ed19d75226c50d24a460fa2db419632264b0bdf331fcca55705d5",
+      "reason": "Exact historical model-review prefix classifier in mock data handling."
+    },
+    {
+      "path": "detections/triage/artex_host_triage.py",
+      "line": 137,
+      "line_sha256": "66b16a24e644d7b82ba73c5b91507cbef7ee84dac9f274c9d972fa40e255a79a",
+      "reason": "Historical emitted marker retained to detect old logs."
+    },
+    {
+      "path": "detections/sigma/artex_guard_audit_framing.yml",
+      "line": 26,
+      "line_sha256": "dee414e408601cfdec28e5f9a961c41a8878970d6e51ae9208ce7c4a3db155a7",
+      "reason": "Historical emitted marker retained to detect old logs."
+    },
+    {
+      "path": "detections/tests/sigma/check.sh",
+      "line": 50,
+      "line_sha256": "7147674fbb8b0ead5f86986cda38be8bf7d585065170b782ed7df161f177d1e3",
+      "reason": "Source/rule compatibility assertion for the exact historical marker."
+    },
+    {
+      "path": "detections/tests/sigma_match/events/artex_guard_audit_framing.json",
+      "line": 5,
+      "line_sha256": "6a48a81e2a8810984c8de7c0ff0fda2d05c1efee81b6d7b80d2c7a5302e65e7d",
+      "reason": "Positive synthetic event fixture for the historical emitted marker."
+    },
+    {
+      "path": "detections/tests/sigma_match/events/correlation/artex_guard_block_burst.json",
+      "line": 10,
+      "line_sha256": "c10a858ad14a5ce83530d6828f4491b7ccdc7d1e11c1c2d149353132f26762b1",
+      "reason": "Positive synthetic correlation fixture for historical emitted markers."
+    },
+    {
+      "path": "detections/tests/sigma_match/events/correlation/artex_guard_block_burst.json",
+      "line": 15,
+      "line_sha256": "c10a858ad14a5ce83530d6828f4491b7ccdc7d1e11c1c2d149353132f26762b1",
+      "reason": "Positive synthetic correlation fixture for historical emitted markers."
+    },
+    {
+      "path": "detections/tests/sigma_match/events/correlation/artex_guard_block_burst.json",
+      "line": 20,
+      "line_sha256": "c10a858ad14a5ce83530d6828f4491b7ccdc7d1e11c1c2d149353132f26762b1",
+      "reason": "Positive synthetic correlation fixture for historical emitted markers."
+    },
+    {
+      "path": "detections/tests/sigma_match/events/correlation/artex_guard_block_burst.json",
+      "line": 25,
+      "line_sha256": "c10a858ad14a5ce83530d6828f4491b7ccdc7d1e11c1c2d149353132f26762b1",
+      "reason": "Positive synthetic correlation fixture for historical emitted markers."
+    },
+    {
+      "path": "detections/tests/sigma_match/events/correlation/artex_guard_block_burst.json",
+      "line": 30,
+      "line_sha256": "c10a858ad14a5ce83530d6828f4491b7ccdc7d1e11c1c2d149353132f26762b1",
+      "reason": "Positive synthetic correlation fixture for historical emitted markers."
+    },
+    {
+      "path": "detections/tests/sigma_match/events/correlation/artex_guard_block_burst.json",
+      "line": 42,
+      "line_sha256": "c10a858ad14a5ce83530d6828f4491b7ccdc7d1e11c1c2d149353132f26762b1",
+      "reason": "Positive synthetic correlation fixture for historical emitted markers."
+    },
+    {
+      "path": "detections/tests/sigma_match/events/correlation/artex_guard_block_burst.json",
+      "line": 47,
+      "line_sha256": "c10a858ad14a5ce83530d6828f4491b7ccdc7d1e11c1c2d149353132f26762b1",
+      "reason": "Positive synthetic correlation fixture for historical emitted markers."
+    },
+    {
+      "path": "detections/tests/sigma_match/events/correlation/artex_guard_block_burst.json",
+      "line": 52,
+      "line_sha256": "c10a858ad14a5ce83530d6828f4491b7ccdc7d1e11c1c2d149353132f26762b1",
+      "reason": "Positive synthetic correlation fixture for historical emitted markers."
+    },
+    {
+      "path": "detections/tests/sigma_match/events/correlation/artex_guard_block_burst.json",
+      "line": 57,
+      "line_sha256": "c10a858ad14a5ce83530d6828f4491b7ccdc7d1e11c1c2d149353132f26762b1",
+      "reason": "Positive synthetic correlation fixture for historical emitted markers."
+    },
+    {
+      "path": "detections/tests/sigma_match/events/correlation/artex_guard_block_burst.json",
+      "line": 67,
+      "line_sha256": "c10a858ad14a5ce83530d6828f4491b7ccdc7d1e11c1c2d149353132f26762b1",
+      "reason": "Positive synthetic correlation fixture for historical emitted markers."
+    },
+    {
+      "path": "detections/tests/sigma_match/events/correlation/artex_guard_block_burst.json",
+      "line": 72,
+      "line_sha256": "c10a858ad14a5ce83530d6828f4491b7ccdc7d1e11c1c2d149353132f26762b1",
+      "reason": "Positive synthetic correlation fixture for historical emitted markers."
+    },
+    {
+      "path": "detections/tests/sigma_match/events/correlation/artex_guard_block_burst.json",
+      "line": 77,
+      "line_sha256": "c10a858ad14a5ce83530d6828f4491b7ccdc7d1e11c1c2d149353132f26762b1",
+      "reason": "Positive synthetic correlation fixture for historical emitted markers."
+    },
+    {
+      "path": "detections/tests/sigma_match/events/correlation/artex_guard_block_burst.json",
+      "line": 82,
+      "line_sha256": "c10a858ad14a5ce83530d6828f4491b7ccdc7d1e11c1c2d149353132f26762b1",
+      "reason": "Positive synthetic correlation fixture for historical emitted markers."
+    },
+    {
+      "path": "detections/tests/sigma_match/events/correlation/artex_guard_block_burst.json",
+      "line": 87,
+      "line_sha256": "c10a858ad14a5ce83530d6828f4491b7ccdc7d1e11c1c2d149353132f26762b1",
+      "reason": "Positive synthetic correlation fixture for historical emitted markers."
+    },
+    {
+      "path": "detections/tests/sigma_match/events/correlation/artex_guard_block_burst.json",
+      "line": 97,
+      "line_sha256": "c10a858ad14a5ce83530d6828f4491b7ccdc7d1e11c1c2d149353132f26762b1",
+      "reason": "Positive synthetic correlation fixture for historical emitted markers."
+    },
+    {
+      "path": "detections/tests/sigma_match/events/correlation/artex_guard_block_burst.json",
+      "line": 102,
+      "line_sha256": "c10a858ad14a5ce83530d6828f4491b7ccdc7d1e11c1c2d149353132f26762b1",
+      "reason": "Positive synthetic correlation fixture for historical emitted markers."
+    },
+    {
+      "path": "detections/tests/sigma_match/events/correlation/artex_guard_block_burst.json",
+      "line": 107,
+      "line_sha256": "c10a858ad14a5ce83530d6828f4491b7ccdc7d1e11c1c2d149353132f26762b1",
+      "reason": "Positive synthetic correlation fixture for historical emitted markers."
+    },
+    {
+      "path": "detections/tests/sigma_match/events/correlation/artex_guard_block_burst.json",
+      "line": 112,
+      "line_sha256": "c10a858ad14a5ce83530d6828f4491b7ccdc7d1e11c1c2d149353132f26762b1",
+      "reason": "Positive synthetic correlation fixture for historical emitted markers."
+    },
+    {
+      "path": "detections/tests/sigma_match/events/correlation/artex_guard_block_burst.json",
+      "line": 117,
+      "line_sha256": "c10a858ad14a5ce83530d6828f4491b7ccdc7d1e11c1c2d149353132f26762b1",
+      "reason": "Positive synthetic correlation fixture for historical emitted markers."
+    },
+    {
+      "path": "detections/tests/sigma_match/events/correlation/artex_guard_marker_then_destructive.json",
+      "line": 10,
+      "line_sha256": "c10a858ad14a5ce83530d6828f4491b7ccdc7d1e11c1c2d149353132f26762b1",
+      "reason": "Positive synthetic correlation fixture for historical emitted markers."
+    },
+    {
+      "path": "detections/tests/sigma_match/events/correlation/artex_guard_marker_then_destructive.json",
+      "line": 28,
+      "line_sha256": "c10a858ad14a5ce83530d6828f4491b7ccdc7d1e11c1c2d149353132f26762b1",
+      "reason": "Positive synthetic correlation fixture for historical emitted markers."
+    },
+    {
+      "path": "detections/tests/sigma_match/events/correlation/artex_guard_marker_then_destructive.json",
+      "line": 33,
+      "line_sha256": "c10a858ad14a5ce83530d6828f4491b7ccdc7d1e11c1c2d149353132f26762b1",
+      "reason": "Positive synthetic correlation fixture for historical emitted markers."
+    },
+    {
+      "path": "detections/tests/sigma_match/events/correlation/artex_guard_marker_then_destructive.json",
+      "line": 54,
+      "line_sha256": "c10a858ad14a5ce83530d6828f4491b7ccdc7d1e11c1c2d149353132f26762b1",
+      "reason": "Positive synthetic correlation fixture for historical emitted markers."
+    },
+    {
+      "path": "detections/tests/sigma_match/events/correlation/artex_guard_marker_then_destructive.json",
+      "line": 70,
+      "line_sha256": "c10a858ad14a5ce83530d6828f4491b7ccdc7d1e11c1c2d149353132f26762b1",
+      "reason": "Positive synthetic correlation fixture for historical emitted markers."
+    },
+    {
+      "path": "skills/api-recon/reference.md",
+      "line": 61,
+      "line_sha256": "885037a416f94ef7e5bda64da598b4af50aa4e2d13345eeeefafbd34f1948a4a",
+      "reason": "Literal target-language error signatures in a search recipe."
+    },
+    {
+      "path": "skills/api-recon/scripts/preload.js",
+      "line": 194,
+      "line_sha256": "d6ab2edd27f8f1d888a68487a99ff3952777563cee24b4984f899aaf49a20445",
+      "reason": "Literal target-language response signatures in a matching regex."
+    },
+    {
+      "path": "sidequestion/VALIDATION.md",
+      "line": 126,
+      "line_sha256": "d62bda71eeee31aae8970ef287c1cae9154a53b8c790d724e387b97d4053dc10",
+      "reason": "Quoted historical target-page title preserved as evidence, with English explanation."
+    },
+    {
+      "path": "sidequestion/VALIDATION.zh.md",
+      "line": 128,
+      "line_sha256": "d62bda71eeee31aae8970ef287c1cae9154a53b8c790d724e387b97d4053dc10",
+      "reason": "Quoted historical target-page title preserved as evidence, with English explanation."
+    },
+    {
+      "path": "sidequestion/context_test.go",
+      "line": 107,
+      "line_sha256": "487545c044b2e93b78f7dd6a2f42f8e09dc6226df0fb051f611f2bed96bd45c6",
+      "reason": "Unicode history/evidence fixtures exercising character-budget behavior."
+    },
+    {
+      "path": "sidequestion/context_test.go",
+      "line": 109,
+      "line_sha256": "74b5ede9a88921d5ed5b7b43f38c52d39fdd43ae978134d62bf0ef4232e8993d",
+      "reason": "Unicode history/evidence fixtures exercising character-budget behavior."
+    },
+    {
+      "path": "sidequestion/validation-2026-09-10.json",
+      "line": 61,
+      "line_sha256": "797041a20c24af0a2e69c248b12b1a20994d85c55a59b7bd9b495d1e9f480282",
+      "reason": "Original recorded validation questions, answers and tool evidence; not a new validation claim."
+    },
+    {
+      "path": "sidequestion/validation-2026-09-10.json",
+      "line": 62,
+      "line_sha256": "8609bf166310fdfcbbbe0245381cff8da38d91104707cca4ef92ab62e8f7d18d",
+      "reason": "Original recorded validation questions, answers and tool evidence; not a new validation claim."
+    },
+    {
+      "path": "sidequestion/validation-2026-09-10.json",
+      "line": 87,
+      "line_sha256": "6d20a6b26fdf5a78337a4bd3399afb28db89109ba1d4839715cb8fe5810ba90d",
+      "reason": "Original recorded validation questions, answers and tool evidence; not a new validation claim."
+    },
+    {
+      "path": "sidequestion/validation-2026-09-10.json",
+      "line": 88,
+      "line_sha256": "bb50a04a13366fcaaf30ec019530490eb776910c5e56565dba5698616481c564",
+      "reason": "Original recorded validation questions, answers and tool evidence; not a new validation claim."
+    },
+    {
+      "path": "sidequestion/validation-2026-09-10.json",
+      "line": 113,
+      "line_sha256": "47eb8a972e129f64b848fe8bcb7926c7d785c3275e22ff5abf03351efe637fb1",
+      "reason": "Original recorded validation questions, answers and tool evidence; not a new validation claim."
+    },
+    {
+      "path": "sidequestion/validation-2026-09-10.json",
+      "line": 114,
+      "line_sha256": "3d4acd147a4a6996b36cd05f337f722a0a90373a404c65c5d13c03ce601ac212",
+      "reason": "Original recorded validation questions, answers and tool evidence; not a new validation claim."
+    },
+    {
+      "path": "sidequestion/validation-2026-09-10.json",
+      "line": 137,
+      "line_sha256": "fb394480a041c91b4b3336aedea6de6eba856069b75ff88ddcffe67dee697eaf",
+      "reason": "Original recorded validation questions, answers and tool evidence; not a new validation claim."
+    },
+    {
+      "path": "sidequestion/validation-2026-09-10.json",
+      "line": 148,
+      "line_sha256": "fd8fc9da606bedcadce10d4f387cdf183f22fff172ba7b49f33dec49a0ddcbc3",
+      "reason": "Original recorded validation questions, answers and tool evidence; not a new validation claim."
+    },
+    {
+      "path": "sidequestion/validation-2026-09-10.json",
+      "line": 156,
+      "line_sha256": "3a9aa0b8ad90da857ea1eb44e61e9b0f4c1e8a3d6bfe2642e217e5c6ae8b8fce",
+      "reason": "Original recorded validation questions, answers and tool evidence; not a new validation claim."
+    },
+    {
+      "path": "sidequestion/validation-2026-09-10.json",
+      "line": 204,
+      "line_sha256": "661000753bdbe21385b5e799eeca03d25389cb0c43b68bc56acd0a74d98a43d5",
+      "reason": "Original recorded validation questions, answers and tool evidence; not a new validation claim."
+    },
+    {
+      "path": "sidequestion/validation-2026-09-10.json",
+      "line": 220,
+      "line_sha256": "6aa88909fba4d93643b88c86041466499bedd8a8d1c0b91b665654dfc6c7134a",
+      "reason": "Original recorded validation questions, answers and tool evidence; not a new validation claim."
+    },
+    {
+      "path": "sidequestion/validation-2026-09-10.json",
+      "line": 221,
+      "line_sha256": "362db268df588212da7ba6ed7ec007d653c05ae51058426d1d4664374b7e55ba",
+      "reason": "Original recorded validation questions, answers and tool evidence; not a new validation claim."
+    },
+    {
+      "path": "sidequestion/validation-2026-09-10.json",
+      "line": 253,
+      "line_sha256": "d4d640a60eb5134a908cc7e3b5c403ac07afabbadd773aa8a1962a20973cd963",
+      "reason": "Original recorded validation questions, answers and tool evidence; not a new validation claim."
+    },
+    {
+      "path": "sidequestion/validation-2026-09-10.json",
+      "line": 254,
+      "line_sha256": "f605e175c543de42294fd6a9a21c14927552b3f3ecba97bf966213d3072ad412",
+      "reason": "Original recorded validation questions, answers and tool evidence; not a new validation claim."
+    },
+    {
+      "path": "sidequestion/validation-2026-09-10.json",
+      "line": 287,
+      "line_sha256": "83fb3fd83001a63ae15e05697eecd06395907f0f8766dcd18b5c9a02581cb64a",
+      "reason": "Original recorded validation questions, answers and tool evidence; not a new validation claim."
+    }
+  ]
+}

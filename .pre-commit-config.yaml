@@ -1,0 +1,22 @@
+# Local equivalents of the CI detection and documentation gates.
+# Detection changes require Docker; tests run in disposable containers.
+# The docs hook always runs because moving a referenced non-Markdown file can
+# break a link too. It uses the Python standard library without network access.
+# Install: pip install pre-commit && pre-commit install
+# Run: pre-commit run detections --all-files
+#      pre-commit run docs --all-files
+repos:
+  - repo: local
+    hooks:
+      - id: detections
+        name: Eight detection suites (Sigma, Suricata, ATT&CK, indicators, MISP)
+        entry: detections/tests/run-all.sh
+        language: script
+        pass_filenames: false
+        files: '^(detections/|enrich/enrich\.go|selfupdate/(github|stage)\.go|guard/guard\.go|db/db\.go|db/schema\.sql|cmd/artex/main\.go|traffic/traffic\.go|docs/defense-(ko|en)\.md)'
+      - id: docs
+        name: Internal documentation links, images, and heading anchors
+        entry: python3 -I scripts/check-doc-links.py
+        language: system
+        pass_filenames: false
+        always_run: true

@@ -1,0 +1,27 @@
+name: external-links
+# Check curated external links weekly or manually, separate from merge gates.
+# Network failures, rate limits, and bot restrictions can make these checks flaky.
+# --strict fails only on DOWN links outside scripts/external-links-allowlist.txt;
+# RESTRICTED but reachable hosts and explicitly allowed upstream failures do not fail.
+# Scheduled workflows run from the default branch.
+on:
+  schedule:
+    - cron: "17 0 * * 1" # Mondays at 00:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: external-links-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  links:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      # Python is preinstalled; the script uses only its standard library.
+      - name: Check external link availability
+        run: python3 -I scripts/check-external-links.py --strict

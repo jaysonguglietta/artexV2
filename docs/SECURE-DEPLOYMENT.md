@@ -1,0 +1,73 @@
+# Secure local deployment
+
+ARTEX is a single-operator assessment application. Use it only on systems you own
+or have permission to test. Deploy it in a dedicated assessment VM with a dedicated
+Docker daemon; do not use shared multi-tenant hosting.
+
+## Execution boundary
+
+Follow [Isolated task execution](WORKER-ISOLATION.md) to build the task image,
+configure approved destination CIDRs, and start the private worker broker. The API
+never runs model-requested shell/filesystem/custom/MCP tools locally. Missing
+worker configuration blocks execution. The legacy ARTEX_ALLOW_HOST_EXECUTION=1
+flag is rejected in production. Prompt review and coverage scope do not authorize
+network access; the broker's operator-owned policy controls worker egress.
+
+The API keeps database/model credentials and signing keys. Workers receive none
+of those credentials. Only the trusted broker gets the Docker socket. Do not mount
+it into the API or worker, publish the broker port, or relax its network isolation.
+
+## Chat-only startup
+
+```sh
+cp .env.example .env
+# Set unique POSTGRES_PASSWORD and ARTEX_ADMIN_PASSWORD values in .env.
+./scripts/setup-workers.sh --secret-only
+docker compose up --build -d
+```
+
+Open http://localhost:8787. The API publishes only on loopback; the database and
+recording proxy are not published. Chat, records and the UI are available without
+a worker, but autonomous tools require the worker deployment. Configuration and
+secrets are private files excluded from Git and build contexts. Keep backups of
+PostgreSQL and the private signing-key volume; protect and rotate them after any
+compromise. Do not upload runtime evidence or configuration to GitHub.
+
+## Sessions and remote access
+
+For remote UI access, use a private authenticated tunnel or HTTPS reverse proxy
+with a dedicated hostname/browser profile. Forward the original Host header.
+Browser sessions use HttpOnly, SameSite=Strict cookies; Secure is required away
+from loopback. Cookies are host-scoped, not TCP-port-scoped: an untrusted service
+on another port at that hostname can receive them. Loopback HTTP is only for a
+private throwaway environment.
+
+Native clients may use the login response token in an Authorization Bearer header.
+Query tokens are rejected. Browser storage contains only a UI marker, never the
+JWT. Sessions expire after 12 hours; logout persists a digest revocation and
+password changes invalidate older sessions. JWT verification requires HS256, the
+expected subject, and expiration. Same-origin mutation checks reject cross-origin
+requests. The dev script allows one explicit loopback frontend origin; leave
+ARTEX_DEV_ORIGIN unset in production.
+
+## Review, TLS and updates
+
+Model review defaults to deny on failure or malformed output. Previously saved
+explicit allow-on-failure policies must be changed manually to deny. Human review
+is an additional control, not a sandbox. TLS validation is on; keep assessment-only
+insecure target exceptions out of credential/control-plane traffic. MCP workers
+always verify TLS. Self-update and rollback are off by default; rebuild reviewed
+source instead of trusting mutable upstream artifacts.
+
+## Verification and publication
+
+Run scripts/test-isolated.sh for disposable PostgreSQL integration tests. Run
+frontend type, test, catalog, lint and static-build checks; scripts/audit-npm.py
+verifies every npm advisory against live upstream withdrawal status and fails
+closed on active or unverifiable alerts. Keep test/build inputs trusted.
+
+Before publication, inspect the clean-copy manifest, retain AGPL and original
+attribution, and exclude .env, private keys, runtime data, logs, evidence, dependency
+directories and binaries. The worker design reduces tool compromise exposure;
+container/kernel hardening, OS-image CVE scanning, signed provenance, centralized
+append-only audit and retention remain operational responsibilities.

@@ -1,0 +1,41 @@
+# Add this file only after running scripts/setup-workers.sh and reviewing policy.
+services:
+  artex:
+    environment:
+      ARTEX_WORKER_URL: http://worker-broker:8790
+    depends_on:
+      worker-broker:
+        condition: service_started
+  worker-broker:
+    image: artex-local:broker
+    build:
+      context: .
+      dockerfile: Dockerfile.source
+      target: broker
+    environment:
+      ARTEX_WORKER_POLICY_FILE: /run/worker-policy.json
+      ARTEX_WORKER_TOKEN_FILE: /run/secrets/worker-token
+      ARTEX_WORKER_IMAGE: ${ARTEX_WORKER_IMAGE:?Run setup-workers.sh after building the worker image}
+      ARTEX_WORKER_STATE_DIR: /broker-state
+      ARTEX_WORKER_NETWORK: artex-isolated-workers
+      GOMEMLIMIT: 384MiB
+    secrets: [worker-token]
+    volumes:
+      # Only this trusted broker gets the daemon socket. Workers and API do not.
+      - /var/run/docker.sock:/var/run/docker.sock
+      - worker-state:/broker-state
+      - ./.secrets/worker-policy.json:/run/worker-policy.json:ro
+    group_add: ["${ARTEX_DOCKER_GID:-0}"]
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    tmpfs: ["/tmp:rw,nosuid,nodev,size=32m"]
+    pids_limit: 64
+    mem_limit: 512m
+    cpus: 1
+    networks: [management]
+    stop_grace_period: 2m
+    restart: unless-stopped
+
+volumes:
+  worker-state: {}

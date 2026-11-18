@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report an upstream security vulnerability
+    url: https://github.com/jiwoochris/artex-global/security/policy
+    about: This is the upstream policy. For this fork, follow SECURITY.md and contact its maintainer privately. Do not post exploit details in public issues.
+  - name: Upstream attribution and authorized use
+    url: https://github.com/jiwoochris/artex-global
+    about: Retain upstream attribution and use ARTEX only on systems you own or are authorized to assess.

@@ -1,0 +1,36 @@
+name: Feature request
+description: Propose a focused improvement to the authorized assessment workflow.
+title: "[Feature] "
+labels: [enhancement]
+body:
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing proposals.
+          required: true
+        - label: This proposal supports authorized use and applicable law.
+          required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or need
+      description: Describe the user and workflow affected before proposing a solution.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+  - type: dropdown
+    id: area
+    attributes:
+      label: Component
+      options: [Agent, Web UI / server, Worker isolation, LLM integration, Documentation, Other]

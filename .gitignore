@@ -1,0 +1,111 @@
+# backend
+/data/
+*.db
+*.db-wal
+*.db-shm
+config.json
+scheduler_state.json
+__pycache__/
+*.pyc
+*.pyo
+
+# frontend
+web/node_modules/
+web/.next/
+web/tsconfig.tsbuildinfo
+web/next-env.d.ts
+*.local
+
+# development tools
+.playwright-mcp/
+.playwright-cli/
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# os
+.DS_Store
+Thumbs.db
+
+# claude code local state
+.claude/
+
+# Single-binary output with embedded frontend
+/artex
+# Update staging files, backups, failed binaries, and upgrade markers
+/artex.new
+/artex.new.sha256
+/artex.old
+/artex.failed
+/artex.upgrade.json
+/server/webui/dist/
+/dist/
+
+# Runtime JWT signing key; never commit
+/jwt.key
+
+# Local Docker environment containing credentials; never commit
+.env
+
+# Scheduler runtime/simulation event logs; local test artifacts
+*-events.csv
+
+# Local benchmark artifacts
+/bench/
+/Dockerfile.bench
+/Dockerfile.bench.v2
+# Local operation: keep private test and scan outputs out of commits
+work/
+test-results/
+scan-output/
+evidence-local/
+# Local demo runtime data includes the recording index database and
+# private interception CA keys; never publish them.
+/demo-data/
+*.local.env
+# Local live model comparison test lives in package agent outside work/
+# and uses OPENROUTER_API_KEY/network access. Exclude its exact path
+# without hiding tracked upstream tests.
+agent/d2_models_live_test.go
+
+# Never commit API keys or secrets, regardless of location
+*.env
+secrets.env
+
+# Local Windows build outputs
+# Windows binary from go build -o artex.exe, corresponding to /artex
+/artex.exe
+# Private local configuration, such as PostgreSQL credentials
+/.secrets/
+# SWC native binding cache when configured inside the project
+/.swc-cache/
+# Redirected foreground runtime logs
+/artex.out.log
+/artex.err.log
+
+# Local validation and publish-preparation artifacts.
+web/out/
+web/*.tsbuildinfo
+*.bak
+*.log
+translation-inventory.local.json
+
+# Local environment overrides and credentials are never publication inputs.
+.env*
+**/.env*
+!.env.example
+!**/.env.example
+*.key
+*.pem
+*.p12
+*.pfx
+/private/
+
+# Dependency trees from every helper/package are generated, never source.
+**/node_modules/
+
+# Operator network policies are private deployment inputs.
+/worker-policy.json
+
+.worker-fixture.*/

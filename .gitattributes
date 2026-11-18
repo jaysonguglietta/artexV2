@@ -1,0 +1,3 @@
+# Preserve reviewed CRLF bytes in Windows scripts and the source manifest.
+*.bat -text
+*.sh  text eol=lf
