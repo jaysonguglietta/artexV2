@@ -3,7 +3,8 @@
 Date: 18 November 2026. Results below are point-in-time observations with explicit
 source scope. Fresh local integration, runtime image and targeted follow-up
 checks have passed, including final Compose acceptance and a fresh prepared-source
-credential scan. Hosted OIDC/amd64 remain pending as listed below. Earlier
+credential scan. Hosted Go/frontend/Docker, amd64/arm64 image gates and real keyless
+signing also passed for the exact commit listed below. Earlier
 integration counts and image IDs must not be represented as results for later edits. No local
 pass implies that GitHub Actions, real OIDC signing or release publication passed.
 
@@ -29,7 +30,7 @@ checks remain available; installation is an external signed-verification workflo
 
 These results cover the storage/image/release changes and current release UI.
 They are separate from the older checkpoint below. Image identities and database
-provenance are recorded in the next section; hosted run evidence is still pending.
+provenance are recorded below, alongside the separate hosted run evidence.
 
 | Final-source check | Observed result / remaining scope |
 |---|---|
@@ -45,11 +46,63 @@ provenance are recorded in the next section; hosted run evidence is still pendin
 | Storage/context behavior | Covered by the fresh PostgreSQL suites and race runs, including new quota/retention/hold and context/transcript paths; this is not an independent forensic or deletion certification. |
 | Fresh Compose startup/persistence | **11/11 passed**, including native PostgreSQL UID drop, restart persistence, absent API interpreters, API-to-broker tool execution and fixture cleanup. |
 | Final prepared-source credential scan | Pinned Gitleaks v8.30.1 scanned the fresh prepared source with no network: six individually reviewed synthetic fixture matches, zero unresolved matches and zero confirmed credential leaks. Publication snapshot changes require another scan. |
-| Remote amd64 build/image gates | **Pending** hosted CI after the source push. Local arm64 results are not cross-architecture results. |
-| Real main-only keyless rehearsal | **Pending** hosted OIDC/Fulcio/Rekor run and strict positive/negative verification. Local signing tests do not substitute for it. |
+| Remote build/image gates | Passed on native linux/amd64 and linux/arm64, four components each; see the exact hosted run and newer DB below. |
+| Real main-only keyless rehearsal | Passed with real GitHub OIDC/Fulcio/Rekor, image signatures and all eight strict negative cases; exact commit/run below. |
 | Protected-tag production release | Not claimed. Requires exact tag/commit/run evidence, hosted protections, complete gates and verified publication. |
 
-## Runtime image review status
+## Hosted follow-up verification
+
+These runs checked source commit `d06f7d8a28c9a562c885a85237811234018eb01c` on 18 November 2026.
+A later documentation/manifest-only commit does not change the tested application,
+worker, image policy or signing scripts. Consult the linked run for exact checkout
+and job identity; a production version-tag release is not claimed.
+
+| Check | Hosted result |
+|---|---|
+| Image security | [Passed on native amd64 and arm64](https://github.com/jaysonguglietta/artexV2/actions/runs/44401217153), all four components on each platform, zero blocking findings. |
+| Real keyless signing | [Passed](https://github.com/jaysonguglietta/artexV2/actions/runs/44401256931), attempt 1: real GitHub OIDC/Fulcio/Rekor signatures and image verification; eight identity/tamper/provenance negatives rejected. |
+| Go / PostgreSQL / workers | [All six jobs passed](https://github.com/jaysonguglietta/artexV2/actions/runs/44401217096), including build/vet/unit/vulnerability, isolated PostgreSQL, frontend, recon, security tooling and live worker/Compose checks. |
+| Frontend | [Passed](https://github.com/jaysonguglietta/artexV2/actions/runs/44401217040). |
+| Detection suites | [Passed](https://github.com/jaysonguglietta/artexV2/actions/runs/44401217173). |
+| Documentation | [Passed](https://github.com/jaysonguglietta/artexV2/actions/runs/44401217199). |
+
+Both hosted platforms used Trivy DB `UpdatedAt=2026-11-18T19:07:09.82030288Z`,
+SHA256 `d06c4389045c2eb4a755b6a25de8c0716007e6fcf287cf9c3778dbbaab560175`.
+This newer DB reflects the Picomatch withdrawal: each platform now has raw
+High 0 and no withdrawal exception is needed. The older local report below
+retains its raw High 1 and primary withdrawal proof; no package fix is implied.
+
+The following counts apply independently to each architecture, not their sum.
+
+| Component | Critical | High | Medium | Low | Unknown | Blocking |
+|---|---:|---:|---:|---:|---:|---:|
+| application | 0 | 0 | 0 | 0 | 0 | 0 |
+| worker | 0 | 0 | 132 | 14 | 0 | 0 |
+| broker | 0 | 0 | 1 | 0 | 0 | 0 |
+| postgres | 0 | 0 | 0 | 0 | 0 | 0 |
+
+Complete reports and CycloneDX SBOMs are retained in that Actions run for 30 days.
+Synthetic candidate bundles are retained for seven days; private local evidence
+also retains the reports, logs and hashes. These CI retention settings are
+separate from the application raw-capture TTL.
+
+| Platform/component | Original Docker image ID | Authenticated config digest |
+|---|---|---|
+| amd64/application | `sha256:394fb49c54af1b3ffd7c2b89de115d0f38f6b2d7d7f2fc7425ff0c973f6d00ab` | `sha256:394fb49c54af1b3ffd7c2b89de115d0f38f6b2d7d7f2fc7425ff0c973f6d00ab` |
+| amd64/worker | `sha256:1b16a7c186019a269139e7cbc9f2ad916c796dcae315fa73adfec36ea35b68b1` | `sha256:1b16a7c186019a269139e7cbc9f2ad916c796dcae315fa73adfec36ea35b68b1` |
+| amd64/broker | `sha256:f34fbdec8c97f5e72397f27c71ff1e13ee025a45d55897b7a8e37a8599657e64` | `sha256:f34fbdec8c97f5e72397f27c71ff1e13ee025a45d55897b7a8e37a8599657e64` |
+| amd64/postgres | `sha256:ee990f3eb890514a7d4f62d6154a3dce1731fb83b9841e5c2515e2190aec543d` | `sha256:ee990f3eb890514a7d4f62d6154a3dce1731fb83b9841e5c2515e2190aec543d` |
+| arm64/application | `sha256:622914d8c0c1e24061755e97987934dc87ab318ce00ab80ef08d70461af004e4` | `sha256:622914d8c0c1e24061755e97987934dc87ab318ce00ab80ef08d70461af004e4` |
+| arm64/worker | `sha256:3922794e1adb9b785590b984046b569f86c32e656b6c6f321869a7e0920b34d9` | `sha256:3922794e1adb9b785590b984046b569f86c32e656b6c6f321869a7e0920b34d9` |
+| arm64/broker | `sha256:d99c2ea8cb74ce54da8309049427f1331f71394de74434aa44a137db945fc3f2` | `sha256:d99c2ea8cb74ce54da8309049427f1331f71394de74434aa44a137db945fc3f2` |
+| arm64/postgres | `sha256:9e1b52b48ad47295d4a01a4097c5e4b646423bb2c347c2b1d343973b180d85d6` | `sha256:9e1b52b48ad47295d4a01a4097c5e4b646423bb2c347c2b1d343973b180d85d6` |
+
+These are scanned local export identities, not published GHCR release digests.
+The signing rehearsal creates no version tag, GitHub release or GHCR package.
+Protected-tag publication and operator repository protections require separate
+release authorization and validation.
+
+## Local ARM64 image review status
 
 All four final **linux/arm64** gates passed. These are raw database severity
 counts, not counts after hiding a withdrawn record:
@@ -111,7 +164,7 @@ all-CVE or all-runtime-code guarantee is inferred. See
 
 These observations predate the latest storage/image/release changes. They remain
 useful earlier regression evidence; the fresh local results above supersede their
-counts for the current source. Still-pending hosted/snapshot checks remain explicit.
+counts for the current source. Hosted follow-up evidence is recorded separately above.
 
 | Check | Earlier observed result | Scope and limits |
 |---|---|---|

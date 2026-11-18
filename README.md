@@ -146,8 +146,9 @@ workflow, tag, source commit and run. Publication is restricted to protected
 version tags with explicit release opt-in. A separate main-only dry run rehearses
 real OIDC signing without publishing a production release. Fresh local integration
 and all four ARM64 image gates passed, with the worker's one withdrawn advisory
-retained in raw counts. Final Compose acceptance passed 11/11. The prepared source credential scan has no unresolved matches. Remote amd64 and
-hosted OIDC remain pending; local tests do not imply those runs or release publication passed.
+retained in raw counts. Final Compose acceptance passed 11/11. The prepared source credential scan has no unresolved matches. Hosted CI, all eight
+amd64/arm64 image gates and the real OIDC signing rehearsal passed. No production
+version-tag release was published; the validation record links the exact tested commit/runs.
 See [validation](docs/VALIDATION.md) for exact counts, identities and limits.
 
 [Evidence storage](docs/EVIDENCE-STORAGE.md) defines independent admission budgets

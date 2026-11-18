@@ -170,6 +170,11 @@ release-tag publication path also requires separate authorized release validatio
 a successful dry run is not a claim that a real release was published or all
 cross-architecture build/registry policies were exercised.
 
+The real main-only rehearsal [passed on 18 November 2026](https://github.com/jaysonguglietta/artexV2/actions/runs/44401256931)
+for commit `d06f7d8a28c9a562c885a85237811234018eb01c`, attempt 1. Actual
+checksum/provenance and image signatures verified, and all eight negative cases
+were refused. This proves that candidate run; no production release was published.
+
 ## Tests and operational checks
 
 ```sh

@@ -198,7 +198,8 @@ primary-source-confirmed withdrawal classifications are distinct and auditable.
 All four final ARM64 component gates passed with zero blocking findings. Worker
 raw counts still include one High with a live official withdrawal proof; Medium/Low
 findings remain visible. [Validation](VALIDATION.md) records exact IDs, counts and
-DB/proof identity. Hosted amd64 is pending; there is no all-CVE clean claim.
+DB/proof identity. The hosted amd64/arm64 gates also passed with a newer DB and
+raw High 0 on both platforms; Medium/Low remain. There is no all-CVE clean claim.
 
 Production cannot enable the retained unsigned updater: apply/rollback routes
 always refuse, the legacy flag is rejected, and production bootstrap/staging does
@@ -206,8 +207,10 @@ not execute old unsigned files. Version checks remain read-only. The
 [signed-release workflow](SIGNED-RELEASES.md) is restricted to protected semantic
 tags and explicit opt-in, with exact repository/workflow/ref/commit/run identities
 and verification before installation. Main-only dry runs use real OIDC without
-publishing. The 14 signing and 15 publication tests passed locally; the actual hosted OIDC
-rehearsal and release publication are pending, not implied by local tests.
+publishing. The 14 signing and 15 publication tests passed locally. The real hosted
+OIDC rehearsal also passed its positive verification and eight negative cases;
+[validation](VALIDATION.md) links its exact commit/run. Production-tag release
+publication remains a separate opt-in operation and is not claimed.
 
 ## Validation checkpoints
 
@@ -228,12 +231,13 @@ rehearsal and release publication are pending, not implied by local tests.
 | Fresh builds and live boundary checks | All four current source-image builds, worker 52/52 and API 12/12 passed |
 | Fresh ARM64 image gates | All four passed, 0 blocking; raw withdrawn High and Medium/Low counts retained |
 | Fresh Compose acceptance | 11/11 passed, including PostgreSQL native UID drop/restart persistence, absent API interpreters, isolated tool execution and cleanup |
-| Still pending | Remote amd64 and real hosted OIDC |
+| Hosted checks | All six Go/worker jobs, frontend, docs and detections passed; all eight amd64/arm64 images passed; real keyless signing and eight negative cases passed. Exact runs in validation. |
+| Production-tag release | Not published; protected-tag settings and explicit release opt-in remain operator policy. |
 | Dependency and source-secret review | Results and limits described above and in the validation record |
 
 Rows explicitly labeled earlier remain historical. Fresh local results now cover
-the storage/image/release changes; the remaining hosted and snapshot checks
-are separate in [validation](VALIDATION.md). These results
+the storage/image/release changes; hosted evidence and the prepared-source scan
+are recorded separately in [validation](VALIDATION.md). These results
 demonstrate checked behaviors, not a security certification.
 The skipped live-provider test is not counted as a pass. Unit/integration tests
 and synthetic adversarial fixtures do not establish real-target assessment

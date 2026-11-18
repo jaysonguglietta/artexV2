@@ -25,8 +25,8 @@ bridge during final adversarial review and repaired before publication. The
 confirmed implementation defects have been repaired or bounded for the supported
 deployment. The follow-up closes F10's unsafe in-process update path and adds
 signed release/image gates. Fresh local integration and all four ARM64 image
-gates and the fresh prepared-source credential scan passed; hosted OIDC/amd64
-remain pending. This is not an assertion of vulnerability absence or approval for arbitrary hosting.
+gates and the fresh prepared-source credential scan passed. Hosted amd64/arm64
+image gates, full CI and the real OIDC signing rehearsal subsequently passed. This is not an assertion of vulnerability absence or approval for arbitrary hosting.
 
 **The supported boundary is one trusted operator on a dedicated assessment VM and
 Docker daemon.** Executable tools now run in disposable containers per agent run,
@@ -47,7 +47,7 @@ cases with one optional provider skip, 13 additional tested suites, full focused
 races/vet, four source builds, 52 worker checks, 12 API checks and 11 Compose checks.
 All four ARM64 image gates have 0 blocking findings; the worker raw High is retained
 with official withdrawal proof. The fresh prepared-source credential scan has no
-unresolved matches; hosted OIDC/amd64 remain pending. Exact counts/identities are in [validation](VALIDATION.md).
+unresolved matches. Hosted OIDC and all eight amd64/arm64 image gates also passed. Exact counts/identities are in [validation](VALIDATION.md).
 The latest complete frontend npm audit and production audit both report zero;
 Go source `govulncheck` reports zero. Earlier npm graph alerts were independently
 verified as withdrawn, as explained in section 7. See [validation](VALIDATION.md)
@@ -177,7 +177,7 @@ it bypassed the intended worker boundary, despite being discovered later.
 | F08 | Medium | High | TLS verification restored by default; explicit assessment override remains |
 | F09 | Medium | High | Reviewed parsing/output and new file-admission budgets bounded; database/log/VM-wide capacity remains separate |
 | F15 | Medium | High | Fixed: whole-map path/depth/directory validation before mutation |
-| F10 | Medium | High | Unsafe production updater closed; signed release/image controls implemented; hosted OIDC/publication verification pending |
+| F10 | Medium | High | Unsafe production updater closed; signed release/image controls and hosted OIDC verified; production release publication not claimed |
 | F11 | Medium | High | Reviewer failures deny by default; explicit legacy allow policy requires review |
 | F12 | Medium | High | Policy read errors refuse insertion before side effects |
 
@@ -579,15 +579,15 @@ independently constrain native-code consequences.
 
 **Validation:** MCP security tests exercise oversized streams and canceled handshake;
 custom-tool tests exercise environment stripping, output cancellation and size caps.
-Real worker lifecycle tests confirm detached work stops on close/watchdog. Broader
-traffic retention, upload/disk quotas and production load profiles remain separate
-work.
+Real worker lifecycle tests confirm detached work stops on close/watchdog. The
+follow-up adds managed raw-capture retention and file admission quotas; production
+load profiles and host/database/log capacity remain separate operational work.
 
 ### F10 — Mutable build inputs and upstream update identity widened trust
 
 **Severity: Medium. Confidence: High. Classification: confirmed supply-chain/design
-gap; unsafe production updater closed, release controls implemented with final
-hosted validation pending. CWE-829 / CWE-494.**
+gap; unsafe production updater closed, release controls implemented with hosted
+image and real OIDC validation passed; production release publication not claimed. CWE-829 / CWE-494.**
 
 **Affected files/functions:** Docker/install/build inputs, release workflows,
 `docker-compose.yml`; [selfupdate/github.go](../selfupdate/github.go), `Repo`;
@@ -627,10 +627,10 @@ uncompromised publisher, every hosted repository setting or all future CVE cover
 probes and image-gate negatives cover tampered metadata/artifacts, wrong identity,
 unsigned staging, incomplete gates and malformed/unsupported image evidence.
 There are 19 local image-gate tests, 14 signing tests and 15 publication tests. Fresh
-local integration and all four ARM64 gates passed. Real hosted OIDC/amd64 and
-protected-tag publication remain separately unverified in
-[validation](VALIDATION.md); passing local tests is not a claimed Fulcio or registry
-publication result. The former conditional unsigned updater risk is closed, while
+local integration and all four ARM64 gates passed. Hosted native amd64/arm64
+image gates and real OIDC/Fulcio/Rekor signing with eight negative cases also
+passed; [validation](VALIDATION.md) identifies the exact commit and runs.
+Protected-tag production release publication is not claimed. The former conditional unsigned updater risk is closed, while
 release operation still requires the documented trust and verification steps.
 
 ### F11 — Model-review failures defaulted to allowing execution
@@ -808,7 +808,7 @@ API confirms the corresponding advisory is withdrawn; this is tracked through a
 live exact CVE/GHSA/npm-identity proof rather than a static risk exception. Raw
 counts remain in reports. All four final ARM64 gates passed with zero blocking findings; the worker retains
 raw High 1 / Medium 132 / Low 14 and the broker retains Medium 1. Exact identities and the
-pending hosted amd64/signing rehearsal are recorded in [validation](VALIDATION.md).
+successful hosted amd64/arm64/signing rehearsal are recorded in [validation](VALIDATION.md).
 Neither existing zero npm/Go findings nor these gates certify all OS/runtime code.
 
 ### Deployment assumptions that must remain explicit
@@ -944,8 +944,9 @@ The current 19 image-gate, 14 signing and 15 publication tests are local control
 Fresh local Go/storage/Docker records now include 869 PG cases, 13 additional
 suites, full focused races/vet, a Windows amd64 cross-build, four source builds,
 52 worker / 12 API / 11 Compose passes
-and all four ARM64 image gates with 0 blocking. No passing remote amd64/OIDC
-Actions run or production publication is inferred from these local results.
+and all four ARM64 image gates with 0 blocking. Separate successful hosted
+Go/frontend/Docker checks, eight amd64/arm64 image gates and a real OIDC rehearsal
+are now linked in validation. No production release publication is claimed.
 
 ### Required release and regression cases
 

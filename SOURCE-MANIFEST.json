@@ -212,9 +212,9 @@
     },
     {
       "path": "README.md",
-      "bytes": 30730,
+      "bytes": 30814,
       "mode": "0o644",
-      "sha256": "5712ef0640170985c3f3cef793eae0f0d0fd01789608afecd6b46649afdc2110"
+      "sha256": "dad489d93dba124a9a7efbdb82659f063bf14a313649d0f8aa9a74c800a30678"
     },
     {
       "path": "README.zh.md",
@@ -1754,27 +1754,27 @@
     },
     {
       "path": "docs/SECURITY-AUDIT.md",
-      "bytes": 67203,
+      "bytes": 67571,
       "mode": "0o644",
-      "sha256": "2394bc23a53c00fe4a88185e55707c1ad75952b45a8dc19ef293f3df25ac25d0"
+      "sha256": "198b14233bb5068521055a864c8830d85b0549c23dfb96c26561c3a32d8a4d00"
     },
     {
       "path": "docs/SECURITY-REVIEW.md",
-      "bytes": 20974,
+      "bytes": 21482,
       "mode": "0o644",
-      "sha256": "b4f3229be09c2dd3fb2eca564bbc7a5a1dee6fdaf8d729273212331c5c5a3a31"
+      "sha256": "5448ad81663940c3724eff6753dc1739e1f6daac1d83fb587310b5055206e870"
     },
     {
       "path": "docs/SIGNED-RELEASES.md",
-      "bytes": 12475,
+      "bytes": 12839,
       "mode": "0o644",
-      "sha256": "0d030ac0707d1865768ead0fbb717ec948fb361aa0ebdfb4a9f479505e0061fc"
+      "sha256": "28708a55b7eac7ba9453cf8a2321e1063394475baec3600ef8e7122fdcea2896"
     },
     {
       "path": "docs/VALIDATION.md",
-      "bytes": 16574,
+      "bytes": 20754,
       "mode": "0o644",
-      "sha256": "5bbd7ce2dff71d4709c935e46d3f3754e5a8bb60f42b618e12f4d5b5e35da2d5"
+      "sha256": "4b445887216a5a07411f6f7d95bf6e7892353c3d2ce5a6b1845361045b9b4cc9"
     },
     {
       "path": "docs/WORKER-ISOLATION.md",
