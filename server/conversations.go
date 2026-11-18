@@ -471,8 +471,13 @@ func (s *Server) pgSendConversationMessage(w http.ResponseWriter, r *http.Reques
 	if ua.Detail == "" {
 		ua.Detail = msg
 	}
-	if _, err := pg.AppendConvActivity(c.ID, ua); err != nil {
-		log.Printf("[conv %d] append user msg failed: %v", c.ID, err)
+	currentActivityID, err := pg.AppendConvActivity(c.ID, ua)
+	if err != nil {
+		s.chatMu.Lock()
+		delete(s.chatBusy, busyKey)
+		s.chatMu.Unlock()
+		writeErr(w, 500, "Could not persist the conversation message; no model request was started")
+		return
 	}
 	if isDefaultConversationTitle(c.Title) {
 		title := firstLine(msg, 40)
@@ -488,7 +493,7 @@ func (s *Server) pgSendConversationMessage(w http.ResponseWriter, r *http.Reques
 	// conv-<id>/), matching chatUpload's landing dir and agent/chat.go's sessionWorkDir
 	// — busyKey == convBusyKey(c.ID) == "conv-<id>" == that session id.
 	baseDir := filepath.Join(s.m.dir, "sessions", busyKey)
-	s.runConversation(c, composeAgentMessage(agentMessage, req.Attachments, baseDir), busyKey, msg)
+	s.runConversationFromActivity(c, composeAgentMessage(agentMessage, req.Attachments, baseDir), busyKey, currentActivityID, msg)
 	writeJSON(w, 202, map[string]any{"status": "accepted"})
 }
 
@@ -497,7 +502,11 @@ func (s *Server) pgSendConversationMessage(w http.ResponseWriter, r *http.Reques
 // conversation_activities. Shared by the chat HTTP handler and the P3 scheduler.
 // busyKey clears when the run ends (best-effort in-flight marker).
 func (s *Server) runConversation(c *db.Conversation, msg, busyKey string, userMessage ...string) {
+	s.runConversationFromActivity(c, msg, busyKey, 0, userMessage...)
+}
+func (s *Server) runConversationFromActivity(c *db.Conversation, msg, busyKey string, currentActivityID int64, userMessage ...string) {
 	ctx, cancel := s.conversationRunContext(c.ID, busyKey)
+	ctx = withConversationBefore(ctx, currentActivityID)
 	// Only the human-message handler supplies this field, before adding the
 	// attachment manifest. Scheduler/retest prompts must not be labelled as users.
 	if len(userMessage) == 1 {
@@ -510,8 +519,11 @@ func (s *Server) runConversation(c *db.Conversation, msg, busyKey string, userMe
 // run ends (clearing busyKey). runConversation wraps it in a goroutine for the
 // fire-and-forget chat path; the P3 trigger queue calls it directly so it can wait
 // for completion before starting the next queued fire for the same agent.
-func (s *Server) runConversationSync(c *db.Conversation, msg, busyKey string) {
+func (s *Server) runConversationSync(c *db.Conversation, msg, busyKey string, currentActivityID ...int64) {
 	ctx, cancel := s.conversationRunContext(c.ID, busyKey)
+	if len(currentActivityID) == 1 {
+		ctx = withConversationBefore(ctx, currentActivityID[0])
+	}
 	s.runConversationTurn(ctx, cancel, c, msg, busyKey)
 }
 
@@ -600,6 +612,17 @@ func (s *Server) runConversationTurn(ctx context.Context, cancel context.CancelC
 			log.Printf("[conv %d] append activity failed: %v", c.ID, err)
 		}
 	}
+	// Optional raw tracing may have an empty tmpfs after restart. Always carry a
+	// bounded PostgreSQL seed; Chat uses it only when raw resume is unavailable.
+	before, _ := ctx.Value(conversationBeforeKey{}).(int64)
+	history, err := loadConversationHistory(ctx, pg, c.ID, before, ca.HistoryReplayBudget())
+	if err != nil {
+		finishReason = "Could not restore conversation history; no model request was sent. Retry after database recovery"
+		log.Printf("[conv %d] history read failed: %v", c.ID, err)
+		emit(db.Activity{Worker: c.AgentKey, Kind: "text", IsError: true, Summary: finishReason, Detail: finishReason})
+		return
+	}
+	ctx = agent.WithChatHistory(ctx, history)
 	// Manual stops already emit a clean stopped activity; suppress duplicate raw cancellation errors and show only actual failures.
 	if _, err := ca.Chat(ctx, c.AgentKey, sessionID, msg, maxTurns, maxDuration, webSearch, emit); err != nil {
 		finishReason = err.Error()
@@ -847,14 +870,16 @@ func (s *Server) runTriggeredRun(item triggeredRun) {
 		return
 	}
 	msg := finalTriggerMessage(item) // prepend the task-context header for single (non-merged) fires
-	if _, err := pg.AppendConvActivity(c.ID, db.Activity{Worker: item.agentKey, Kind: "user", Summary: firstLine(msg, 200), Detail: msg}); err != nil {
-		log.Printf("[trigger] append msg failed: %v", err)
+	currentActivityID, err := pg.AppendConvActivity(c.ID, db.Activity{Worker: item.agentKey, Kind: "user", Summary: firstLine(msg, 200), Detail: msg})
+	if err != nil {
+		log.Printf("[trigger] append msg failed; run refused: %v", err)
+		return
 	}
 	busyKey := s.convBusyKey(c.ID)
 	s.chatMu.Lock()
 	s.chatBusy[busyKey] = true
 	s.chatMu.Unlock()
-	s.runConversationSync(c, msg, busyKey)
+	s.runConversationSync(c, msg, busyKey, currentActivityID)
 }
 
 // firstLine returns a single-line, length-capped preview (shared with summaries).

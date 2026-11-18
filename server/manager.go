@@ -20,6 +20,7 @@ import (
 	"github.com/Autumn-27/artex/guard"
 	"github.com/Autumn-27/artex/intercept"
 	"github.com/Autumn-27/artex/isolation"
+	"github.com/Autumn-27/artex/storage"
 	"github.com/Autumn-27/artex/traffic"
 	actool "github.com/Autumn-27/norma/tool"
 )
@@ -217,6 +218,10 @@ type DeleteTaskResult struct {
 // Manager owns the PostgreSQL data source (asset graph + every task's exploration
 // graph + config) and the in-memory set of task handles.
 type Manager struct {
+	storageHoldMu           sync.RWMutex
+	storageStateMu          sync.Mutex
+	storageMaintenanceError string
+
 	dir         string
 	pg          *pgdb.DB
 	assets      *pgdb.AssetStore
@@ -354,6 +359,9 @@ func NewManager(dir, proxyAddr string) (*Manager, error) {
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return nil, err
 	}
+	if _, err := storage.ConfigureDataDir(dir); err != nil {
+		return nil, fmt.Errorf("storage configuration: %w", err)
+	}
 	dsn, source, err := pgdb.DSN()
 	if err != nil {
 		return nil, err
@@ -374,10 +382,21 @@ func NewManager(dir, proxyAddr string) (*Manager, error) {
 		log.Printf("[llmusage] create table: %v", err)
 	}
 	m := &Manager{dir: dir, pg: pg, assets: pg.Assets(), tasks: map[string]*Task{}, interceptor: intercept.New(pg)}
-	if proxyAddr != "" {
-		tr, err := traffic.Open(filepath.Join(dir, "traffic"), proxyAddr)
+	needTraffic, needErr := trafficStorageNeeded(filepath.Join(dir, "traffic"), proxyAddr)
+	if needErr != nil {
+		pg.Close()
+		return nil, needErr
+	}
+	if needTraffic {
+		var tr *traffic.Traffic
+		if proxyAddr == "" {
+			tr, err = traffic.OpenIndex(filepath.Join(dir, "traffic"))
+		} else {
+			tr, err = traffic.Open(filepath.Join(dir, "traffic"), proxyAddr)
+		}
 		if err != nil {
-			log.Printf("[traffic] disabled: %v", err)
+			pg.Close()
+			return nil, fmt.Errorf("open traffic storage: %w", err)
 		} else {
 			err = tr.RecoverHostDeleteStages(func(_ int64, taskID int64) (bool, error) {
 				if taskID <= 0 {
@@ -393,19 +412,25 @@ func NewManager(dir, proxyAddr string) (*Manager, error) {
 				return task == nil, nil
 			})
 			if err != nil {
-				_ = tr.Close()
-				_ = pg.Close()
-				return nil, fmt.Errorf("recover traffic delete staging: %w", err)
+				if errors.Is(err, storage.ErrHold) {
+					log.Printf("[storage] traffic stage recovery deferred by legal hold")
+				} else {
+					_ = tr.Close()
+					_ = pg.Close()
+					return nil, fmt.Errorf("recover traffic delete staging: %w", err)
+				}
 			}
 		}
 		if tr != nil {
 			m.traffic = tr
-			go func() {
-				log.Printf("[traffic] recording proxy on %s (set HTTP_PROXY=%s + trust _ca CA)", proxyAddr, tr.ProxyAddr())
-				if err := tr.Start(); err != nil {
-					log.Printf("[traffic] proxy stopped: %v", err)
-				}
-			}()
+			if proxyAddr != "" {
+				go func() {
+					log.Printf("[traffic] recording proxy on %s (set HTTP_PROXY=%s + trust _ca CA)", proxyAddr, tr.ProxyAddr())
+					if err := tr.Start(); err != nil {
+						log.Printf("[traffic] proxy stopped: %v", err)
+					}
+				}()
+			}
 		}
 	}
 	// Asset auto-completion engine (§5): HTTP probes routed through the recording
@@ -738,7 +763,9 @@ func (m *Manager) Traffic() *traffic.Traffic { return m.traffic }
 // capturing, in the agent's own bash env / WebFetch when not.
 func (m *Manager) ProxyAddr() string {
 	if m.traffic != nil && m.TrafficEnabled() {
-		return m.traffic.ProxyAddr()
+		if addr := m.traffic.ProxyAddr(); addr != "" {
+			return addr
+		}
 	}
 	m.mu.RLock()
 	defer m.mu.RUnlock()
@@ -751,7 +778,7 @@ func (m *Manager) ProxyAddr() string {
 // preserves real target certs, so no custom CA is needed there. Its emptiness is
 // also the worker's "recording off" signal (see workerSystem).
 func (m *Manager) ProxyCACert() string {
-	if m.traffic == nil || !m.TrafficEnabled() {
+	if m.traffic == nil || !m.TrafficEnabled() || m.traffic.ProxyAddr() == "" {
 		return ""
 	}
 	return m.traffic.CACertPath()
@@ -1424,6 +1451,17 @@ func (m *Manager) SetTaskStatus(id, status string) error {
 // staged while PostgreSQL excludes asset/anchor writers. Both are restored on a
 // database failure and purged only after its commit.
 func (m *Manager) DeleteTask(id string, opts DeleteTaskOptions) (DeleteTaskResult, error) {
+	m.storageHoldMu.RLock()
+	defer m.storageHoldMu.RUnlock()
+	if err := m.checkEvidenceHold(); err != nil {
+		return DeleteTaskResult{}, err
+	}
+	if opts.DeleteFiles {
+		if err := storage.CheckHold(m.dir); err != nil {
+			return DeleteTaskResult{}, err
+		}
+	}
+
 	result := DeleteTaskResult{Deleted: id}
 	n, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
@@ -1548,6 +1586,7 @@ func (m *Manager) forgetTask(id string, numericID int64) {
 }
 
 type stagedTaskPath struct {
+	copied bool
 	source string
 	staged string
 }
@@ -1559,9 +1598,9 @@ type taskFileDeleteStage struct {
 	done     bool
 }
 
-// stageTaskFiles atomically renames the task workspace and owned transcripts to
-// a same-filesystem staging directory. The trailing dash in the transcript
-// prefix is significant: exploration 12 must not match exploration 123.
+// stageTaskFiles renames the workspace and copies owned transcripts into staging;
+// transcript originals remain until commit, including across tmpfs boundaries.
+// The trailing dash prevents exploration 12 from matching exploration 123.
 func stageTaskFiles(dataDir, taskID string, explorationID int64) (*taskFileDeleteStage, error) {
 	stage := &taskFileDeleteStage{}
 	var targets []string
@@ -1594,15 +1633,22 @@ func stageTaskFiles(dataDir, taskID string, explorationID int64) (*taskFileDelet
 	}
 
 	parent := filepath.Join(dataDir, ".delete-staging")
-	if err := os.MkdirAll(parent, 0o700); err != nil {
+	if err := storage.MkdirAll(parent, 0o700); err != nil {
 		return nil, err
 	}
-	stage.stageDir, err = os.MkdirTemp(parent, "task-"+taskID+"-")
+	stage.stageDir, err = storage.TempDir(parent, "task-"+taskID+"-")
 	if err != nil {
 		return nil, err
 	}
 	for _, source := range targets {
 		staged := filepath.Join(stage.stageDir, fmt.Sprintf("%d-%s", len(stage.moves), filepath.Base(source)))
+		if filepath.Dir(source) == transcriptDir {
+			stage.moves = append(stage.moves, stagedTaskPath{source: source, staged: staged, copied: true})
+			if err := copyArchivePath(source, staged); err != nil {
+				return nil, errors.Join(err, stage.rollback())
+			}
+			continue
+		}
 		if err := os.Rename(source, staged); err != nil {
 			cause := fmt.Errorf("stage task file %s: %w", source, err)
 			if restoreErr := stage.rollback(); restoreErr != nil {
@@ -1620,6 +1666,13 @@ func (s *taskFileDeleteStage) commit() error {
 	if s == nil || s.done {
 		return nil
 	}
+	for _, move := range s.moves {
+		if move.copied {
+			if err := os.RemoveAll(move.source); err != nil {
+				return err
+			}
+		}
+	}
 	err := os.RemoveAll(s.stageDir)
 	s.done = true
 	return err
@@ -1632,6 +1685,9 @@ func (s *taskFileDeleteStage) rollback() error {
 	var errs []error
 	for i := len(s.moves) - 1; i >= 0; i-- {
 		move := s.moves[i]
+		if move.copied {
+			continue
+		}
 		if _, err := os.Lstat(move.source); err == nil {
 			errs = append(errs, fmt.Errorf("restore destination already exists: %s", move.source))
 			continue

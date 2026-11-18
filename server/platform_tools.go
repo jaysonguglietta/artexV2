@@ -88,6 +88,9 @@ func (s *Server) toolCreateSkill() actool.CoreTool {
 			"instructions": strParam("Optional Markdown instructions"),
 		}, "name", "description"),
 		func(_ context.Context, in json.RawMessage) (actool.Result, error) {
+			if err := s.checkSkillManagedMutation(s.skillDir); err != nil {
+				return actool.Errorf(err.Error()), nil
+			}
 			var a struct{ Name, Description, Instructions string }
 			_ = json.Unmarshal(in, &a)
 			if !validSkillName(a.Name) {
@@ -136,6 +139,9 @@ func (s *Server) toolUpdateSkillFile() actool.CoreTool {
 			"content": strParam("Complete file contents"),
 		}, "name", "content"),
 		func(_ context.Context, in json.RawMessage) (actool.Result, error) {
+			if err := s.checkSkillManagedMutation(s.skillDir); err != nil {
+				return actool.Errorf(err.Error()), nil
+			}
 			var a struct{ Name, File, Content string }
 			_ = json.Unmarshal(in, &a)
 			if !validSkillName(a.Name) {

@@ -1,4 +1,6 @@
-// Package selfupdate implements the explicitly enabled in-process updater: download, verify, stage and replace on restart. Supervisors only interpret exit codes; Go owns cross-platform verification, smoke, replacement and rollback. A complete update starts the old server to stage, restarts it to verify/swap, then starts the new version to confirm stability. Failed staging preserves the old binary; repeated unstable new starts restore its backup. The feature is disabled by default for this fork.
+// Package selfupdate provides read-only release information and legacy staging
+// fixtures. Production in-process binary replacement is disabled; installation
+// requires external verification of this fork's signed release artifacts.
 package selfupdate
 
 import (

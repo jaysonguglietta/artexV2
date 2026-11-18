@@ -65,8 +65,8 @@ func TestUpdateProgressMessagesLocalized(t *testing.T) {
 	}
 }
 
-// Exercise the rollback-in-progress HTTP 409 response without PostgreSQL.
-func TestUpdateRollbackInProgressLocalized(t *testing.T) {
+// The legacy opt-in and a busy update hub cannot enable production rollback.
+func TestUpdateRollbackDisabledEvenWhenBusy(t *testing.T) {
 	t.Setenv("ARTEX_ENABLE_SELF_UPDATE", "1")
 	updHub.mu.Lock()
 	prev := updHub.running
@@ -83,12 +83,12 @@ func TestUpdateRollbackInProgressLocalized(t *testing.T) {
 	rec := httptest.NewRecorder()
 	s.updateRollback(rec, req)
 
-	if rec.Code != http.StatusConflict {
-		t.Fatalf("Expected status 409, got %d (body %s)", rec.Code, rec.Body.Bytes())
+	if rec.Code != http.StatusForbidden {
+		t.Fatalf("Expected status 403, got %d (body %s)", rec.Code, rec.Body.Bytes())
 	}
 	msg := decodeErrorField(t, rec.Body.Bytes())
-	assertEnglishError(t, "updateRollback in-progress 409", msg)
-	if msg != updateErrRollbackInProgress {
+	assertEnglishError(t, "updateRollback disabled 403", msg)
+	if !strings.Contains(msg, "signed prior release") {
 		t.Fatalf("Rollback refusal message mismatch: %q", msg)
 	}
 }

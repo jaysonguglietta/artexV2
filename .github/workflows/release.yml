@@ -1,36 +1,128 @@
-# Release publication is opt-in for personal forks; source uploads do not publish packages.
+# Real publication requires the explicit repository variable AND a protected
+# version tag on main ancestry. Manual dispatch signs only disposable candidates.
 name: release
 on:
   push:
     tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Sign and verify candidates only; never publish a release/tag/package"
+        type: boolean
+        default: true
+        required: true
 
 permissions:
   contents: read
 
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  ARTEX_ENABLE_RELEASES: ${{ vars.ARTEX_ENABLE_RELEASES }}
+  ARTEX_DRY_RUN: ${{ inputs.dry_run }}
+  ARTEX_REF_PROTECTED: ${{ github.ref_protected }}
+
 jobs:
-  frontend:
-    if: vars.ARTEX_ENABLE_RELEASES == 'true'
+  policy:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      mode: ${{ steps.gate.outputs.mode }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - id: gate
+        run: python3 scripts/signed-release.py gate
+      - run: python3 scripts/test-signed-release.py
+      - run: python3 scripts/test-release-publication.py
+
+  dry-run:
+    needs: policy
+    if: needs.policy.outputs.mode == 'candidate'
+    permissions:
+      contents: read
+      id-token: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      registry:
+        image: registry:3@sha256:82f6ff4a7f982960c8aa51617fea3aabc485df6e55cce80d22deb1de36f1bc3c
+        ports:
+          - "127.0.0.1:5000:5000"
+        options: >-
+          --memory 256m --pids-limit 64 --cap-drop ALL
+          --security-opt no-new-privileges:true
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: sigstore/cosign-installer@756fe2d284c7292c4e9b62c8a28f1e5629c59532
+        with:
+          cosign-release: v3.1.4
+      - name: Build a synthetic candidate and scratch image in the disposable loopback registry
+        run: >-
+          python3 scripts/signed-release.py candidate --directory dist/candidate
+          --candidate-run "$GITHUB_RUN_ID" --attempt "$GITHUB_RUN_ATTEMPT" --commit "$GITHUB_SHA"
+      - name: Real GitHub OIDC signing and exact-identity verification
+        run: >-
+          python3 scripts/signed-release.py sign --directory dist/candidate
+          --candidate-run "$GITHUB_RUN_ID" --attempt "$GITHUB_RUN_ATTEMPT" --commit "$GITHUB_SHA"
+      - name: Actual keyless tamper, issuer, workflow, repository, ref and SHA rejection tests
+        run: python3 scripts/test-keyless-release.py dist/candidate
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: signed-candidate-${{ github.run_id }}-${{ github.run_attempt }}
+          path: dist/candidate/*
+          if-no-files-found: error
+          retention-days: 7
+          overwrite: false
+
+  preflight-tests:
+    needs: policy
+    if: needs.policy.outputs.mode == 'release'
+    uses: ./.github/workflows/ci.yml
+
+  preflight-images:
+    needs: policy
+    if: needs.policy.outputs.mode == 'release'
+    uses: ./.github/workflows/image-security.yml
+
+  frontend:
+    needs: [policy, preflight-tests, preflight-images]
+    if: needs.policy.outputs.mode == 'release'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: "22"
           cache: npm
           cache-dependency-path: web/package-lock.json
-      - run: npm ci
+      - run: npm ci --ignore-scripts
         working-directory: web
       - run: npm run build:static
         working-directory: web
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: web-dist
           path: web/out
+          if-no-files-found: error
+          retention-days: 3
+          overwrite: false
 
   binaries:
     needs: frontend
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     strategy:
+      fail-fast: true
       matrix:
         include:
           - { goos: linux, goarch: amd64 }
@@ -39,16 +131,18 @@ jobs:
           - { goos: darwin, goarch: arm64 }
           - { goos: windows, goarch: amd64 }
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff
         with:
           go-version: "1.27.4"
           cache: true
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
           name: web-dist
           path: server/webui/dist
-      - name: Build and package with build.sh
+      - name: Build and package reviewed source
         env:
           ARTEX_TARGET_OS: ${{ matrix.goos }}
           ARTEX_TARGET_ARCH: ${{ matrix.goarch }}
@@ -58,82 +152,136 @@ jobs:
           ARTEX_COMPRESS: "0"
           ARTEX_PACKAGE: "1"
           ARTEX_PACKAGE_DIR: dist
-        run: |
-          ./build.sh --target "${ARTEX_TARGET_OS}/${ARTEX_TARGET_ARCH}"
+        run: ./build.sh --target "${ARTEX_TARGET_OS}/${ARTEX_TARGET_ARCH}"
       - name: Smoke test Linux amd64 binary
         if: matrix.goos == 'linux' && matrix.goarch == 'amd64'
         run: dist/artex-linux-amd64/artex -h
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: pkg-${{ matrix.goos }}-${{ matrix.goarch }}
           path: "dist/*.zip"
-      - if: matrix.goos == 'linux'
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        with:
-          name: bin-linux-${{ matrix.goarch }}
-          path: dist/artex-linux-${{ matrix.goarch }}/artex
+          if-no-files-found: error
+          retention-days: 3
+          overwrite: false
 
-  release:
-    permissions:
-      contents: write
-    needs: binaries
+  containers:
+    needs: [policy, binaries]
+    if: needs.policy.outputs.mode == 'release'
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
-        with:
-          pattern: pkg-*
-          merge-multiple: true
-          path: dist
-      - name: Generate checksums
-        working-directory: dist
-        run: sha256sum -- *.zip > SHA256SUMS
-      - uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
-        with:
-          files: |
-            dist/*.zip
-            dist/SHA256SUMS
-          generate_release_notes: true
-
-  docker:
-    needs: [binaries]
-    runs-on: ubuntu-latest
+    timeout-minutes: 120
     permissions:
       contents: read
       packages: write
-    env:
-      IMAGE_NAMESPACE: ghcr.io/${{ github.repository }}
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          name: bin-linux-amd64
-          path: dist/amd64
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
-        with:
-          name: bin-linux-arm64
-          path: dist/arm64
-      - uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3
-      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
-      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f
+      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Normalize image namespace
-        run: echo "IMAGE_NAMESPACE=${IMAGE_NAMESPACE,,}" >> "$GITHUB_ENV"
-      - uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5
-        id: meta
+      - name: Scan all four components and both architectures before any version-only image push
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 scripts/release-images.py dist/container-metadata
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          images: ${{ env.IMAGE_NAMESPACE }}
-          tags: |
-            type=ref,event=tag
-            type=raw,value=latest
-      - uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+          name: container-metadata
+          path: dist/container-metadata/*
+          if-no-files-found: error
+          retention-days: 3
+          overwrite: false
+      - name: Preserve full per-architecture scan reports and SBOMs
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          context: .
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          name: release-image-security-${{ github.run_id }}-${{ github.run_attempt }}
+          path: dist/image-scans-*/
+          if-no-files-found: warn
+          retention-days: 14
+          overwrite: false
+
+  sign:
+    needs: [policy, binaries, containers]
+    if: needs.policy.outputs.mode == 'release'
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - run: python3 scripts/signed-release.py gate
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          pattern: pkg-*
+          merge-multiple: true
+          path: dist/release
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: container-metadata
+          path: dist/release
+      - uses: sigstore/cosign-installer@756fe2d284c7292c4e9b62c8a28f1e5629c59532
+        with:
+          cosign-release: v3.1.4
+      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Keyless signatures, provenance and exact-identity verification
+        env:
+          ARTEX_RELEASE_TAG: ${{ github.ref_name }}
+        run: >-
+          python3 scripts/signed-release.py sign --directory dist/release
+          --tag "$ARTEX_RELEASE_TAG" --commit "$GITHUB_SHA" --run-id "$GITHUB_RUN_ID"
+          --attempt "$GITHUB_RUN_ATTEMPT"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: verified-signed-release-${{ github.run_id }}-${{ github.run_attempt }}
+          path: dist/release/*
+          if-no-files-found: error
+          retention-days: 7
+          overwrite: false
+
+  publish:
+    needs: [policy, sign]
+    if: needs.policy.outputs.mode == 'release'
+    permissions:
+      contents: write
+      packages: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - run: python3 scripts/signed-release.py gate
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: verified-signed-release-${{ github.run_id }}-${{ github.run_attempt }}
+          path: dist/release
+      - uses: sigstore/cosign-installer@756fe2d284c7292c4e9b62c8a28f1e5629c59532
+        with:
+          cosign-release: v3.1.4
+      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Verify independently in publication job and refuse existing release assets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ARTEX_RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          python3 scripts/signed-release.py verify --directory dist/release --tag "$ARTEX_RELEASE_TAG" --commit "$GITHUB_SHA" --run-id "$GITHUB_RUN_ID" --attempt "$GITHUB_RUN_ATTEMPT"
+          python3 scripts/publish-signed-release.py dist/release

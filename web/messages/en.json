@@ -336,7 +336,7 @@
       "disabledInherited": "Unarchived task #{id} directly inherits this task; archive the dependent task first",
       "triggerAria": "Archive task",
       "dialogTitle": "Archive task #{id}?",
-      "dialogDesc": "The task graph, related records, dedicated assets and traffic, task files, and LLM logs will be compressed to cold storage. Once archiving completes, you can restore it from the “Archived” page in the task list.",
+      "dialogDesc": "The task graph, related records, dedicated assets, finding-linked evidence, task files, and LLM logs will be compressed to cold storage. Unbound raw network captures are excluded and may be deleted; cancel if you need to preserve them first. Restore the retained records from the “Archived” page.",
       "cancel": "Cancel",
       "confirm": "Archive"
     },
@@ -2484,7 +2484,7 @@
     },
     "archiveDialog": {
       "title": "{count, plural, =1 {Archive this task?} other {Archive # tasks?}}",
-      "description": "Archiving stops task scheduling and compresses the graph, LLM records, files, and dedicated assets and traffic into local cold storage. Once archiving is done, you can restore it from \"Archived\".",
+      "description": "Archiving stops task scheduling and preserves the graph, LLM records, files, dedicated assets, and finding-linked evidence. Unbound raw network captures are excluded and may be deleted; cancel if you need to preserve them first. Restore retained records from \"Archived\".",
       "cancel": "Cancel",
       "confirm": "Confirm archive"
     },
@@ -3187,15 +3187,15 @@
       "label": "Send method"
     },
     "update": {
-      "title": "Version and Updates",
-      "desc": "Check for and install new versions from GitHub. Updating restarts the program and interrupts running tasks.",
+      "title": "Versions and verified installation",
+      "desc": "Check published releases. Install or redeploy only after verifying signed artifacts.",
       "currentVersion": "Current version",
       "latestVersion": "Latest version",
       "modeDocker": "Docker",
       "modeStandalone": "Standalone program",
       "changelog": "Changelog",
       "connectError": "Can't connect to GitHub: {error} You can set the global proxy above and try again.",
-      "noAsset": "{latest} has no release package for {os}/{arch} ({asset} missing), so it can't be updated automatically.",
+      "noAsset": "{latest} has no release package for {os}/{arch} ({asset} missing). Choose a release that includes your platform.",
       "willDownloadPrefix": "Will download: ",
       "willDownloadSize": " ({size})",
       "willDownloadSuffix": ". It is replaced only after passing SHA256 verification and a smoke test; if either fails, the current version is kept automatically.",
@@ -3206,7 +3206,7 @@
       "updateToVersion": "Update to {latest}",
       "updateNow": "Update now",
       "rollback": "Roll back to the previous version",
-      "footer": "One-click update relies on the daemon script restarting the program. Start ARTEX with <code>start.sh</code> (<code>start.bat</code> on Windows). If you run the artex binary directly, it won't restart automatically after the program exits.",
+      "footer": "Use the verified release guide to install a signed binary or redeploy verified image digests. Back up assessment data before upgrading or rolling back.",
       "toast": {
         "checkFailed": "Update check failed: {error}",
         "found": "Found new version {latest}",
@@ -3217,14 +3217,20 @@
         "startFailed": "Failed to start the update: {error}",
         "rollbackSwitched": "Switched to the previous version. Restarting…",
         "rollbackFailed": "Rollback failed: {error}",
-        "preparing": "Preparing…"
+        "preparing": "Preparing…",
+        "versionCopied": "Current version copied",
+        "copyFailed": "Could not copy the version. Select the version text and copy it manually."
       },
       "confirm": {
         "title": "Update to {latest}?",
         "restart": "Updating restarts the program and interrupts running tasks.",
         "docker": "Note: updating inside the container replaces only the program itself and does not update the image's tool chain such as playwright / nmap. If the new version depends on new tools, switch to running it with docker compose pull.",
         "rollback": "Roll back to the previous version?\n\nThe program will restart and running tasks will be interrupted.\nNote: the database structure is not rolled back, and the previous version may not recognize data written by the new version."
-      }
+      },
+      "externalOnlyTitle": "Installation happens outside this application",
+      "externalOnlyBody": "In-process update and rollback are disabled. Verify the release signature and source commit, then follow the deployment instructions.",
+      "verifiedInstallGuide": "Verified installation guide",
+      "copyVersion": "Copy current version"
     },
     "language": {
       "title": "Display language",

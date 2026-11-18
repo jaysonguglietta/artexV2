@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/Autumn-27/artex/storage"
 	"io"
 	"os"
 	"strings"
@@ -90,7 +91,7 @@ func writeFindingsZipEntries(zw *zip.Writer, findings []*db.DBFinding, stage str
 }
 
 func buildFindingsEvidenceZip(path string, findings []*db.DBFinding, stage string, now time.Time) error {
-	f, err := os.OpenFile(path, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0o600)
+	f, err := storage.CreateFile(path, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0o600)
 	if err != nil {
 		return err
 	}

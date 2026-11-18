@@ -85,7 +85,7 @@
     },
     {
       "path": "agent/review_context_test.go",
-      "line": 110,
+      "line": 113,
       "line_sha256": "2a014fc4aa73c8269e51294cb561f44bb81cce109012ad62e530ce9f72ddff13",
       "reason": "Original Unicode user-intent, constraint and sentinel fixtures verify isolation of the reviewer context from worker summaries and unrelated task data."
     },
@@ -1555,19 +1555,19 @@
     },
     {
       "path": "server/orchestration.go",
-      "line": 660,
+      "line": 665,
       "line_sha256": "b2dcc3ee5b5b30d8b2c0baaaf1d53663546be9efe19e29af135b3bfd4d011bec",
       "reason": "Exact historical persisted reporter-trigger default is retained only for equality-based migration; changing its bytes could overwrite custom prompts or miss the upgrade."
     },
     {
       "path": "server/orchestration.go",
-      "line": 661,
+      "line": 666,
       "line_sha256": "636cc78eaf0c93744e64c41cc26d3bb68ff04119e867089bfaa3bf0d58bef2bb",
       "reason": "Exact historical persisted reporter-trigger default is retained only for equality-based migration; changing its bytes could overwrite custom prompts or miss the upgrade."
     },
     {
       "path": "server/orchestration.go",
-      "line": 662,
+      "line": 667,
       "line_sha256": "b64957e955b892bc7f3948a24e2f36838d1103cf17a990ec4d434b9305895572",
       "reason": "Exact historical persisted reporter-trigger default is retained only for equality-based migration; changing its bytes could overwrite custom prompts or miss the upgrade."
     },

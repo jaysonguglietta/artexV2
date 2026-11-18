@@ -23,8 +23,10 @@ Fifteen findings are documented: eight High and seven Medium. F01-F14 describe
 the supplied application and follow-up review; F15 was found in the new artifact
 bridge during final adversarial review and repaired before publication. The
 confirmed implementation defects have been repaired or bounded for the supported
-deployment. F10 retains a conditional release/update provenance gap. This is not
-an assertion of vulnerability absence or approval for arbitrary hosting.
+deployment. The follow-up closes F10's unsafe in-process update path and adds
+signed release/image gates. Fresh local integration and all four ARM64 image
+gates and the fresh prepared-source credential scan passed; hosted OIDC/amd64
+remain pending. This is not an assertion of vulnerability absence or approval for arbitrary hosting.
 
 **The supported boundary is one trusted operator on a dedicated assessment VM and
 Docker daemon.** Executable tools now run in disposable containers per agent run,
@@ -36,17 +38,26 @@ operator account and deliberately configured provider endpoints remain trusted.
 The broker has Docker-daemon authority: compromising it can compromise the VM.
 This is not multi-tenant isolation or a sandbox against a hostile kernel.
 
-Verification recorded 817 passing PostgreSQL-backed cases including subtests, one
-optional external-service skip, 52 passing synthetic worker checks, 12 passing live
-API checks and 23 passing frontend tests. Build/type/catalog/export checks passed.
+An earlier checkpoint recorded 817 passing PostgreSQL-backed cases including
+subtests, one optional external-service skip, 52 synthetic worker checks and 12
+live API checks. Those counts predate the latest storage/release changes. The
+current frontend has 26 passing tests, 3,086 English keys and a passing clean-source
+type check. Fresh final-source verification subsequently passed 869 PostgreSQL
+cases with one optional provider skip, 13 additional tested suites, full focused
+races/vet, four source builds, 52 worker checks, 12 API checks and 11 Compose checks.
+All four ARM64 image gates have 0 blocking findings; the worker raw High is retained
+with official withdrawal proof. The fresh prepared-source credential scan has no
+unresolved matches; hosted OIDC/amd64 remain pending. Exact counts/identities are in [validation](VALIDATION.md).
 The latest complete frontend npm audit and production audit both report zero;
 Go source `govulncheck` reports zero. Earlier npm graph alerts were independently
 verified as withdrawn, as explained in section 7. See [validation](VALIDATION.md)
 for commands, scope and limitations.
 
-The remaining priorities are signed release provenance, OS-image vulnerability
-review, attributable external audit storage, evidence retention and quotas, and an
-independent repeat assessment. Shared untrusted users require a separate identity,
+Signed provenance verification, exact-image vulnerability/SBOM gates and scoped
+evidence quotas/retention/holds are now implemented. Priorities are completing
+their real hosted and final-source checks, operating attributable external audit
+storage, testing backup/restore/deletion and obtaining an independent repeat
+assessment. Shared untrusted users require a separate identity,
 authorization and tenancy design before deployment.
 
 ## 2. System Overview and Trust Boundaries
@@ -60,8 +71,10 @@ holds settings, authentication state, profiles, tasks, assets and findings; SQLi
 and bounded filesystem artifacts hold additional traffic/evidence/runtime data.
 The external Norma SDK supplies agent sessions and tool implementations.
 
-The API performs authentication, model/search requests, metadata operations and
-audit bookkeeping. Authenticated worker requests go to
+The minimal API image contains the static Go service and required certificates,
+time-zone data and skills, without Node/Python/browser assessment tools. The API
+performs authentication, model/search requests, metadata operations and audit
+bookkeeping. Authenticated worker requests go to
 [isolation/broker.go](../isolation/broker.go). The trusted broker creates a separate
 container for each `(scope, run_id)`; task scopes select an operator-authored CIDR
 policy. Inside it, [isolation/runtime.go](../isolation/runtime.go) runs SDK,
@@ -84,7 +97,7 @@ Docker broker token and replay ledger; source, build inputs and release artifact
 | Worker to assessment network | Commands, browser/HTTP/MCP requests, DNS | Approved IPv4 destinations; management/Docker/link-local denies take precedence; IPv6 denied except loopback |
 | Worker to evidence store | File names/bytes and tool results | `os.Root`, regular-file restrictions and size/count limits; content is not trusted forensic evidence |
 | MCP to client | SSE endpoint, response bytes, tool schema/content | Same-origin handoff, no redirects, bounded parsing, verified TLS when TLS is used; integration destination/credential deliberately granted |
-| Build/update system to runtime | Dependencies, images, actions, downloaded code | Lockfiles, image/action pins and local source builds; signed provenance and OS-package review remain outstanding |
+| Build/update system to runtime | Dependencies, images, actions, downloaded code | Lockfiles/pins, exact-ID image/SBOM gates and exact-identity external signature verification; production in-process mutation is refused; hosted release settings and final validation remain explicit |
 
 ### Supported execution limits
 
@@ -162,9 +175,9 @@ it bypassed the intended worker boundary, despite being discovered later.
 | F13 | High | High | Fixed helper defaults/origin/redirect/output controls plus worker egress |
 | F07 | Medium | High | Fixed browser/query session handling and durable logout revocation |
 | F08 | Medium | High | TLS verification restored by default; explicit assessment override remains |
-| F09 | Medium | High | Reviewed parsing/output paths bounded; quotas still needed broadly |
+| F09 | Medium | High | Reviewed parsing/output and new file-admission budgets bounded; database/log/VM-wide capacity remains separate |
 | F15 | Medium | High | Fixed: whole-map path/depth/directory validation before mutation |
-| F10 | Medium | High | Mitigated; optional upstream update/provenance trust remains conditional |
+| F10 | Medium | High | Unsafe production updater closed; signed release/image controls implemented; hosted OIDC/publication verification pending |
 | F11 | Medium | High | Reviewer failures deny by default; explicit legacy allow policy requires review |
 | F12 | Medium | High | Policy read errors refuse insertion before side effects |
 
@@ -573,7 +586,8 @@ work.
 ### F10 — Mutable build inputs and upstream update identity widened trust
 
 **Severity: Medium. Confidence: High. Classification: confirmed supply-chain/design
-gap; mitigated with remaining conditional risk. CWE-829 / CWE-494.**
+gap; unsafe production updater closed, release controls implemented with final
+hosted validation pending. CWE-829 / CWE-494.**
 
 **Affected files/functions:** Docker/install/build inputs, release workflows,
 `docker-compose.yml`; [selfupdate/github.go](../selfupdate/github.go), `Repo`;
@@ -587,26 +601,37 @@ protects integrity against corruption, not a malicious trusted publisher.
 
 **Exploitation scenario / prerequisites:** an authorized build/update consumes
 compromised or unintended packages/actions/releases. No actual compromise was found.
-An operator enabling legacy updates can still choose the retained upstream trust
-path instead of this fork's reviewed source.
+That historical in-process route is now unavailable in production, including with
+the legacy opt-in. Compromise of an actually trusted maintainer/build service
+remains a supply-chain assumption, not an exploit demonstrated here.
 
 **Potential impact:** attacker-selected build/runtime code and loss of fork
 hardening; impact follows the authority of the build/release/runtime service.
 
-**Fix and patch guidance:** current defaults build local reviewed source using
-lockfiles, image digests and pinned actions, with nonroot/read-only deployment.
-Apply/rollback HTTP operations require explicit `ARTEX_ENABLE_SELF_UPDATE=1`.
-The retained `Repo` is still upstream, so keep this opt-in off for the published
-fork. Do not claim the old updater verifies this fork's identity. Before enabling
-updates, bind repository/workflow/commit identity, enforce signed provenance,
-anti-rollback policy and byte-limited staging; restrict release-job permissions.
-OS package resolution is not snapshot-pinned or independently CVE-certified.
+**Fix and patch guidance:** local source builds use lockfiles, image digests and
+pinned actions. Production apply/rollback HTTP operations always refuse, startup
+rejects `ARTEX_ENABLE_SELF_UPDATE=1`, and production bootstrap/staging never runs
+old unsigned files. The repository identity is this personal fork; version checks
+are read-only. Legacy staging implementation is reachable only in true Go tests.
 
-**Validation:** current update tests reject tampered/unrunnable binaries, invalid
-URLs and extraction failures; default gates are live-tested. CI/source checks cover
-pins. Negative tests for wrong-repository/unsigned/replayed provenance remain
-required when implementing a signed release channel. This finding is not declared
-fully closed by an opt-in gate alone.
+[Signed releases](SIGNED-RELEASES.md) fix repository/workflow/issuer/ref/commit/run
+identity and require verification before external installation. Publication needs
+protected semantic tags, explicit opt-in and exact-image gates; a separate main-only
+dry run rehearses real OIDC without publishing a production release. The
+[image gate](IMAGE-SECURITY.md) records inventories, complete vulnerabilities/SBOMs,
+DB freshness and exact index/config/layer identities. It does not ignore unfixed
+issues or authorize package-wide waivers. These controls do not prove an
+uncompromised publisher, every hosted repository setting or all future CVE coverage.
+
+**Validation:** local signing/publication regressions, real production refusal
+probes and image-gate negatives cover tampered metadata/artifacts, wrong identity,
+unsigned staging, incomplete gates and malformed/unsupported image evidence.
+There are 19 local image-gate tests, 14 signing tests and 15 publication tests. Fresh
+local integration and all four ARM64 gates passed. Real hosted OIDC/amd64 and
+protected-tag publication remain separately unverified in
+[validation](VALIDATION.md); passing local tests is not a claimed Fulcio or registry
+publication result. The former conditional unsigned updater risk is closed, while
+release operation still requires the documented trust and verification steps.
 
 ### F11 — Model-review failures defaulted to allowing execution
 
@@ -730,7 +755,7 @@ them in subsequent release verification.
 | Reviewer/asset read failure to bypassed policy (F11/F12) | Review/DB fault with relevant action still possible | Explicit refusal, negative-side-effect tests; independent broker policy |
 | Worker response to API directory/inode exhaustion (F15) | Authorized compromised worker; many empty deep artifact paths | Entire-map validation before mutations, path/depth/parent-directory budgets and bounded traversal |
 | Foreground cancellation to continuing detached scans | Native code starts setsid/double-fork descendants | Urgent run-container removal, separate lease channel, UID-protected watchdog and replay ledger |
-| Compromised release channel to runtime execution (F10) | Build/publisher compromise or enabled unintended update channel | Pinned/local-source defaults; optional upstream trust and unsigned provenance remain conditional gaps |
+| Compromised release channel to runtime execution (F10) | Compromise of the deliberately trusted build/publisher or unverified external installation | Production updater permanently refused; exact-identity signatures and image gates constrain intended channels; hosted/trusted-publisher assumptions remain |
 
 No combined chain here asserts that an unproven prerequisite occurred. In
 particular, target prompt injection, stored XSS, cloud credential theft and kernel
@@ -767,6 +792,25 @@ not proof of absence in external account history, backups or future Git commits.
 The publication preparation excludes credentials, private state, raw captures,
 installed dependencies, binaries, caches and Git history, and records a manifest.
 
+
+### Runtime images, signatures and evidence storage
+
+The follow-up adds [image inventory/CVE gates](IMAGE-SECURITY.md),
+[signed release verification](SIGNED-RELEASES.md) and
+[evidence storage controls](EVIDENCE-STORAGE.md). The worker uses Ubuntu 26.04 and
+version-pinned Node/npm/browser tooling; the API has no assessment toolchain.
+Scanner completeness requires the relevant Go and npm/browser inventories, not
+only an OS-only base scan. Exact layer/config/index bindings prevent a changed tag
+or Docker/Trivy identifier mismatch from being accepted as the intended image.
+
+A current worker report still contains one raw High Picomatch alert. The official
+API confirms the corresponding advisory is withdrawn; this is tracked through a
+live exact CVE/GHSA/npm-identity proof rather than a static risk exception. Raw
+counts remain in reports. All four final ARM64 gates passed with zero blocking findings; the worker retains
+raw High 1 / Medium 132 / Low 14 and the broker retains Medium 1. Exact identities and the
+pending hosted amd64/signing rehearsal are recorded in [validation](VALIDATION.md).
+Neither existing zero npm/Go findings nor these gates certify all OS/runtime code.
+
 ### Deployment assumptions that must remain explicit
 
 - Keep the API loopback-published or behind a reviewed authenticated-TLS ingress;
@@ -786,9 +830,10 @@ installed dependencies, binaries, caches and Git history, and records a manifest
 - Keep development servers private. Static production export and Next development
   server have different exposure; do not infer identical reachability from npm
   package presence alone.
-- OS-image CVE scanning, signed provenance, registry/tag protection and hosted
-  repository branch/environment settings require release-environment evidence not
-  available from source files alone.
+- Image scans and signed verification now have checked-in controls. Exact final
+  image results, real OIDC/publication, protected branches/tags/environments and
+  registry settings still require release-environment evidence; source tests do
+  not establish that hosted settings are configured.
 
 ## 8. Secure Design Gaps
 
@@ -815,19 +860,24 @@ operator/session/run/task identity, policy version, input digest and result to a
 restricted append-only sink. Shared identities limit attribution. Avoid putting
 bearer values, target credentials or raw private evidence into ordinary logs.
 
-**Evidence privacy and retention:** captured requests, responses, authentication
-records, uploads and findings may contain personal data and target secrets. Private
-file modes and separated key storage help; source does not establish a complete
-retention, backup encryption, deletion-verification or provider privacy policy.
-Define these per assessment and test archive/delete/restore and backup behavior.
-Authenticated raw errors can disclose filesystem/network/DB details; use stable
-public codes and protected correlated diagnostics where practical.
+**Evidence privacy and retention:** raw requests/responses, uploads and findings
+can contain personal data and target secrets. New whole-bucket legal holds and
+30-day raw retention are documented in [evidence storage](EVIDENCE-STORAGE.md).
+Raw SDK debug transcripts default off for ordinary binaries; Compose enables
+bounded ephemeral tmpfs. Live SDK debug files are excluded from workspace legal
+holds and are destroyed on restart, so they are not durable held evidence. PostgreSQL UI conversation/activity records are
+separate, so disabling raw dumps is not deletion of that history. Fresh integration
+checks cover bounded model-context replay and API output handling as well as storage.
+Backup encryption, provider retention, legal requirements and verified deletion
+still need per-assessment operational decisions. Holds are not forensic immutability.
 
-**Resource budgets:** bounded messages/output and worker cgroups do not replace
-application-wide disk/traffic storage quotas, connection limits or distributed
-abuse controls. Maintain admission limits rather than raising them to accommodate
-an oversized artifact. The current file bridge synchronizes at most 1,000 regular
-files/4 MiB; unsynchronized large artifacts and interactive state are ephemeral.
+**Resource budgets:** evidence, traffic and workspace now have independent byte
+and entry admission quotas, in addition to body/exchange limits, message/output
+bounds and worker cgroups. These are not a total VM, PostgreSQL/WAL, log, backup
+or Docker-layer capacity cap. Distributed abuse, connection limits and those other
+stores remain separate. Do not raise a message limit to bypass storage admission;
+the bridge still synchronizes at most 1,000 regular files/4 MiB, with larger
+unsynchronized artifacts and interactive state remaining ephemeral.
 
 **Evidence consistency and operational failure:** snapshots read actual tmpfs and
 then pause/retire matching runs. They are best-effort copies of worker-controlled
@@ -849,8 +899,9 @@ signatures and international evidence/tests without exempting whole files.
 |---|---|---|
 | Before each deployment | Review VM/daemon trust, CIDRs/management denies, TLS, secrets/state volumes, public ports, explicit review-failure policy | Deployment inspection plus allowed/denied synthetic tests; no local fallback or real secret in workers |
 | Before each publication | Re-run clean-source validation/advisory/secret/English checks, review source manifest and exclusions, preserve license attribution | Reproducible checks and manifest; no credentials/state/raw captures/history in upload |
-| Next security iteration | Add signed provenance bound to this fork and remove or redesign its optional upstream updater | Wrong-repository, unsigned, altered/replayed/downgraded artifacts fail before execution |
-| Next operations iteration | Scan runtime OS packages; add retention/backup/rotation exercises, disk/traffic/connection quotas and external append-only audit | Image report, recovery drills, quota/failure tests and attributable audit evidence |
+| Before release activation | Complete real main-only OIDC rehearsal, verify protected-tag policy and repeat final image/signature checks | Exact repository/workflow/tag/commit/run evidence; tampered/wrong/unsigned artifacts refused; no production in-process updater |
+| Each later source/runtime change | Repeat the final Go/PostgreSQL/Docker/image regressions as needed; the current local follow-up passed | Current results: 869 PG cases + 1 optional skip, 13 additional suites, 52 worker, 12 API, 11 Compose; exact IDs and limits in validation |
+| Next operations iteration | Exercise backups/rotation/deletion, enforce database/log/VM capacity and external append-only audit | Restore drills, explicit capacity boundaries and attributable audit evidence |
 | Before broader access | Independent repeat audit and realistic controlled load/hostile-content review | Documented negative tests and deployment-specific findings |
 | Before untrusted multiuser hosting | Design identities, roles, ownership, tenant secrets/storage/execution and per-tenant budgets | Separate threat model and end-to-end authorization/isolation tests; current single-operator assumptions removed explicitly |
 
@@ -860,11 +911,12 @@ as model-side scope enforcement or assume a prompt judge can repair them.
 
 ## 10. Security Test Plan
 
-### Completed validation
+### Earlier completed checkpoint
 
-The final validation checkpoint includes targeted F15 artifact-budget regressions
-and rebuilt images. Refer to [VALIDATION.md](VALIDATION.md) for the final-source
-results; an earlier image must never be assumed to cover a subsequent patch:
+The following integration counts predate the latest image/release/storage follow-up.
+They include F15 artifact-budget regressions and then-rebuilt images. Refer to
+[VALIDATION.md](VALIDATION.md) for the fresh final-source section; an earlier image
+must never be assumed to cover a subsequent patch:
 
 - 817 passing PostgreSQL-backed cases including subtests, with one optional
   external-service test skipped; package/build/vet checks also passed.
@@ -876,17 +928,24 @@ results; an earlier image must never be assumed to cover a subsequent patch:
   oversize failure, all-run retirement, crash recovery, ledger persistence and cleanup.
 - 12 live API/security checks including cookie/session/origin/body/update/execution
   gates and persisted logout revocation.
-- 23 frontend tests plus clean-source type checking, English/catalog checks, static
-  export and generated-HTML review. Biome has zero errors; 124 warnings and 658
-  informational diagnostics remain and are not represented as a warning-free run.
-- Zero current full/production frontend npm findings, zero reported Go source
-  vulnerabilities, separate helper audits, reviewed secret-pattern results,
+- At that checkpoint, 23 frontend tests and a static export/generated-HTML check
+  passed. The current UI adds three release-capability/clipboard tests: 26 tests,
+  clean-source TypeScript and 3,086 English keys now pass. Biome has zero errors,
+  124 warnings and 659 infos. A fresh final image build/export is still required.
+- At that earlier checkpoint, zero full/production frontend npm findings and zero
+  reported Go source vulnerabilities, plus helper audits, reviewed secret results,
   translation/source publication checks and documentation-link validation.
 - Targeted race-enabled isolation/agent/worker tests, malicious provider probe
   regression, synthetic HTTP recon-policy tests and disposable Chromium helper tests.
 
 [VALIDATION.md](VALIDATION.md) is the authoritative reproducibility companion;
-passing counts describe this checkpoint and are not an external certification.
+passing counts describe their stated checkpoints and are not an external certification.
+The current 19 image-gate, 14 signing and 15 publication tests are local controls.
+Fresh local Go/storage/Docker records now include 869 PG cases, 13 additional
+suites, full focused races/vet, a Windows amd64 cross-build, four source builds,
+52 worker / 12 API / 11 Compose passes
+and all four ARM64 image gates with 0 blocking. No passing remote amd64/OIDC
+Actions run or production publication is inferred from these local results.
 
 ### Required release and regression cases
 
@@ -921,11 +980,13 @@ limit, not a passing external-service integration test.
 4. Are target credentials synthetic where required, integration accounts narrowly
    scoped and insecure TLS exceptions deliberately reviewed? Compatibility options
    must not quietly become blanket production trust.
-5. Does the operator intend to enable the retained upstream in-process updater?
-   This fork has no signed, fork-bound update provenance claim; keep it disabled.
-6. Are repository protections, release approvals, registry immutability, OS-image
-   scanning, backups, key rotation, audit export and storage quotas implemented in
-   the actual environment? They are not proven by a passing source test suite.
+5. Have the real main-only OIDC rehearsal and protected-tag release verification
+   completed for the exact intended commit/run? Production in-process updates
+   cannot be enabled; signed external installation remains mandatory.
+6. Are repository/tag/environment protections, registry policies, final ID-bound
+   scans, backups, key rotation, legal holds, retention and separate database/log
+   capacity configured and exercised in the actual environment? Checked-in controls
+   and local tests do not prove those deployment settings.
 7. Is forensic-atomic evidence preservation, large streamed transfer, privileged
    raw scanning or distributed recording required? Those capabilities are outside
    this version's supported behavior.

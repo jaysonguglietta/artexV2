@@ -37,6 +37,9 @@ type State struct {
 
 // Bootstrap runs before database opening or network listeners. Verify/smoke/swap a staged binary and request restart; otherwise count unsettled post-swap attempts and roll back when exhausted; without staging/marker state, start normally.
 func Bootstrap() (Action, State) {
+	if !runtimeUpdatesAllowed() {
+		return Continue, State{}
+	}
 	if os.Getenv(smokeEnv) != "" {
 		return Continue, State{}
 	}
@@ -112,6 +115,9 @@ func confirmOrRollback(p Paths, m marker) (Action, State) {
 
 // Settle clears the upgrade marker only after a running HTTP server survives the confirmation delay. Earlier failures retain the marker for attempt counting and eventual rollback.
 func Settle() {
+	if !runtimeUpdatesAllowed() {
+		return
+	}
 	p, err := ResolvePaths()
 	if err != nil {
 		return
@@ -212,6 +218,9 @@ func rollback(p Paths) error {
 
 // Rollback handles the explicitly enabled rollback endpoint by swapping versions; the caller exits with ExitRestart for supervisor relaunch.
 func Rollback() error {
+	if !runtimeUpdatesAllowed() {
+		return errExternalVerification
+	}
 	p, err := ResolvePaths()
 	if err != nil {
 		return err
@@ -242,6 +251,9 @@ func Rollback() error {
 
 // HasBackup controls whether the UI can offer a prior-version rollback.
 func HasBackup() bool {
+	if !runtimeUpdatesAllowed() {
+		return false
+	}
 	p, err := ResolvePaths()
 	if err != nil {
 		return false

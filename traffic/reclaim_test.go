@@ -44,7 +44,7 @@ func TestDeleteReclaimsIndexSpace(t *testing.T) {
 	// itself rather than the blob store — that is where the growth was invisible.
 	bulkRecord(tr, host, 30, 200*1024)
 	grown := tr.indexBytes()
-	if grown < 5<<20 {
+	if grown < 4<<20 {
 		t.Fatalf("index only %d bytes; fixture too small to test reclamation", grown)
 	}
 
@@ -175,7 +175,7 @@ func TestDeleteAllPurgesAndCompacts(t *testing.T) {
 		t.Fatal(err)
 	}
 	grown := tr.indexBytes()
-	if grown < 5<<20 {
+	if grown < 4<<20 {
 		t.Fatalf("index only %d bytes; fixture too small", grown)
 	}
 

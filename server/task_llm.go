@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"iter"
 	"log"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -16,7 +15,6 @@ import (
 	"github.com/Autumn-27/artex/db"
 	"github.com/Autumn-27/artex/llmrec"
 	"github.com/Autumn-27/norma/llm"
-	"github.com/Autumn-27/norma/transcript"
 )
 
 type taskAgentBundle struct {
@@ -537,7 +535,7 @@ func (s *Server) agentsForTask(t *Task) *taskAgentBundle {
 	plannerRuntime := &taskLLMRuntime{s: s, taskID: t.ID, agentKey: "planner"}
 	workerRuntime := &taskLLMRuntime{s: s, taskID: t.ID, agentKey: "worker"}
 	mainRuntime := &taskLLMRuntime{s: s, taskID: t.ID, agentKey: "mainagent"}
-	tx := transcript.NewStore(filepath.Join(s.m.dir, "transcripts"))
+	tx := s.rawTranscriptStore()
 	window := workerRuntime.CompactionWindow()
 	wk := agent.NewWorker(workerRuntime, "task-router", s.m.dir, tx, window, s.agentMaxTurns("worker"))
 	wk.SetFindingRecorder(s.evidenceStore())

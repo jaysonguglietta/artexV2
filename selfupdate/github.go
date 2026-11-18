@@ -10,8 +10,9 @@ import (
 	"time"
 )
 
-// Repo fixes the trusted upstream release source. Making it ordinary editable configuration would grant code-execution authority to any configuration editor; self-update remains disabled by default.
-const Repo = "Autumn-27/artex"
+// Repo pins read-only release information to this fork. Installation is external
+// and must verify the signed release; these metadata requests cannot stage code.
+const Repo = "jaysonguglietta/artexV2"
 
 // latestURL selects the latest non-draft, non-prerelease GitHub release.
 const latestURL = "https://api.github.com/repos/" + Repo + "/releases/latest"

@@ -56,3 +56,34 @@ func TestSkillTools(t *testing.T) {
 		t.Fatal("path traversal should be rejected")
 	}
 }
+
+func TestSkillToolsRefuseManagedDataRootOverlap(t *testing.T) {
+	dir := t.TempDir()
+	for _, relative := range []string{".", "tasks/skills", "evidence/skills", "traffic/skills"} {
+		t.Run(relative, func(t *testing.T) {
+			skills := filepath.Join(dir, relative)
+			if err := os.MkdirAll(filepath.Join(skills, "retained-skill"), 0700); err != nil {
+				t.Fatal(err)
+			}
+			canary := filepath.Join(skills, "retained-skill", "SKILL.md")
+			if err := os.WriteFile(canary, []byte("retained"), 0600); err != nil {
+				t.Fatal(err)
+			}
+			s := &Server{skillDir: skills, m: &Manager{dir: dir}}
+			create := json.RawMessage(`{"name":"new-skill","description":"must not write"}`)
+			update := json.RawMessage(`{"name":"retained-skill","content":"must not replace"}`)
+			if result, err := s.toolCreateSkill().Call(t.Context(), create, nil); err != nil || !result.IsError {
+				t.Fatalf("create admitted managed-root overlap: %+v %v", result, err)
+			}
+			if result, err := s.toolUpdateSkillFile().Call(t.Context(), update, nil); err != nil || !result.IsError {
+				t.Fatalf("update admitted managed-root overlap: %+v %v", result, err)
+			}
+			if _, err := os.Lstat(filepath.Join(skills, "new-skill")); !os.IsNotExist(err) {
+				t.Fatalf("refused tool created data: %v", err)
+			}
+			if raw, err := os.ReadFile(canary); err != nil || string(raw) != "retained" {
+				t.Fatalf("refused tool changed retained data: %q %v", raw, err)
+			}
+		})
+	}
+}

@@ -426,6 +426,11 @@ func (s *Server) toolUpdateFindingReport() actool.CoreTool {
 			"evidence_version": map[string]any{"type": "integer", "description": "Evidence version actually read from get_finding_traffic, preventing a report from overwriting newer evidence changes"},
 		}, "finding_id", "report"),
 		func(ctx context.Context, in json.RawMessage) (actool.Result, error) {
+			s.m.storageHoldMu.RLock()
+			defer s.m.storageHoldMu.RUnlock()
+			if err := s.m.checkEvidenceHold(); err != nil {
+				return actool.Errorf(err.Error()), nil
+			}
 			var a struct {
 				EvidenceVersion *int64          `json:"evidence_version"`
 				FindingID       json.RawMessage `json:"finding_id"`

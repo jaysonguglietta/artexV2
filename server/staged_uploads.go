@@ -3,6 +3,7 @@ package server
 import (
 	"errors"
 	"fmt"
+	"github.com/Autumn-27/artex/storage"
 	"io"
 	"os"
 	"path/filepath"
@@ -190,7 +191,7 @@ func (s *stagedUploadSnapshot) rewrite(text string) (string, error) {
 // copyToTask runs before seeding or engine admission. Only a newly created task
 // directory is owned by this copy; failures remove that directory without
 // touching any pre-existing filesystem entry or the source draft.
-func (s *stagedUploadSnapshot) copyToTask(dataDir, taskID string) error {
+func (s *stagedUploadSnapshot) copyToTaskRaw(dataDir, taskID string) error {
 	if s == nil || len(s.files) == 0 {
 		return nil
 	}
@@ -242,4 +243,15 @@ func (s *stagedUploadSnapshot) copyToTask(dataDir, taskID string) error {
 	}
 	copied = true
 	return nil
+}
+
+func (s *stagedUploadSnapshot) copyToTask(dataDir, taskID string) error {
+	if s == nil || len(s.files) == 0 {
+		return nil
+	}
+	reserve := storage.Reservation{Entries: int64(len(s.files)) + 3}
+	for _, data := range s.files {
+		reserve.Bytes += int64(len(data))
+	}
+	return storage.GuardUnheld(dataDir, reserve, func() error { return s.copyToTaskRaw(dataDir, taskID) })
 }

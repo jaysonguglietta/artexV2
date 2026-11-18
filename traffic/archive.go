@@ -1,12 +1,14 @@
 package traffic
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"database/sql"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/Autumn-27/artex/storage"
 	"os"
 	"path/filepath"
 	"sort"
@@ -79,11 +81,11 @@ FROM exchanges WHERE host IN (`+strings.Join(placeholders, ",")+`) ORDER BY ts,i
 		err := t.db.QueryRow(`SELECT req_head,req_body,req_blob,resp_head,resp_body,resp_blob
 FROM exchange_bodies WHERE id=?`, item.ID).Scan(&item.ReqHead, &item.ReqBody, &reqBlob, &item.RespHead, &item.RespBody, &respBlob)
 		if errors.Is(err, sql.ErrNoRows) && strings.TrimSpace(legacyPath) != "" {
-			req, readErr := os.ReadFile(filepath.Join(t.dir, legacyPath, "request.http"))
+			req, readErr := readArchiveFile(t.dir, filepath.Join(legacyPath, "request.http"), 65<<20)
 			if readErr != nil && !os.IsNotExist(readErr) {
 				return 0, readErr
 			}
-			resp, readErr := os.ReadFile(filepath.Join(t.dir, legacyPath, "response.http"))
+			resp, readErr := readArchiveFile(t.dir, filepath.Join(legacyPath, "response.http"), 65<<20)
 			if readErr != nil && !os.IsNotExist(readErr) {
 				return 0, readErr
 			}
@@ -107,11 +109,11 @@ FROM exchange_bodies WHERE id=?`, item.ID).Scan(&item.ReqHead, &item.ReqBody, &r
 		if err != nil {
 			return 0, err
 		}
-		data, err := os.ReadFile(source)
+		data, err := readArchiveFile(t.dir, relativeArchiveSource(t.dir, source), 64<<20)
 		if err != nil {
 			return 0, err
 		}
-		if err := os.WriteFile(filepath.Join(dir, "blobs", hash+".bin"), data, 0o600); err != nil {
+		if err := storage.AtomicWrite(filepath.Join(dir, "blobs", hash+".bin"), bytes.NewReader(data), int64(len(data)), false); err != nil {
 			return 0, err
 		}
 		snapshot.Blobs = append(snapshot.Blobs, hash)
@@ -121,7 +123,7 @@ FROM exchange_bodies WHERE id=?`, item.ID).Scan(&item.ReqHead, &item.ReqBody, &r
 	if err != nil {
 		return 0, err
 	}
-	if err := os.WriteFile(filepath.Join(dir, "traffic.json"), raw, 0o600); err != nil {
+	if err := storage.AtomicWrite(filepath.Join(dir, "traffic.json"), bytes.NewReader(raw), int64(len(raw)), false); err != nil {
 		return 0, err
 	}
 	return int64(len(snapshot.Exchanges)), nil
@@ -129,31 +131,12 @@ FROM exchange_bodies WHERE id=?`, item.ID).Scan(&item.ReqHead, &item.ReqBody, &r
 
 // ImportArchive imports only missing exchange IDs. Current hot rows always win,
 // and repeated restore attempts are safe after a partial external failure.
-func (t *Traffic) ImportArchive(dir string) (int64, error) {
-	if t == nil {
-		return 0, nil
-	}
-	raw, err := os.ReadFile(filepath.Join(dir, "traffic.json"))
-	if os.IsNotExist(err) {
-		return 0, nil
-	}
-	if err != nil {
-		return 0, err
-	}
-	var snapshot ArchiveSnapshot
-	if err := json.Unmarshal(raw, &snapshot); err != nil {
-		return 0, err
-	}
-	if snapshot.Version != 1 {
-		return 0, fmt.Errorf("unsupported traffic archive version %d", snapshot.Version)
-	}
-	t.wmu.Lock()
-	defer t.wmu.Unlock()
+func (t *Traffic) importArchiveWithinQuota(dir string, snapshot ArchiveSnapshot) (int64, error) {
 	for _, hash := range snapshot.Blobs {
 		if !blobHashRe.MatchString(hash) {
 			return 0, fmt.Errorf("invalid archived traffic blob %q", hash)
 		}
-		data, err := os.ReadFile(filepath.Join(dir, "blobs", hash+".bin"))
+		data, err := readArchiveFile(dir, "blobs/"+hash+".bin", 64<<20)
 		if err != nil {
 			return 0, err
 		}
@@ -161,14 +144,8 @@ func (t *Traffic) ImportArchive(dir string) (int64, error) {
 		if hex.EncodeToString(sum[:]) != hash {
 			return 0, fmt.Errorf("traffic blob checksum mismatch: %s", hash)
 		}
-		destination := filepath.Join(t.dir, "_blobs", "sha256", hash[:2], hash+".bin")
-		if _, err := os.Stat(destination); os.IsNotExist(err) {
-			if err := os.MkdirAll(filepath.Dir(destination), 0o755); err != nil {
-				return 0, err
-			}
-			if err := os.WriteFile(destination, data, 0o644); err != nil {
-				return 0, err
-			}
+		if err := t.writeRawBlob(hash, data); err != nil {
+			return 0, err
 		}
 	}
 	tx, err := t.db.Begin()
@@ -234,4 +211,12 @@ func uniqueArchiveHosts(hosts []string) []string {
 	}
 	sort.Strings(out)
 	return out
+}
+
+func relativeArchiveSource(root, name string) string {
+	relative, err := filepath.Rel(root, name)
+	if err != nil {
+		return ".."
+	}
+	return relative
 }

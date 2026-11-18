@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/Autumn-27/artex/storage"
 	"log"
 	"net/http"
 	"os"
@@ -116,6 +117,15 @@ func (s *Server) runOneTaskArchiveJob() error {
 }
 
 func (s *Server) archiveTask(job *pgdb.TaskArchive) (runErr error) {
+	s.m.storageHoldMu.RLock()
+	defer s.m.storageHoldMu.RUnlock()
+	if err := s.m.checkEvidenceHold(); err != nil {
+		return err
+	}
+	if err := storage.CheckHold(s.m.dir); err != nil {
+		return err
+	}
+
 	taskID := strconv.FormatInt(job.TaskID, 10)
 	if !s.beginTaskDelete(taskID) {
 		return errors.New("Another archive or deletion operation is already in progress for this task")
@@ -156,10 +166,10 @@ func (s *Server) archiveTask(job *pgdb.TaskArchive) (runErr error) {
 		}
 	}()
 	streamPath := filepath.Join(fileStage.payload, filepath.FromSlash(pgdb.TaskArchiveLLMRecordsPath))
-	if err := os.MkdirAll(filepath.Dir(streamPath), archiveDirMode); err != nil {
+	if err := storage.MkdirAll(filepath.Dir(streamPath), archiveDirMode); err != nil {
 		return err
 	}
-	streamFile, err := os.OpenFile(streamPath, os.O_CREATE|os.O_EXCL|os.O_WRONLY, archiveFileMode)
+	streamFile, err := storage.CreateFile(streamPath, os.O_CREATE|os.O_EXCL|os.O_WRONLY, archiveFileMode)
 	if err != nil {
 		return err
 	}
@@ -176,14 +186,12 @@ func (s *Server) archiveTask(job *pgdb.TaskArchive) (runErr error) {
 	if snapshot.ExplorationID != task.ExplorationID {
 		return errors.New("Task exploration records changed while the archive snapshot was being created")
 	}
-	if s.m.traffic != nil && len(snapshot.Hosts) > 0 {
-		_ = s.m.pg.UpdateTaskArchiveProgress(job.ID, "snapshot_traffic", 38)
-		trafficCount, err := s.m.traffic.ExportHosts(snapshot.Hosts, filepath.Join(fileStage.payload, "traffic"))
-		if err != nil {
-			return err
-		}
-		snapshot.DataCounts["traffic"] = trafficCount
-	}
+	// Unbound raw captures cannot be hidden indefinitely in compressed archives.
+	// Finding-linked evidence is independently copied below and remains restorable.
+	snapshot.RawTrafficOmitted = true
+	snapshot.DataCounts["raw_traffic_omitted"] = 1
+	snapshot.DataCounts["traffic"] = 0
+
 	archivePath := taskArchivePath(s.m.dir, job.ID, taskID)
 	evidenceSnapshots, err := pgdb.ArchiveEvidenceSnapshots(snapshot)
 	if err != nil {
@@ -243,6 +251,14 @@ func (s *Server) archiveTask(job *pgdb.TaskArchive) (runErr error) {
 }
 
 func (s *Server) restoreTaskArchive(job *pgdb.TaskArchive) (runErr error) {
+	s.m.storageHoldMu.RLock()
+	defer s.m.storageHoldMu.RUnlock()
+	if err := s.m.checkEvidenceHold(); err != nil {
+		return err
+	}
+	if err := storage.CheckHold(s.m.dir); err != nil {
+		return err
+	}
 	if err := validateArchivePath(s.m.dir, job.ArchivePath); err != nil {
 		return err
 	}
@@ -262,10 +278,10 @@ func (s *Server) restoreTaskArchive(job *pgdb.TaskArchive) (runErr error) {
 	}
 	_ = s.m.pg.UpdateTaskArchiveProgress(job.ID, "verify_package", 10)
 	restoreParent := filepath.Join(taskArchiveRoot(s.m.dir), ".restore")
-	if err := os.MkdirAll(restoreParent, archiveDirMode); err != nil {
+	if err := storage.MkdirAll(restoreParent, archiveDirMode); err != nil {
 		return err
 	}
-	extracted, err := os.MkdirTemp(restoreParent, fmt.Sprintf("%d-", job.ID))
+	extracted, err := storage.TempDir(restoreParent, fmt.Sprintf("%d-", job.ID))
 	if err != nil {
 		return err
 	}
@@ -317,6 +333,9 @@ func (s *Server) restoreTaskArchivePayload(job *pgdb.TaskArchive, snapshot *pgdb
 		_ = s.m.pg.UpdateTaskArchiveProgress(job.ID, "restore_traffic", 35)
 		if _, err := s.m.traffic.ImportArchive(filepath.Join(extracted, "traffic")); err != nil {
 			return err
+		}
+		if skipped := s.m.traffic.LastImportSkipped(); skipped > 0 {
+			_ = s.m.pg.AppendTaskArchiveWarning(job.ID, fmt.Sprintf("%d expired raw captures were not restored under the 30-day retention policy; finding-linked evidence remains restorable", skipped))
 		}
 	}
 	_ = s.m.pg.UpdateTaskArchiveProgress(job.ID, "restore_files", 55)
@@ -397,6 +416,15 @@ func (s *Server) loadRestoredTask(taskID int64) {
 }
 
 func (s *Server) deleteTaskArchive(job *pgdb.TaskArchive) error {
+	s.m.storageHoldMu.RLock()
+	defer s.m.storageHoldMu.RUnlock()
+	if err := s.m.checkEvidenceHold(); err != nil {
+		return err
+	}
+	if err := storage.CheckHold(s.m.dir); err != nil {
+		return err
+	}
+
 	if err := validateArchivePath(s.m.dir, job.ArchivePath); err != nil {
 		return err
 	}

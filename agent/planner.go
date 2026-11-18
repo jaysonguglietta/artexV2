@@ -370,7 +370,10 @@ func (p *Planner) Plan(ctx context.Context, taskID int64, as *db.AssetStore, ts 
 		situational += "\n\nTask final settlement (overrides normal planning instructions for this round):" + resolveTaskTimeoutWrapup("planner")
 	}
 	// Precreate the task workspace.
-	taskDir := ensureRunDir(p.workDir, taskID, 0)
+	taskDir, dirErr := ensureRunDir(p.workDir, taskID, 0)
+	if dirErr != nil {
+		return false, "", dirErr
+	}
 	ctx = intercept.WithReviewContext(ctx, taskDir, intercept.ReviewBackground{})
 	sysBody := plannerSystem(goal, p.workDir, taskDir)
 	if p.wantConstraints() {

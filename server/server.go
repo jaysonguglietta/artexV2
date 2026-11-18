@@ -28,10 +28,10 @@ import (
 	"github.com/Autumn-27/artex/llmrec"
 	"github.com/Autumn-27/artex/notify"
 	"github.com/Autumn-27/artex/report"
+	"github.com/Autumn-27/artex/storage"
 	"github.com/Autumn-27/artex/traffic"
 	"github.com/Autumn-27/norma/llm"
 	actool "github.com/Autumn-27/norma/tool"
-	"github.com/Autumn-27/norma/transcript"
 )
 
 // BuildVersion is the backend application version, injected from cmd/artex at
@@ -308,7 +308,7 @@ func New(ctx context.Context, m *Manager, skillDir string, dataDir string, keyDi
 		if err := s.seedFindingRetester(); err != nil {
 			log.Printf("[retester] seed: %v", err)
 		}
-		go s.evidenceStore().RunGC(s.ctx)
+		go s.runStorageMaintenance(s.ctx)
 		s.seedPythonInterpreter()     // Detect a Python interpreter only for an unset saved preference; production script execution uses the worker runtime.
 		go newScheduler(s).Run(s.ctx) // Custom-agent trigger scheduling for time/finding/goal events.
 		// Notification delivery runs independently of Scheduler because its three-second cadence and failures must not affect agent triggers. Integration fixtures can disable only its background loop and drive deterministic steps directly.
@@ -542,7 +542,7 @@ func (s *Server) applyLLM(cfg agent.Config) error {
 	// (agentsForTask), resolved through the engine's authoritative resolver. Global
 	// readiness (Ready()/llm_configured) is reported from s.llmOn, set below.
 
-	tx := transcript.NewStore(filepath.Join(s.m.dir, "transcripts"))
+	tx := s.rawTranscriptStore()
 	win := cfg.CompactionWindow()
 	// chat stays the GLOBAL fallback since one ChatAgent serves many agent keys — its
 	// per-agent binding is resolved at Chat time (runConversationSync →
@@ -685,7 +685,7 @@ func (s *Server) chatAgentForProfile(id int64) *agent.ChatAgent {
 	if !ok {
 		return nil
 	}
-	tx := transcript.NewStore(filepath.Join(s.m.dir, "transcripts"))
+	tx := s.rawTranscriptStore()
 	ca := agent.NewChatAgent(s.poolForBinding(id, prov, cfg), cfg.Model, s.m.dir, tx, cfg.CompactionWindow())
 	ca.SetProxy(s.m.ProxyAddr(), s.m.ProxyCACert())
 	ca.SetWebSearch(s.m.WebSearchOpts())
@@ -836,6 +836,7 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /api/exploration/findings/stats", s.findingStats)
 	mux.HandleFunc("GET /api/exploration/findings/export", s.findingsExport)
 	s.registerFindingTraffic(mux)
+	s.registerStorage(mux)
 	mux.HandleFunc("GET /api/exploration/findings/{id}", s.getFinding)
 	mux.HandleFunc("GET /api/exploration/findings/{id}/lineage", s.findingLineage)
 	mux.HandleFunc("POST /api/exploration/findings/{id}/deepen", s.deepenFinding)
@@ -1622,7 +1623,11 @@ func (s *Server) createTask(w http.ResponseWriter, r *http.Request) {
 			message += "; pause persistence failed: " + pauseErr.Error()
 		}
 		s.concMu.Unlock()
-		writeJSON(w, 500, map[string]any{"error": message, "created": true, "task_id": t.ID, "attachments_copied": false, "pause_persisted": pauseErr == nil})
+		status := 500
+		if errors.Is(err, storage.ErrQuota) {
+			status = http.StatusInsufficientStorage
+		}
+		writeJSON(w, status, map[string]any{"error": message, "created": true, "task_id": t.ID, "attachments_copied": false, "pause_persisted": pauseErr == nil})
 		return
 	}
 	s.concMu.Unlock()
@@ -2218,7 +2223,7 @@ func (s *Server) findingsExport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	stage, err := os.MkdirTemp("", "artex-finding-export-")
+	stage, err := storage.TempDir(filepath.Join(s.m.dir, "exports"), "finding-")
 	if err != nil {
 		writeErr(w, 500, err.Error())
 		return
@@ -2426,6 +2431,13 @@ func (s *Server) patchFinding(w http.ResponseWriter, r *http.Request) {
 // deleteFinding removes a finding (findings row + originating exploration node).
 // id is the standalone findings-table id (DTO finding_id).
 func (s *Server) deleteFinding(w http.ResponseWriter, r *http.Request) {
+	s.m.storageHoldMu.RLock()
+	defer s.m.storageHoldMu.RUnlock()
+	if err := s.m.checkEvidenceHold(); err != nil {
+		writeErr(w, 409, err.Error())
+		return
+	}
+
 	id := int64(atoiDefault(r.PathValue("id"), 0))
 	if id <= 0 {
 		writeErr(w, 400, "bad finding id")
@@ -4014,6 +4026,13 @@ func writeJSON(w http.ResponseWriter, code int, v any) {
 }
 
 func writeErr(w http.ResponseWriter, code int, msg string) {
+	if strings.Contains(msg, "storage admission refused:") || strings.Contains(msg, storage.ErrQuota.Error()) || strings.Contains(msg, "no space left on device") || strings.Contains(msg, "disk quota exceeded") {
+		code = http.StatusInsufficientStorage
+	}
+	if strings.Contains(msg, storage.ErrHold.Error()) {
+		code = http.StatusConflict
+	}
+
 	// trMsg retains the historical catalog hook while English-only message handling preserves original uncatalogued underlying diagnostics.
 	writeJSON(w, code, map[string]any{"error": trMsg(msg)})
 }

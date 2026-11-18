@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"os"
+	"github.com/Autumn-27/artex/storage"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -241,15 +241,17 @@ func workerArtifactSpec(runDir string) string {
 // ensureRunDir builds and creates an agent's working directory under base:
 // <base>/tasks/<taskID> for planner/main; <base>/tasks/<taskID>/i<intentID> for a
 // worker (intentID<=0 → task dir only). The "tasks/" segment groups per-task dirs
-// symmetrically with the chat agent's "sessions/<sessionID>". Best-effort mkdir — on
-// failure, writes fail the same way an unwritable CWD would.
-func ensureRunDir(base string, taskID, intentID int64) string {
+// symmetrically with the chat agent's "sessions/<sessionID>". Admission failure
+// stops the run before any provider request or tool execution.
+func ensureRunDir(base string, taskID, intentID int64) (string, error) {
 	dir := filepath.Join(base, "tasks", strconv.FormatInt(taskID, 10))
 	if intentID > 0 {
 		dir = filepath.Join(dir, "i"+strconv.FormatInt(intentID, 10))
 	}
-	_ = os.MkdirAll(dir, 0o755)
-	return dir
+	if err := storage.MkdirAll(dir, 0700); err != nil {
+		return "", err
+	}
+	return dir, nil
 }
 
 // cmdOutDir is the SDK large-tool-output spill dir under an agent's run dir.
@@ -349,7 +351,10 @@ func (w *Worker) execute(ctx context.Context, name string, taskID int64, as *db.
 	defer cleanup()
 
 	// Intent, launch instructions and anchored asset data belong in the system prompt so compaction cannot erase the worker's sole mandate. Rebuild them each run, deliberately trading cross-intent prompt caching for reliable task focus. Global overview remains lower-priority user input and may become stale or be compacted. The engine precreates the intent directory.
-	runDir := ensureRunDir(w.workDir, taskID, intent.ID)
+	runDir, dirErr := ensureRunDir(w.workDir, taskID, intent.ID)
+	if dirErr != nil {
+		return "", tsx.Writes(), dirErr
+	}
 	// The run-wide intent is not the current tool action. Do not forward it or
 	// inherit a parent run's background into the action reviewer.
 	ctx = intercept.WithReviewContext(ctx, runDir, intercept.ReviewBackground{})

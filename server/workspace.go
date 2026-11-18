@@ -2,6 +2,7 @@ package server
 
 import (
 	"bytes"
+	"github.com/Autumn-27/artex/storage"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -209,11 +210,15 @@ func (s *Server) wsWrite(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 400, errWsIllegalPath)
 		return
 	}
+	if err := s.workspaceMutationAllowed(abs); err != nil {
+		writeErr(w, 403, err.Error())
+		return
+	}
 	if fi, err := root.Stat(relPath(abs)); err == nil && fi.IsDir() {
 		writeErr(w, 400, errWsTargetIsDir)
 		return
 	}
-	if err := root.MkdirAll(filepath.Dir(relPath(abs)), 0o700); err != nil {
+	if err := storage.MkdirAll(filepath.Dir(abs), 0o700); err != nil {
 		writeErr(w, 500, err.Error())
 		return
 	}
@@ -221,7 +226,7 @@ func (s *Server) wsWrite(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 400, errWsIllegalPath)
 		return
 	}
-	if err := root.WriteFile(relPath(abs), []byte(req.Content), 0o600); err != nil {
+	if err := storage.AtomicWrite(abs, strings.NewReader(req.Content), int64(len(req.Content)), false); err != nil {
 		writeErr(w, 500, err.Error())
 		return
 	}
@@ -251,7 +256,11 @@ func (s *Server) wsMkdir(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 400, errWsIllegalPath)
 		return
 	}
-	if err := root.MkdirAll(relPath(abs), 0o700); err != nil {
+	if err := s.workspaceMutationAllowed(abs); err != nil {
+		writeErr(w, 403, err.Error())
+		return
+	}
+	if err := storage.MkdirAll(abs, 0o700); err != nil {
 		writeErr(w, 500, err.Error())
 		return
 	}
@@ -279,11 +288,15 @@ func (s *Server) wsDelete(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 400, errWsCannotDeleteRoot)
 		return
 	}
+	if err := s.workspaceMutationAllowed(abs); err != nil {
+		writeErr(w, 403, err.Error())
+		return
+	}
 	if _, err := root.Stat(relPath(abs)); err != nil {
 		writeErr(w, 404, errWsPathNotFound)
 		return
 	}
-	if err := root.RemoveAll(relPath(abs)); err != nil {
+	if err := workspaceDelete(root, relPath(abs), abs); err != nil {
 		writeErr(w, 500, err.Error())
 		return
 	}
@@ -343,56 +356,33 @@ func (s *Server) wsUpload(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 400, errWsIllegalPath)
 		return
 	}
+	if err := s.workspaceMutationAllowed(dirAbs); dirAbs != filepath.Clean(s.m.dir) && err != nil {
+		writeErr(w, 403, err.Error())
+		return
+	}
 	if fi, err := root.Stat(relPath(dirAbs)); err != nil || !fi.IsDir() {
 		writeErr(w, 400, errWsUploadDirMissing)
 		return
 	}
-	r.Body = http.MaxBytesReader(w, r.Body, maxWorkspaceUpload)
-	if err := r.ParseMultipartForm(32 << 20); err != nil {
-		writeErr(w, 400, errWsUploadParse+err.Error())
+	uploaded, err := s.streamUploads(w, r, dirAbs, maxWorkspaceUpload)
+	if err != nil {
+		writeErr(w, 400, err.Error())
 		return
 	}
-	files := r.MultipartForm.File["file"]
-	if len(files) == 0 {
-		writeErr(w, 400, errWsNoUploadFile)
-		return
-	}
-	saved := 0
-	for _, hdr := range files {
-		name := filepath.Base(hdr.Filename) // strip any path component
-		if name == "" || name == "." || name == ".." {
-			continue
-		}
-		destAbs, okd := s.wsResolve(filepath.Join(s.wsRel(dirAbs), name))
-		if !okd {
-			continue
-		}
-		if fi, err := root.Stat(relPath(destAbs)); err == nil && !fi.Mode().IsRegular() {
-			writeErr(w, 400, errWsIllegalPath)
-			return
-		}
-		if err := saveRootUpload(root, hdr, relPath(destAbs)); err != nil {
-			writeErr(w, 500, err.Error())
-			return
-		}
-		saved++
-	}
+	saved := len(uploaded)
 	writeJSON(w, 200, map[string]any{"uploaded": saved})
 }
 
 func saveUpload(hdr *multipart.FileHeader, dest string) error {
+	return saveUploadAtomic(hdr, dest, true)
+}
+func saveUploadAtomic(hdr *multipart.FileHeader, dest string, exclusive bool) error {
 	src, err := hdr.Open()
 	if err != nil {
 		return err
 	}
 	defer src.Close()
-	out, err := os.Create(dest)
-	if err != nil {
-		return err
-	}
-	defer out.Close()
-	_, err = io.Copy(out, src)
-	return err
+	return storage.AtomicWrite(dest, src, hdr.Size, exclusive)
 }
 
 // sanitizeFilename strips characters unsafe for a Content-Disposition filename token.

@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/Autumn-27/artex/db"
+	"github.com/Autumn-27/artex/storage"
 )
 
 // maxChatUpload caps a single chat-attachment upload request (memory + spill).
@@ -75,33 +76,14 @@ func (s *Server) chatUpload(w http.ResponseWriter, r *http.Request) {
 		defer s.engine.decInflight(id)
 	}
 	dir := filepath.Join(s.m.dir, sub, id, "uploads")
-	if err := os.MkdirAll(dir, 0o755); err != nil {
+	if err := storage.MkdirAll(dir, 0o700); err != nil {
 		writeErr(w, 500, errChatUploadMkdir+err.Error())
 		return
 	}
-	r.Body = http.MaxBytesReader(w, r.Body, maxChatUpload)
-	if err := r.ParseMultipartForm(32 << 20); err != nil {
-		writeErr(w, 400, errChatUploadParse+err.Error())
+	out, err := s.streamUploads(w, r, dir, maxChatUpload)
+	if err != nil {
+		writeErr(w, 400, err.Error())
 		return
-	}
-	files := r.MultipartForm.File["file"]
-	if len(files) == 0 {
-		writeErr(w, 400, errChatUploadNoFile)
-		return
-	}
-	out := make([]chatAttachment, 0, len(files))
-	for _, hdr := range files {
-		name := filepath.Base(hdr.Filename) // strip any path component
-		if name == "" || name == "." || name == ".." || strings.ContainsAny(name, `/\`) {
-			continue
-		}
-		dest := uniqueUploadPath(dir, name)
-		if err := saveUpload(hdr, dest); err != nil {
-			writeErr(w, 500, errChatUploadSaveFailed+err.Error())
-			return
-		}
-		base := filepath.Base(dest)
-		out = append(out, chatAttachment{Name: base, Path: "uploads/" + base, Size: hdr.Size, Abs: dest})
 	}
 	writeJSON(w, 200, map[string]any{"attachments": out})
 }

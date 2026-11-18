@@ -29,6 +29,9 @@ func isolatedOptions(ctx context.Context, opts agentcore.Options) agentcore.Opti
 			opts.Tools = append(opts.Tools, actool.NewTaskOutput(), actool.NewTaskStop(), actool.NewTaskList(), actool.NewMonitor())
 		}
 	}
+	// The SDK can otherwise write unbounded remote output through its private
+	// file writer. Empty output directories use bounded head/tail truncation.
+	opts.ToolOutputDir = ""
 	opts.EnableWebFetch = false
 	opts.DisableBackgroundTasks = true
 	// Search remains a typed provider integration in the control plane; it takes

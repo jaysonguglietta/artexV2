@@ -74,6 +74,21 @@ git push -u origin review/hardened-source
 Review the branch before merging. Do not force-push over existing history to make
 an upload succeed. A permission/authentication failure requires correcting account
 access through GitHub; embedding a token in the URL is not a recovery method.
+GitHub requires the `workflow` OAuth scope to upload changes under
+`.github/workflows`. If the saved HTTPS sign-in lacks that scope, either refresh
+the correct personal account's permissions or use an SSH key already registered
+to that account:
+
+```sh
+ssh -T git@github.com
+git remote set-url origin git@github.com:jaysonguglietta/artexV2.git
+git push -u origin main
+```
+
+Confirm GitHub identifies the intended personal account. Its successful SSH test
+says shell access is unavailable; that message is normal. Keep host-key
+verification enabled and never upload a private SSH key or token into the repo.
+
 If a real secret is ever committed, revoke it first and follow an explicit history
 cleanup process; deleting its current file does not remove it from prior commits.
 

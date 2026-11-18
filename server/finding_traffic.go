@@ -191,6 +191,12 @@ func (s *Server) bindFindingTraffic(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) editFindingTraffic(w http.ResponseWriter, r *http.Request) {
+	s.m.storageHoldMu.RLock()
+	defer s.m.storageHoldMu.RUnlock()
+	if err := s.m.checkEvidenceHold(); err != nil {
+		writeErr(w, http.StatusConflict, err.Error())
+		return
+	}
 	id, ok := s.findingTrafficAccess(w, r, true)
 	if !ok {
 		return

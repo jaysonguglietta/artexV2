@@ -7,12 +7,17 @@ container="artex-tests-$(date +%s)-$$"
 log_dir=$(mktemp -d "${TMPDIR:-/tmp}/artex-tests.XXXXXX")
 cleanup() { docker rm -f "$container" >/dev/null 2>&1 || true; }
 trap cleanup EXIT HUP INT TERM
+# Exercise the same hardened database image deployed by Compose.
+docker build --target postgres -f Dockerfile.source -t artex-local:postgres . > "$log_dir/postgres-build.log" 2>&1 || {
+  echo "PostgreSQL image build failed; see $log_dir/postgres-build.log" >&2
+  exit 1
+}
 # Test-only credential: the container is disposable and bound exclusively to loopback.
 docker run -d --name "$container" --label artex.purpose=isolated-tests \
   --memory=1g --cpus=1 -e POSTGRES_USER=artex_test \
   -e POSTGRES_PASSWORD=local-test-only -e POSTGRES_DB=postgres \
   -p 127.0.0.1::5432 --tmpfs /var/lib/postgresql/data:rw,size=768m \
-  postgres:16-alpine@sha256:81e77a4833487b8132fe4b00bedd39dc3f74b8641e387f19312a48f7de218c2e >/dev/null
+  artex-local:postgres >/dev/null
 attempt=0
 until docker exec "$container" pg_isready -U artex_test >/dev/null 2>&1; do
   attempt=$((attempt+1)); [ "$attempt" -lt 30 ] || { echo "PostgreSQL failed to start" >&2; exit 1; }
@@ -30,6 +35,6 @@ for package in db agent config evidence llmrec server; do
   fi
 done
 # Run remaining packages without a database configuration.
-if ! ARTEX_PG_DSN= go test ./cmd/artex ./guard ./intercept ./llmpool ./mcphttp ./notify ./report ./selfupdate ./sidequestion ./traffic -count=1; then failed=1; fi
+if ! ARTEX_PG_DSN= go test ./cmd/artex ./cmd/tool-worker ./cmd/worker-broker ./guard ./intercept ./isolation ./llmpool ./mcphttp ./notify ./report ./selfupdate ./sidequestion ./storage ./traffic -count=1; then failed=1; fi
 [ "$failed" -eq 0 ] || { echo "Tests failed. Logs: $log_dir" >&2; exit 1; }
 echo "All isolated tests passed. Logs: $log_dir"

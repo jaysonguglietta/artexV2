@@ -4,6 +4,7 @@ import * as React from "react";
 
 import {
   CheckCircle2Icon,
+  CopyIcon,
   DownloadIcon,
   ExternalLinkIcon,
   RefreshCwIcon,
@@ -48,6 +49,8 @@ export function UpdateCard() {
   // Track restart separately from download progress because staging ends the process and SSE connection.
   const [restarting, setRestarting] = React.useState(false);
   const [busy, setBusy] = React.useState(false);
+  // Unknown or absent capabilities fail closed, including older server responses.
+  const inProcessUpdates = info?.in_process_updates === true;
 
   // Automatic entry checks keep the backend cache; explicit user checks
   // force a fresh result so recently published versions need not wait for cache expiry.
@@ -141,7 +144,7 @@ export function UpdateCard() {
   );
 
   const doUpdate = () => {
-    if (!info) return;
+    if (info?.in_process_updates !== true) return;
     const from = info.current;
     const ok = window.confirm(
       `${t("update.confirm.title", { latest: info.latest ?? "" })}\n\n` +
@@ -162,7 +165,7 @@ export function UpdateCard() {
   };
 
   const doRollback = () => {
-    if (!info) return;
+    if (info?.in_process_updates !== true) return;
     if (!window.confirm(t("update.confirm.rollback"))) return;
     const from = info.current;
     setBusy(true);
@@ -176,6 +179,16 @@ export function UpdateCard() {
         setBusy(false);
         toast.error(t("update.toast.rollbackFailed", { error: (e as Error).message }));
       });
+  };
+
+  const copyVersion = async () => {
+    if (!info?.current) return;
+    try {
+      await navigator.clipboard.writeText(info.current);
+      toast.success(t("update.toast.versionCopied"));
+    } catch {
+      toast.error(t("update.toast.copyFailed"));
+    }
   };
 
   const phase = progress?.phase;
@@ -231,6 +244,24 @@ export function UpdateCard() {
           )}
         </div>
 
+        {!inProcessUpdates && (
+          <div className="space-y-2 rounded-md border p-3 text-sm">
+            <p className="font-medium">{t("update.externalOnlyTitle")}</p>
+            <p className="text-muted-foreground">{t("update.externalOnlyBody")}</p>
+            {info?.installation_instructions && (
+              <p className="text-xs text-muted-foreground">{info.installation_instructions}</p>
+            )}
+            <a
+              href="https://github.com/jaysonguglietta/artexV2/blob/main/docs/SIGNED-RELEASES.md"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1 underline underline-offset-4"
+            >
+              {t("update.verifiedInstallGuide")} <ExternalLinkIcon className="size-3" />
+            </a>
+          </div>
+        )}
+
         {info?.boot_notice && (
           <p className="flex items-start gap-2 rounded-md border border-amber-500/40 bg-amber-500/10 p-2 text-xs text-amber-700 dark:text-amber-400">
             <TriangleAlertIcon className="mt-0.5 size-3.5 shrink-0" />
@@ -254,7 +285,7 @@ export function UpdateCard() {
           </p>
         )}
 
-        {info?.has_update && info.asset_available !== false && (
+        {inProcessUpdates && info?.has_update && info.asset_available !== false && (
           <p className="text-xs text-muted-foreground">
             {t("update.willDownloadPrefix")}
             <span className="font-mono">{info.asset}</span>
@@ -270,7 +301,7 @@ export function UpdateCard() {
           </p>
         )}
 
-        {info?.mode === "docker" && info.has_update && (
+        {inProcessUpdates && info?.mode === "docker" && info.has_update && (
           <p className="text-xs text-muted-foreground">{t.rich("update.dockerNote", richTags)}</p>
         )}
 
@@ -286,15 +317,23 @@ export function UpdateCard() {
             <RefreshCwIcon className={checking ? "size-4 animate-spin" : "size-4"} />
             {t("update.check")}
           </Button>
-          <Button
-            size="sm"
-            onClick={doUpdate}
-            disabled={busy || restarting || !info?.has_update || info?.asset_available === false}
-          >
-            <DownloadIcon className="size-4" />
-            {info?.has_update ? t("update.updateToVersion", { latest: info.latest ?? "" }) : t("update.updateNow")}
-          </Button>
-          {info?.has_backup && (
+          {info?.current && (
+            <Button variant="ghost" size="sm" onClick={copyVersion}>
+              <CopyIcon className="size-4" />
+              {t("update.copyVersion")}
+            </Button>
+          )}
+          {inProcessUpdates && (
+            <Button
+              size="sm"
+              onClick={doUpdate}
+              disabled={busy || restarting || !info?.has_update || info?.asset_available === false}
+            >
+              <DownloadIcon className="size-4" />
+              {info?.has_update ? t("update.updateToVersion", { latest: info.latest ?? "" }) : t("update.updateNow")}
+            </Button>
+          )}
+          {inProcessUpdates && info?.has_backup && (
             <Button variant="ghost" size="sm" onClick={doRollback} disabled={busy || restarting}>
               <RotateCcwIcon className="size-4" />
               {t("update.rollback")}

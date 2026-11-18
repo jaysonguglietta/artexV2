@@ -3,6 +3,7 @@ package isolation
 import (
 	"bytes"
 	"errors"
+	"github.com/Autumn-27/artex/storage"
 	"io"
 	"io/fs"
 	"os"
@@ -18,6 +19,9 @@ const (
 )
 
 func validateArtifactPath(name string) error {
+	if err := storage.ValidatePath(name); err != nil {
+		return err
+	}
 	if name == "." || !fs.ValidPath(name) || strings.ContainsAny(name, "\\\x00") {
 		return errors.New("invalid artifact path")
 	}
@@ -127,7 +131,7 @@ func ReadFiles(dir string, limit int64) (map[string][]byte, error) {
 	})
 	return files, err
 }
-func WriteFiles(dir string, files map[string][]byte) error {
+func writeFilesRaw(dir string, files map[string][]byte) error {
 	if err := validateArtifactFiles(files, 8<<20); err != nil {
 		return err
 	}
@@ -158,7 +162,7 @@ func WriteFiles(dir string, files map[string][]byte) error {
 
 // ApplySnapshot preserves UI files created or changed while a tool was running.
 // A worker may remove only the unchanged inputs it was actually given.
-func ApplySnapshot(dir string, sent, returned map[string][]byte) error {
+func applySnapshotRaw(dir string, sent, returned map[string][]byte) error {
 	// Reject malicious worker paths and inode amplification before deleting any
 	// unchanged API files from the prior snapshot.
 	if err := validateArtifactFiles(returned, 8<<20); err != nil {
@@ -189,5 +193,31 @@ func ApplySnapshot(dir string, sent, returned map[string][]byte) error {
 		}
 		writable[name] = data
 	}
-	return WriteFiles(dir, writable)
+	return writeFilesRaw(dir, writable)
+}
+
+func artifactReservation(files map[string][]byte) storage.Reservation {
+	var out storage.Reservation
+	parents := map[string]bool{}
+	for name, data := range files {
+		out.Bytes += int64(len(data))
+		out.Entries++
+		for parent := path.Dir(name); parent != "."; parent = path.Dir(parent) {
+			parents[parent] = true
+		}
+	}
+	out.Entries += int64(len(parents))
+	return out
+}
+func WriteFiles(dir string, files map[string][]byte) error {
+	if err := validateArtifactFiles(files, 8<<20); err != nil {
+		return err
+	}
+	return storage.GuardUnheld(dir, artifactReservation(files), func() error { return writeFilesRaw(dir, files) })
+}
+func ApplySnapshot(dir string, sent, returned map[string][]byte) error {
+	if err := validateArtifactFiles(returned, 8<<20); err != nil {
+		return err
+	}
+	return storage.GuardUnheld(dir, artifactReservation(returned), func() error { return applySnapshotRaw(dir, sent, returned) })
 }

@@ -14,7 +14,9 @@ The Go API authenticates the operator, calls configured model providers, schedul
 agents and owns PostgreSQL records, approval state and signing keys. A separate
 trusted broker controls a dedicated Docker daemon. Executable shell, filesystem,
 custom command/Python/HTTP, interactive-shell and MCP tools run in separate
-containers per agent run. The browser uses the API on the same origin.
+containers per agent run. The minimal API image keeps only its static Go service
+and required certificate/time-zone/skill data; it carries no assessment toolchain.
+The browser uses the API on the same origin.
 
 Protect these assets: operator sessions, provider and integration credentials,
 signing keys, assessment scope, database records, uploaded files, findings and raw
@@ -56,7 +58,7 @@ prerequisites. It is not a list of currently exploitable unauthenticated endpoin
 | Browser tokens were exposed to JavaScript and request URLs | Medium / High | Strict expiring JWTs, HttpOnly cookies, no query tokens and durable logout revocation; [session tests](../server/session_security_test.go). |
 | Review or policy-read failures could permit operations | Medium / High | Default-deny model review and refused tool/asset assembly on database errors; [tool policy tests](../server/tool_policy_security_test.go), [asset policy tests](../agent/asset_policy_security_test.go) and approval-lifecycle tests. Existing explicit allow-on-failure settings require operator review. |
 | Recon helper could forward cookies/requests beyond the intended origin | High / High | Mock-by-default behavior, explicit bounded same-origin GET/HEAD forwarding, no redirects, private captures and secure TLS/browser defaults; [policy tests](../skills/api-recon/scripts/runtime_policy.test.js) and [browser tests](../skills/api-recon/scripts/runtime_browser.test.js). Independent worker egress remains necessary. |
-| Mutable update/build inputs could compromise a personal fork | Medium / High | Reviewed local-source builds, pinned actions/base images and lockfiles; in-process update/rollback disabled by default. Signed release provenance and OS package review remain open. |
+| Mutable update/build inputs could compromise a personal fork | Medium / High | Production in-process apply/rollback is permanently refused. Exact-identity signed release verification and immutable-image/SBOM gates are implemented; hosted OIDC/publication and final integrated validation remain separate checkpoints. See [signed releases](SIGNED-RELEASES.md) and [image security](IMAGE-SECURITY.md). |
 
 Relevant categories include CWE-78 (command injection), CWE-22/CWE-59
 (filesystem traversal/symlinks), CWE-918/CWE-201 (SSRF/credential forwarding),
@@ -131,12 +133,28 @@ remain trusted control-plane connections; tool-worker network rules do not make
 an arbitrary provider endpoint trustworthy. Target-only TLS exceptions must not
 be reused for credential/control-plane traffic.
 
-Findings, model traces, captures and exports can contain personal data, target
-credentials or sensitive business content. Keep runtime data and backups private,
-limit integration permissions, and define retention/deletion for each assessment.
-Repository hygiene does not replace runtime storage quotas or an evidence-retention
-policy. Central append-only audit, broader quotas and lifecycle-managed retention
-remain hardening work.
+### Evidence storage and retention
+
+Findings, captures and exports can contain personal data, target credentials or
+sensitive business content. [Evidence storage](EVIDENCE-STORAGE.md) describes the
+new independent file-admission budgets: evidence 2 GiB, traffic 5 GiB and workspace
+5 GiB by default, with entry/body/exchange limits and fail-closed admission.
+These do not cap PostgreSQL/WAL, process logs, backups, Docker layers or total VM
+storage. Those need separate operational capacity controls.
+
+Raw captures have a 30-day retention policy. Legal holds apply to a whole storage
+bucket and block destructive operations/retention until deliberately released;
+they are not a claim of immutable or forensic-atomic storage. Define assessment
+and backup requirements before applying a hold or deleting evidence.
+
+Raw SDK debug transcripts default off for ordinary binaries. Compose explicitly
+enables bounded ephemeral tmpfs; live debug files are excluded from workspace
+legal holds and disappear on restart. They are not ordinary persistent raw files.
+PostgreSQL UI conversation/activity history remains separate. Model-context replay
+and output handling are covered by the fresh PostgreSQL/race runs; their behavior
+is not an independent evidence or deletion certification.
+Keep runtime data/backups private and limit external provider retention. Central
+append-only audit and verified backup/restore/deletion exercises remain work.
 
 ## Dependency and secret checks
 
@@ -155,8 +173,8 @@ used. Build/test globs remain trusted input even when the advisory count is zero
 The unused multilingual extraction dependency chain was removed; the application
 uses the English catalog and direct `use-intl` integration.
 
-Official govulncheck v1.10.0 reported no findings in the checked default Go source
-graph (52 modules; 20 root packages). Its recorded database was last modified on
+Earlier official govulncheck v1.10.0 reported no findings in its checked default
+Go source graph (52 modules; 20 root packages). Its recorded database was last modified on
 11 November 2026. This does not cover all build tags, test-only code or unknown
 vulnerabilities. The embedded-UI build is validated separately by compilation.
 
@@ -170,21 +188,53 @@ match remained in that snapshot. Values were redacted; no whole-test-directory
 suppression was used. A later source change requires another scan; this is not a
 scan of future Git history.
 
-## Completed validation
+### Runtime image and release controls
+
+[Image security](IMAGE-SECURITY.md) now supplies OS/language inventories, complete
+Trivy JSON and CycloneDX SBOMs for exact IDs/platforms, a fresh bounded DB policy,
+EOL/inventory checks and strict active/unverified High/Critical/Unknown gating.
+Unfixed findings remain visible. Exact short-lived risk exceptions and live
+primary-source-confirmed withdrawal classifications are distinct and auditable.
+All four final ARM64 component gates passed with zero blocking findings. Worker
+raw counts still include one High with a live official withdrawal proof; Medium/Low
+findings remain visible. [Validation](VALIDATION.md) records exact IDs, counts and
+DB/proof identity. Hosted amd64 is pending; there is no all-CVE clean claim.
+
+Production cannot enable the retained unsigned updater: apply/rollback routes
+always refuse, the legacy flag is rejected, and production bootstrap/staging does
+not execute old unsigned files. Version checks remain read-only. The
+[signed-release workflow](SIGNED-RELEASES.md) is restricted to protected semantic
+tags and explicit opt-in, with exact repository/workflow/ref/commit/run identities
+and verification before installation. Main-only dry runs use real OIDC without
+publishing. The 14 signing and 15 publication tests passed locally; the actual hosted OIDC
+rehearsal and release publication are pending, not implied by local tests.
+
+## Validation checkpoints
 
 | Check | Recorded result |
 |---|---|
-| Disposable PostgreSQL integration suites | 817 test cases passed, including subtests; 1 optional live-provider test skipped without external credentials |
-| Live isolated-worker boundary checks | 52 passed against local disposable Docker targets |
-| Container API/security smoke checks | 12 passed |
-| Frontend tests | 23 passed across 7 files |
+| Earlier PostgreSQL integration checkpoint | 817 test cases passed, including subtests; 1 optional live-provider test skipped without external credentials |
+| Earlier live-worker checkpoint | 52 passed against local disposable Docker targets |
+| Earlier container API smoke checkpoint | 12 passed |
+| Current frontend tests | 26 passed across 8 files, including disabled/missing update capability and clipboard-failure regressions |
 | Frontend TypeScript and English catalog | Passed, including a clean source-only TypeScript check |
-| Frontend static build and exported English UI | Passed; 30 exported HTML pages checked |
-| Biome | 0 errors; 124 warnings and 658 informational diagnostics retained |
-| Go static analysis and portability | `go vet ./...` passed; Windows cross-build passed |
+| Earlier frontend static build/export checkpoint | Passed; 30 HTML pages checked at that checkpoint. Fresh source-image builds also passed with the current static frontend |
+| Biome | 0 errors; 124 warnings and 659 informational diagnostics retained |
+| Earlier Go analysis/portability checkpoint | `go vet ./...` and Windows cross-build passed before the latest storage/release changes |
+| Current image-gate regressions | 19 passed, including primary withdrawal, runtime inventory and OCI/config/layer identity tests |
+| Current local signing/publication regressions | 14 signing + 15 publication tests passed; not hosted OIDC verification |
+| Fresh PostgreSQL/Go integration | 869 cases passed, 0 failed, 1 optional live-provider skipped; 13 additional tested suites passed |
+| Fresh races and analysis | storage/traffic/isolation/evidence/agent/server races, `go vet ./...` and windows/amd64 API cross-build passed |
+| Fresh builds and live boundary checks | All four current source-image builds, worker 52/52 and API 12/12 passed |
+| Fresh ARM64 image gates | All four passed, 0 blocking; raw withdrawn High and Medium/Low counts retained |
+| Fresh Compose acceptance | 11/11 passed, including PostgreSQL native UID drop/restart persistence, absent API interpreters, isolated tool execution and cleanup |
+| Still pending | Remote amd64 and real hosted OIDC |
 | Dependency and source-secret review | Results and limits described above and in the validation record |
 
-These results demonstrate the checked behaviors, not a security certification.
+Rows explicitly labeled earlier remain historical. Fresh local results now cover
+the storage/image/release changes; the remaining hosted and snapshot checks
+are separate in [validation](VALIDATION.md). These results
+demonstrate checked behaviors, not a security certification.
 The skipped live-provider test is not counted as a pass. Unit/integration tests
 and synthetic adversarial fixtures do not establish real-target assessment
 quality or prompt-translation benchmark equivalence.
@@ -202,6 +252,9 @@ go run golang.org/x/vuln/cmd/govulncheck@v1.10.0 ./...
 python3 scripts/test-prepare-upload.py
 python3 scripts/test-setup-workers.py
 python3 scripts/test-audit-npm.py
+python3 scripts/test-image-security.py
+python3 scripts/test-signed-release.py
+python3 scripts/test-release-publication.py
 python3 scripts/audit-npm.py
 python3 scripts/check-english.py
 python3 scripts/check-doc-links.py
@@ -238,11 +291,13 @@ reproduction guidance, not a claim that every optional environment is available.
 
 1. Preserve the dedicated VM/daemon boundary. A compromised API, broker, kernel,
    Docker daemon or operator remains outside the worker isolation guarantee.
-2. Add OS-image/package CVE scanning and signed build/release provenance before
-   treating generated images as a production release. Digest pins do not review
-   every installed OS package or eliminate upstream compromise.
-3. Add centralized append-only audit, operational quotas and explicit retention
-   for traces, captures, artifacts and backups.
+2. Repeat ID-bound scans for each release/architecture and complete the real hosted
+   OIDC rehearsal; configure
+   repository/tag protections, and verify a release end to end. Implemented gates
+   do not establish every hosted setting or eliminate upstream compromise.
+3. Extend the new quota/retention/hold and Compose persistence evidence with
+   realistic backup/recovery exercises. Add centralized append-only audit and separate
+   database/log/backup capacity and privacy controls.
 4. Design a bounded distributed traffic-capture/import pipeline if required.
    Workers cannot use the API recording proxy, privileged raw-packet scans are
    unsupported, and oversized unsynchronized files remain ephemeral.

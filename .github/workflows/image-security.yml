@@ -1,0 +1,55 @@
+name: Runtime image security
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "43 4 * * 2" # Tuesdays at 04:43 UTC
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: image-security-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  images:
+    name: Runtime images (${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { arch: amd64, platform: linux/amd64, runner: ubuntu-24.04 }
+          - { arch: arm64, platform: linux/arm64, runner: ubuntu-24.04-arm }
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Test the gate without network or Docker
+        run: python3 -I scripts/test-image-security.py
+      - name: Build all four runtime components locally
+        run: |
+          docker build --platform '${{ matrix.platform }}' -f Dockerfile.source --target application -t artex-security:application .
+          docker build --platform '${{ matrix.platform }}' -f Dockerfile.source --target worker -t artex-security:worker .
+          docker build --platform '${{ matrix.platform }}' -f Dockerfile.source --target broker -t artex-security:broker .
+          docker build --platform '${{ matrix.platform }}' -f Dockerfile.source --target postgres -t artex-security:postgres .
+      - name: Scan the exact runtime image IDs and create SBOMs
+        run: |
+          python3 scripts/scan-images.py --output '${{ runner.temp }}/image-security-reports' \
+            --trivy '${{ runner.temp }}/artex-trivy-0.76.2' \
+            --cache-dir '${{ runner.temp }}/artex-trivy-db' \
+            --platform '${{ matrix.platform }}' \
+            --image application=artex-security:application \
+            --image worker=artex-security:worker \
+            --image broker=artex-security:broker \
+            --image postgres=artex-security:postgres
+      - name: Preserve complete reports, SBOMs and gate decision
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: runtime-image-security-${{ matrix.arch }}
+          path: ${{ runner.temp }}/image-security-reports/
+          if-no-files-found: warn
+          retention-days: 30

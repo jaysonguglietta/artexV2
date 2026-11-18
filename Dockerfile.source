@@ -9,20 +9,32 @@ COPY web/ ./
 RUN NEXT_EXPORT=1 ./node_modules/.bin/next build --webpack
 
 FROM golang:1.27.4-bookworm@sha256:4fa7c968ba93f1635670522dbb01a2c78150443e1385746924566079f36570ea AS backend
+ARG ARTEX_BUILD_VERSION=dev
 WORKDIR /src
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . ./
 COPY --from=frontend /src/web/out /src/server/webui/dist
-RUN CGO_ENABLED=0 go build -trimpath -tags embedui -o /out/artex ./cmd/artex \
+RUN CGO_ENABLED=0 go build -trimpath -ldflags "-X main.version=${ARTEX_BUILD_VERSION}" -tags embedui -o /out/artex ./cmd/artex \
     && CGO_ENABLED=0 go build -trimpath -o /out/tool-worker ./cmd/tool-worker \
-    && CGO_ENABLED=0 go build -trimpath -o /out/worker-broker ./cmd/worker-broker
+    && CGO_ENABLED=0 go build -trimpath -o /out/worker-broker ./cmd/worker-broker \
+    && mkdir -p /out/rootfs/app/data/home /out/rootfs/app/private /out/rootfs/tmp \
+    && chmod 1777 /out/rootfs/tmp && chmod 0700 /out/rootfs/app/private
 
-FROM node:22-bookworm-slim@sha256:e9f565d32859f0cbfb52125eafe8be39390f24dac302dc3cdf566e8ba3ab21ee AS runtime
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates python3 python3-pip python3-venv ripgrep curl wget vim git jq unzip \
-    dnsutils iputils-ping netcat-openbsd inetutils-telnet whois nmap \
+# Assessment tools belong only in the untrusted worker, never the API image.
+FROM node:24-trixie-slim@sha256:af02d57b57719b9657a45199a79264a9437940cd55b3c7b3fc99615654f124a0 AS node-runtime
+FROM ubuntu:26.04@sha256:d66b366dac61b575bee2aef07e9c26e8070096fbe84a3d4d3eb0da069b5d76db AS tools
+RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
+    libstdc++6 libatomic1 \
+    ca-certificates python3 python3-pip python3-venv ripgrep curl wget git jq unzip \
+    dnsutils iputils-ping netcat-openbsd whois nmap \
     && rm -rf /var/lib/apt/lists/*
+COPY --from=node-runtime /usr/local/bin/node /usr/local/bin/node
+COPY --from=node-runtime /usr/local/lib/node_modules/npm/ /usr/local/lib/node_modules/npm/
+# Pin the fixed npm archive independently of the base image's bundled version.
+ADD --checksum=sha256:fa0711dd513fa1386bbad3962a292cb813461cb57dedf07d6eb7efe76dffe897 https://registry.npmjs.org/npm/-/npm-12.2.3.tgz /tmp/npm.tgz
+RUN node /usr/local/lib/node_modules/npm/bin/npm-cli.js install --global /tmp/npm.tgz --ignore-scripts --no-audit --no-fund \
+    && rm /tmp/npm.tgz && npm cache clean --force
 COPY tools/browser/package*.json /opt/artex-browser/
 RUN cd /opt/artex-browser && npm ci --ignore-scripts --omit=dev \
     && PLAYWRIGHT_BROWSERS_PATH=/ms-playwright ./node_modules/.bin/playwright install --with-deps chromium \
@@ -35,15 +47,15 @@ ENV PATH="/opt/artex-browser/node_modules/.bin:${PATH}" \
     ARTEX_KEY_DIR=/app/private \
     HOME=/app/data/home
 WORKDIR /app
-COPY --from=backend --chmod=0555 /out/artex /app/artex
 COPY --chown=10001:10001 skills/ /app/skills/
 USER 10001:10001
-EXPOSE 8787
-ENTRYPOINT ["/app/artex"]
-CMD ["-addr", ":8787", "-proxy", "127.0.0.1:8788"]
 
 # Task image: no API/database/signing-key mounts or Docker socket.
-FROM runtime AS worker
+FROM tools AS worker
+ARG ARTEX_BUILD_VERSION=dev
+ARG ARTEX_BUILD_COMMIT=unknown
+LABEL org.opencontainers.image.source="https://github.com/jaysonguglietta/artexV2" \
+    org.opencontainers.image.version="${ARTEX_BUILD_VERSION}" org.opencontainers.image.revision="${ARTEX_BUILD_COMMIT}"
 USER root
 RUN apt-get update && apt-get install -y --no-install-recommends iptables util-linux iproute2 \
     && rm -rf /var/lib/apt/lists/*
@@ -55,11 +67,46 @@ CMD []
 
 # Trusted management component; reachable only from the API management network.
 FROM docker:29-cli@sha256:34507eb5069d8be82c95dd3b6987d4250fd5fee49b82e2509b7d7a7030740d6d AS broker
+ARG ARTEX_BUILD_VERSION=dev
+ARG ARTEX_BUILD_COMMIT=unknown
+LABEL org.opencontainers.image.source="https://github.com/jaysonguglietta/artexV2" \
+    org.opencontainers.image.version="${ARTEX_BUILD_VERSION}" org.opencontainers.image.revision="${ARTEX_BUILD_COMMIT}"
 COPY --from=backend --chmod=0555 /out/worker-broker /usr/local/bin/worker-broker
-RUN mkdir -p /broker-state && chown 10001:10001 /broker-state && chmod 0700 /broker-state
+RUN rm -rf /usr/local/libexec/docker/cli-plugins \
+    && mkdir -p /broker-state && chown 10001:10001 /broker-state && chmod 0700 /broker-state
 USER 10001:10001
 ENV HOME=/tmp
 ENTRYPOINT ["/usr/local/bin/worker-broker"]
 CMD []
+
+# Keep the supported upstream engine, replacing its obsolete Go-built startup
+# helper with Alpine's native, package-managed privilege dropper.
+FROM postgres:16-alpine@sha256:81e77a4833487b8132fe4b00bedd39dc3f74b8641e387f19312a48f7de218c2e AS postgres
+ARG ARTEX_BUILD_VERSION=dev
+ARG ARTEX_BUILD_COMMIT=unknown
+LABEL org.opencontainers.image.source="https://github.com/jaysonguglietta/artexV2" \
+    org.opencontainers.image.version="${ARTEX_BUILD_VERSION}" org.opencontainers.image.revision="${ARTEX_BUILD_COMMIT}"
+# Separate deletion records an explicit layer whiteout, so inventory tools do
+# not retain stale Go metadata when the pathname becomes a native-helper link.
+RUN rm /usr/local/bin/gosu
+RUN apk add --no-cache --upgrade su-exec && ln -s /sbin/su-exec /usr/local/bin/gosu
+
+# Static API: no shell, Node, npm, browser, Python or OS package manager.
+FROM scratch AS runtime
+ARG ARTEX_BUILD_VERSION=dev
+ARG ARTEX_BUILD_COMMIT=unknown
+LABEL org.opencontainers.image.source="https://github.com/jaysonguglietta/artexV2" \
+    org.opencontainers.image.version="${ARTEX_BUILD_VERSION}" org.opencontainers.image.revision="${ARTEX_BUILD_COMMIT}"
+COPY --from=backend --chown=10001:10001 /out/rootfs/ /
+COPY --from=backend /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+COPY --from=backend /usr/share/zoneinfo/ /usr/share/zoneinfo/
+COPY --from=backend --chmod=0555 /out/artex /app/artex
+COPY --chown=10001:10001 skills/ /app/skills/
+ENV HOME=/app/data/home ARTEX_KEY_DIR=/app/private
+WORKDIR /app
+USER 10001:10001
+EXPOSE 8787
+ENTRYPOINT ["/app/artex"]
+CMD ["-addr", ":8787", "-proxy", "127.0.0.1:8788"]
 
 FROM runtime AS application

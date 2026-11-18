@@ -16,6 +16,9 @@ assessment VM and test only authorized targets.
 | Review security changes and remaining risks | [Security review](SECURITY-REVIEW.md) |
 | Trace findings, attack paths and remediation | [Comprehensive adversarial audit](SECURITY-AUDIT.md) |
 | Inspect completed checks and reproduce them | [Validation record](VALIDATION.md) |
+| Review OS/language packages and SBOMs | [Runtime image security](IMAGE-SECURITY.md) |
+| Verify and install a signed release | [Signed releases](SIGNED-RELEASES.md) |
+| Manage quotas, retention and legal holds | [Evidence storage](EVIDENCE-STORAGE.md) |
 | Upload a reviewed source snapshot | [Personal GitHub upload guide](../UPLOAD.md) |
 
 ## Operate and maintain
@@ -44,4 +47,7 @@ assessment VM and test only authorized targets.
 The broker has Docker-daemon authority. Container boundaries do not protect
 against a compromised broker, API, daemon, kernel or operator account. Shared
 multi-tenant hosting is outside the supported design. Recorded evidence and model
-output remain untrusted data even after an isolated tool run succeeds.
+output remain untrusted data even after an isolated tool run succeeds. The static
+API image has no assessment toolchain; those tools belong in isolated workers.
+Production in-process update/rollback is unavailable. Hosted signing/publication
+status and final integrated checks are reported separately in the validation record.

@@ -39,8 +39,8 @@ func TestTaskArchivePackageFilesRoundTrip(t *testing.T) {
 	if _, err := os.Stat(taskFile); !os.IsNotExist(err) {
 		t.Fatalf("task file still hot after staging: %v", err)
 	}
-	if _, err := os.Stat(transcriptFile); !os.IsNotExist(err) {
-		t.Fatalf("task transcript still hot after staging: %v", err)
+	if got, err := os.ReadFile(transcriptFile); err != nil || string(got) != "transcript" {
+		t.Fatalf("raw transcript must remain intact until archive commit: %q %v", got, err)
 	}
 	if _, err := os.Stat(unrelatedTranscript); err != nil {
 		t.Fatalf("unrelated transcript was staged: %v", err)

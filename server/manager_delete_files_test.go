@@ -137,14 +137,67 @@ func TestStageTaskFilesRollbackRestoresWorkspaceAndTranscripts(t *testing.T) {
 	if !stage.deleted {
 		t.Fatal("expected files to be staged")
 	}
+	assertPathMissing(t, filepath.Join(dataDir, paths[0]))
+	for _, path := range paths[1:] {
+		assertTaskDeleteFixtureBytes(t, filepath.Join(dataDir, path))
+	}
 	for _, path := range paths {
-		assertPathMissing(t, filepath.Join(dataDir, path))
+		assertTaskDeleteFixtureBytes(t, stagedTaskFixturePath(t, stage, filepath.Join(dataDir, path)))
 	}
 	if err := stage.rollback(); err != nil {
 		t.Fatal(err)
 	}
 	for _, path := range paths {
-		assertPathExists(t, filepath.Join(dataDir, path))
+		assertTaskDeleteFixtureBytes(t, filepath.Join(dataDir, path))
+	}
+	assertPathMissing(t, stage.stageDir)
+}
+
+func TestStageTaskFilesCommitRemovesTranscriptOriginalsOnlyAfterCommit(t *testing.T) {
+	dataDir := t.TempDir()
+	paths := []string{
+		filepath.Join("tasks", "77", "notes.txt"),
+		filepath.Join("transcripts", "exp12-main.jsonl"),
+		filepath.Join("transcripts", "exp12-worker-i9", "sidechain.jsonl"),
+	}
+	for _, path := range paths {
+		createDeleteFixture(t, dataDir, path, false)
+	}
+	stage, err := stageTaskFiles(dataDir, "77", 12)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = stage.rollback() })
+	assertPathMissing(t, filepath.Join(dataDir, paths[0]))
+	for _, path := range paths[1:] {
+		assertTaskDeleteFixtureBytes(t, filepath.Join(dataDir, path))
+		assertTaskDeleteFixtureBytes(t, stagedTaskFixturePath(t, stage, filepath.Join(dataDir, path)))
+	}
+	if err := stage.commit(); err != nil {
+		t.Fatal(err)
+	}
+	for _, path := range paths {
+		assertPathMissing(t, filepath.Join(dataDir, path))
+	}
+	assertPathMissing(t, stage.stageDir)
+}
+
+func stagedTaskFixturePath(t *testing.T, stage *taskFileDeleteStage, original string) string {
+	t.Helper()
+	for _, move := range stage.moves {
+		relative, err := filepath.Rel(move.source, original)
+		if err == nil && filepath.IsLocal(relative) {
+			return filepath.Join(move.staged, relative)
+		}
+	}
+	t.Fatalf("fixture %s was not included in task deletion stage", original)
+	return ""
+}
+
+func assertTaskDeleteFixtureBytes(t *testing.T, path string) {
+	t.Helper()
+	if content, err := os.ReadFile(path); err != nil || string(content) != "test" {
+		t.Fatalf("task deletion fixture %s changed: content=%q err=%v", path, content, err)
 	}
 }
 

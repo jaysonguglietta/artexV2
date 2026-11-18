@@ -51,6 +51,7 @@ var (
 // TaskArchive is the compact PostgreSQL record retained while a task is cold.
 // Sensitive profile configuration and API keys are intentionally absent.
 type TaskArchive struct {
+	RawTrafficOmitted       bool            `json:"raw_traffic_omitted"`
 	ID                      int64           `json:"id"`
 	TaskID                  int64           `json:"task_id"`
 	State                   string          `json:"state"`
@@ -115,6 +116,7 @@ type TaskArchivePage struct {
 // Small tables remain JSON arrays in Tables. Large v2 tables are streamed to
 // package files listed in StreamedTables so their size is not bounded by memory.
 type TaskArchiveSnapshot struct {
+	RawTrafficOmitted bool                       `json:"raw_traffic_omitted,omitempty"`
 	FormatVersion     int                        `json:"format_version"`
 	CreatedAt         time.Time                  `json:"created_at"`
 	TaskID            int64                      `json:"task_id"`
@@ -155,6 +157,10 @@ func scanTaskArchive(sc interface{ Scan(...any) error }) (*TaskArchive, error) {
 	}
 	if len(item.AggregateStats) == 0 {
 		item.AggregateStats = json.RawMessage("{}")
+	}
+	var counts map[string]int64
+	if json.Unmarshal(item.DataCounts, &counts) == nil {
+		item.RawTrafficOmitted = counts["raw_traffic_omitted"] == 1
 	}
 	return &item, nil
 }

@@ -68,6 +68,9 @@ preserve historical model benchmarks.
 | [Security review](docs/SECURITY-REVIEW.md) | Assess fixes, regression checks and remaining limits |
 | [Comprehensive audit](docs/SECURITY-AUDIT.md) | Trace the threat model, 15 findings, attack chains and remediation roadmap |
 | [Validation](docs/VALIDATION.md) | Inspect test results and repeat the checks |
+| [Image security](docs/IMAGE-SECURITY.md) | Scan exact runtime images and review full vulnerability/SBOM evidence |
+| [Signed releases](docs/SIGNED-RELEASES.md) | Verify source identity and signed artifacts before external installation |
+| [Evidence storage](docs/EVIDENCE-STORAGE.md) | Configure quotas, raw retention and whole-bucket legal holds |
 | [Upload guide](UPLOAD.md) | Publish a reviewed source copy to the personal repository |
 
 ---
@@ -102,7 +105,10 @@ Screenshots are examples from the inherited project; live deployment behavior fo
 
 The included Compose configuration builds the reviewed local source instead of
 pulling a third-party `latest` image. It keeps the UI on loopback, uses private
-named data/key volumes, and does not publish the recording proxy.
+named data/key volumes, and does not publish the recording proxy. PostgreSQL is a
+source-built component retaining the pinned 16.16 engine, with native `su-exec`
+replacing the obsolete Go-built privilege helper; it is not an unmodified upstream
+image. Image gates and release signatures cover all four components.
 
 ```sh
 cp .env.example .env
@@ -121,9 +127,36 @@ See [Secure local deployment](docs/SECURE-DEPLOYMENT.md) for setup and limitatio
 ### Other installation methods
 
 Source builds require Go and Node 22. Native API binaries also require the remote
-broker for tool execution; there is no local fallback. The installer and updater
-build the reviewed checkout and do not download/execute remote installer scripts.
+broker for tool execution; there is no local fallback. Use a reviewed source build or externally verify signed release artifacts before
+installation. Production in-process update and rollback are permanently refused,
+including with the legacy enabling flag; version checks remain read-only.
 Use a dedicated assessment VM and retain the AGPL license and upstream attribution.
+
+
+### Release and evidence controls
+
+[Runtime image security](docs/IMAGE-SECURITY.md) inventories exact image IDs and
+platforms, records fresh Trivy DB identity, and produces complete JSON and
+CycloneDX reports. Active or unverified High/Critical/Unknown findings block the
+gate, including unfixed issues. A primary-source-confirmed withdrawal is recorded
+separately with its raw finding and proof; it is not a blanket package exception.
+
+[Signed releases](docs/SIGNED-RELEASES.md) bind artifacts to this repository,
+workflow, tag, source commit and run. Publication is restricted to protected
+version tags with explicit release opt-in. A separate main-only dry run rehearses
+real OIDC signing without publishing a production release. Fresh local integration
+and all four ARM64 image gates passed, with the worker's one withdrawn advisory
+retained in raw counts. Final Compose acceptance passed 11/11. The prepared source credential scan has no unresolved matches. Remote amd64 and
+hosted OIDC remain pending; local tests do not imply those runs or release publication passed.
+See [validation](docs/VALIDATION.md) for exact counts, identities and limits.
+
+[Evidence storage](docs/EVIDENCE-STORAGE.md) defines independent admission budgets
+for evidence, traffic and workspace files, 30-day raw capture retention and
+whole-bucket legal holds. Raw SDK debug transcripts default off for ordinary
+binaries; Compose explicitly enables bounded ephemeral tmpfs. These live debug
+files are not durable held evidence. PostgreSQL conversation and
+activity history is separate and is not removed by disabling raw SDK dumps.
+These are scoped controls, not a total VM/database/log disk cap.
 
 
 ---
@@ -206,8 +239,10 @@ flowchart TB
 
 - **Frontend:** the English Next.js static export is embedded in release API
   binaries. Development uses a same-origin API proxy.
-- **API and orchestration:** authentication, graph tools, model calls, scheduling,
-  approvals and durable records stay in Go. Database, JWT and model-provider
+- **API and orchestration:** the minimal production image contains the static Go
+  service, certificates, time-zone data and skills, with no assessment toolchain.
+  Authentication, graph tools, model calls, scheduling, approvals and durable
+  records stay in Go. Database, JWT and model-provider
   credentials stay in the control plane.
 - **Broker:** a separate authenticated service owns the dedicated Docker daemon
   connection. It enforces task CIDRs, management/metadata denies, run identities,
@@ -375,7 +410,8 @@ See the [operator guide](docs/OPERATIONS.md) for manual retesting, ScopeSentry s
 Review [validation results](docs/VALIDATION.md) before changing security boundaries.
 The [fork changelog](CHANGELOG.md) and [translated upstream history](CHANGELOG.zh.md)
 remain separate records. The [documentation index](docs/README.md) provides the
-setup, worker, security, evidence and maintenance guides.
+setup, worker, image-security, signed-release, evidence-storage and maintenance
+guides.
 
 ---
 

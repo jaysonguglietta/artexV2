@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/Autumn-27/artex/storage"
 	"io"
 	"log"
 	"net/http"
@@ -1148,6 +1149,11 @@ func cleanStrs(in []string) []string {
 }
 
 func (s *Server) fsCreateSkill(w http.ResponseWriter, r *http.Request) {
+	if err := s.checkSkillManagedMutation(s.skillDir); err != nil {
+		writeErr(w, 403, err.Error())
+		return
+	}
+
 	if err := os.MkdirAll(s.skillDir, 0700); err != nil {
 		writeErr(w, 500, "Skills directory unavailable")
 		return
@@ -1229,6 +1235,11 @@ func (s *Server) fsCreateSkill(w http.ResponseWriter, r *http.Request) {
 // fields are left as-is (the whole frontmatter is reconstructed from the
 // parsed values, so the write is a clean replace, not a line-patch).
 func (s *Server) fsUpdateSkillMeta(w http.ResponseWriter, r *http.Request) {
+	if err := s.checkSkillManagedMutation(s.skillDir); err != nil {
+		writeErr(w, 403, err.Error())
+		return
+	}
+
 	root, rootErr := os.OpenRoot(s.skillDir)
 	if rootErr != nil {
 		writeErr(w, 500, "Skills directory unavailable")
@@ -1383,6 +1394,11 @@ func skillNameFromFrontmatter(md []byte) string {
 // of size/count caps guard against zip bombs. POST ?overwrite=true replaces an
 // existing skill of the same name.
 func (s *Server) fsUploadSkill(w http.ResponseWriter, r *http.Request) {
+	if err := s.checkSkillManagedMutation(s.skillDir); err != nil {
+		writeErr(w, 403, err.Error())
+		return
+	}
+
 	r.Body = http.MaxBytesReader(w, r.Body, maxSkillZipBytes)
 	file, hdr, err := r.FormFile("file")
 	if err != nil {
@@ -1545,6 +1561,11 @@ func readZipEntry(f *zip.File) ([]byte, error) {
 }
 
 func (s *Server) fsDeleteSkill(w http.ResponseWriter, r *http.Request) {
+	if err := s.checkSkillManagedMutation(s.skillDir); err != nil {
+		writeErr(w, 403, err.Error())
+		return
+	}
+
 	root, rootErr := os.OpenRoot(s.skillDir)
 	if rootErr != nil {
 		writeErr(w, 500, "Skills directory unavailable")
@@ -1761,12 +1782,16 @@ func (s *Server) fsWriteFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	fullPath := filepath.Join(name, file)
+	if err := s.checkSkillManagedMutation(filepath.Join(s.skillDir, fullPath)); err != nil {
+		writeErr(w, 403, err.Error())
+		return
+	}
 	// create parent subdirectory if needed (e.g. scripts/, references/, assets/)
 	if err := root.MkdirAll(filepath.Dir(fullPath), 0o700); err != nil {
 		writeErr(w, 500, err.Error())
 		return
 	}
-	if err := root.WriteFile(fullPath, []byte(body.Content), 0o600); err != nil {
+	if err := storage.AtomicWrite(filepath.Join(s.skillDir, fullPath), strings.NewReader(body.Content), int64(len(body.Content)), false); err != nil {
 		writeErr(w, 500, err.Error())
 		return
 	}
@@ -1802,7 +1827,11 @@ func (s *Server) fsCreateDir(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 404, "skill not found")
 		return
 	}
-	if err := root.MkdirAll(filepath.Join(name, dir), 0o700); err != nil {
+	if err := s.checkSkillManagedMutation(filepath.Join(s.skillDir, filepath.Join(name, dir))); err != nil {
+		writeErr(w, 403, err.Error())
+		return
+	}
+	if err := storage.MkdirAll(filepath.Join(s.skillDir, name, dir), 0o700); err != nil {
 		writeErr(w, 500, err.Error())
 		return
 	}
@@ -1828,11 +1857,15 @@ func (s *Server) fsDeletePath(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	fullPath := filepath.Join(name, file)
+	if err := s.checkSkillManagedMutation(filepath.Join(s.skillDir, fullPath)); err != nil {
+		writeErr(w, 403, err.Error())
+		return
+	}
 	if _, err := root.Stat(filepath.Join(name, file)); os.IsNotExist(err) {
 		writeErr(w, 404, "not found")
 		return
 	}
-	if err := root.RemoveAll(fullPath); err != nil {
+	if err := workspaceDelete(root, fullPath, filepath.Join(s.skillDir, fullPath)); err != nil {
 		writeErr(w, 500, err.Error())
 		return
 	}

@@ -5,9 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
-	"os"
 	"runtime"
 	"sync"
 	"time"
@@ -15,7 +13,8 @@ import (
 	"github.com/Autumn-27/artex/selfupdate"
 )
 
-// HTTP surface for deliberately enabled updates. selfupdate owns downloading, verification and replacement; this layer owns authentication, exclusion, progress and the restart signal. Staging ends with ExitRestart and start.sh/start.bat supervises relaunch.
+// Read-only version information and retained progress fixtures. Production apply
+// and rollback are refused; external installation requires signed verification.
 
 // Update progress, reasons and errors are displayed verbatim by the frontend update card; keep them English.
 const (
@@ -204,14 +203,16 @@ func (s *Server) updateCheck(w http.ResponseWriter, r *http.Request) {
 	}
 	boot := bootUpdateState()
 	out := map[string]any{
-		"current":     current,
-		"mode":        mode,
-		"os":          runtime.GOOS,
-		"arch":        runtime.GOARCH,
-		"has_backup":  selfupdate.HasBackup(),
-		"repo":        selfupdate.Repo,
-		"boot_notice": boot.Detail,
-		"rolled_back": boot.RolledBack,
+		"current":                   current,
+		"mode":                      mode,
+		"os":                        runtime.GOOS,
+		"arch":                      runtime.GOARCH,
+		"has_backup":                false,
+		"in_process_updates":        false,
+		"installation_instructions": "Verify signed release artifacts with scripts/signed-release.py before installing or redeploying",
+		"repo":                      selfupdate.Repo,
+		"boot_notice":               boot.Detail,
+		"rolled_back":               boot.RolledBack,
 	}
 
 	// The top bar uses cache by default; explicit user checks send force=1.
@@ -251,76 +252,13 @@ func (s *Server) updateCheck(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, 200, out)
 }
 
-// updateApply starts a background download/staging operation and immediately returns 202; long downloads cannot depend on a reverse-proxy request deadline. Progress streams separately.
+// Apply/rollback never accept the legacy environment opt-in. Keeping these
+// authenticated routes as explicit refusals also protects older frontend clients.
 func (s *Server) updateApply(w http.ResponseWriter, r *http.Request) {
-	if os.Getenv("ARTEX_ENABLE_SELF_UPDATE") != "1" {
-		writeErr(w, 403, "In-process updates are disabled. Deploy a reviewed, pinned build instead.")
-		return
-	}
-
-	current := BuildVersion
-
-	// Use the cached release the user actually reviewed and confirmed.
-	client := selfupdate.NewClient(s.m.GlobalProxy())
-	rel, err := relCache.get(r.Context(), client, false)
-	if err != nil {
-		writeErr(w, 502, err.Error())
-		return
-	}
-	cmp, comparable := selfupdate.CompareVersions(current, rel.TagName)
-	if !comparable {
-		writeErr(w, 400, fmt.Sprintf(updateErrNotReleaseFmt, current))
-		return
-	}
-	if cmp >= 0 {
-		writeErr(w, 400, fmt.Sprintf(updateErrAlreadyLatestFmt, current))
-		return
-	}
-	if !updHub.begin(rel.TagName) {
-		writeErr(w, 409, updateErrInProgress)
-		return
-	}
-
-	go func() {
-		// Use s.ctx rather than the request context, which ends as soon as the HTTP response is returned.
-		err := selfupdate.Stage(s.ctx, client, rel, current, func(ph selfupdate.Phase, pct int, msg string) {
-			updHub.publish(ph, pct, msg)
-		})
-		updHub.finish(err)
-		if err != nil {
-			log.Printf("[update] update failed: %v", err)
-			return
-		}
-		log.Printf("[update] %s -> %s staged, exiting to complete the swap", current, rel.TagName)
-		// Allow the final progress event to reach the frontend before exiting.
-		time.Sleep(1500 * time.Millisecond)
-		requestRestart()
-	}()
-
-	writeJSON(w, 202, map[string]any{"ok": true, "target": rel.TagName})
+	writeErr(w, http.StatusForbidden, "In-process updates are disabled. Verify signed release artifacts with scripts/signed-release.py before installing or redeploying.")
 }
-
-// updateRollback restores the pre-replacement artex.old backup.
 func (s *Server) updateRollback(w http.ResponseWriter, r *http.Request) {
-	if os.Getenv("ARTEX_ENABLE_SELF_UPDATE") != "1" {
-		writeErr(w, 403, "In-process updates are disabled. Deploy a reviewed, pinned build instead.")
-		return
-	}
-
-	if _, running := updHub.snapshot(); running {
-		writeErr(w, 409, updateErrRollbackInProgress)
-		return
-	}
-	if err := selfupdate.Rollback(); err != nil {
-		writeErr(w, 400, err.Error())
-		return
-	}
-	log.Printf("[update] manually rolled back to the previous version, exiting to complete the switch")
-	writeJSON(w, 202, map[string]any{"ok": true})
-	go func() {
-		time.Sleep(500 * time.Millisecond)
-		requestRestart()
-	}()
+	writeErr(w, http.StatusForbidden, "In-process rollback is disabled. Verify a signed prior release before installing or redeploying.")
 }
 
 // updateStream emits update progress through SSE.

@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestTrafficArchiveRoundTripAndCurrentRowWins(t *testing.T) {
@@ -21,7 +22,7 @@ func TestTrafficArchiveRoundTripAndCurrentRowWins(t *testing.T) {
 	requestHead := "POST /v1/test HTTP/1.1\nHost: archive.example"
 	responseHead := "HTTP/1.1 200 OK\nContent-Type: application/json"
 	if _, err := tr.DB().Exec(`INSERT INTO exchanges(id,ts,host,method,url_template,url,status,content_type,req_len,resp_len,path)
-VALUES(?,?,?,?,?,?,?,?,?,?,?)`, id, 1, host, "POST", "/v1/test", "https://archive.example/v1/test", 200,
+VALUES(?,?,?,?,?,?,?,?,?,?,?)`, id, time.Now().Unix(), host, "POST", "/v1/test", "https://archive.example/v1/test", 200,
 		"application/json", 7, 11, ""); err != nil {
 		t.Fatal(err)
 	}
@@ -155,4 +156,8 @@ func simulateTrafficStageProcessExit(t *testing.T, stage *HostDeleteStage) {
 	}
 	stage.done = true
 	stage.traffic.wmu.Unlock()
+	if stage.storageRelease != nil {
+		stage.storageRelease()
+		stage.storageRelease = nil
+	}
 }

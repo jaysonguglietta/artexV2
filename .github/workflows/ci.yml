@@ -1,8 +1,18 @@
 name: Go checks
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
+  workflow_call:
 permissions:
   contents: read
 jobs:
+  security-tools:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - run: python3 -I scripts/test-image-security.py
+      - run: python3 -I scripts/test-signed-release.py
+      - run: python3 -I scripts/test-release-publication.py
   unit:
     runs-on: ubuntu-latest
     steps:
@@ -69,5 +79,6 @@ jobs:
       - run: docker build --target worker -f Dockerfile.source -t artex-local:worker .
       - run: docker build --target broker -f Dockerfile.source -t artex-local:broker .
       - run: docker build --target application -f Dockerfile.source -t artex-local:hardened .
+      - run: docker build --target postgres -f Dockerfile.source -t artex-local:postgres .
       - run: python3 scripts/test-workers.py
       - run: python3 scripts/test-compose.py

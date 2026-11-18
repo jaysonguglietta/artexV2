@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """Test fresh Compose setup on a dedicated disposable Docker daemon.
 
-Requires existing artex-local:hardened, artex-local:worker and artex-local:broker
+Requires existing artex-local:hardened, artex-local:worker, artex-local:broker and artex-local:postgres
 images. Uses synthetic credentials, an ephemeral loopback port and a unique
 Compose project. A pre-existing worker bridge is never removed.
 """
 
 import argparse
 import hashlib
+import http.client
 import json
 import os
 from pathlib import Path
@@ -78,7 +79,7 @@ class Fixture:
         return networks[0]
 
     def setup_and_run(self):
-        for image in ["artex-local:hardened", "artex-local:worker", "artex-local:broker"]:
+        for image in ["artex-local:hardened", "artex-local:worker", "artex-local:broker", "artex-local:postgres"]:
             self.run(["docker", "image", "inspect", image])
         existing = self.inspect_network()
         self.network_existed = existing is not None
@@ -135,7 +136,7 @@ class Fixture:
                 with urllib.request.urlopen(base + "/api/auth/status", timeout=2) as response:
                     if response.status == 200:
                         break
-            except (urllib.error.URLError, TimeoutError):
+            except (urllib.error.URLError, TimeoutError, ConnectionError, http.client.RemoteDisconnected):
                 time.sleep(1)
         else:
             raise RuntimeError("Compose API did not become healthy")
@@ -144,10 +145,37 @@ class Fixture:
             headers={"Content-Type": "application/json"})
         with urllib.request.urlopen(request, timeout=20) as response:
             self.check("Fresh Compose API and PostgreSQL initialize and authenticate", response.status == 200)
+        database = self.run(self.command + ["ps", "-q", "postgres"]).stdout.strip()
+        expected_uid = self.run(["docker", "exec", database, "id", "-u", "postgres"]).stdout.strip()
+        process_status = self.run(["docker", "exec", database, "cat", "/proc/1/status"]).stdout
+        uid_fields = next(line.split()[1:] for line in process_status.splitlines() if line.startswith("Uid:"))
+        self.check("PostgreSQL native startup helper drops all server UIDs away from root",
+                   expected_uid != "0" and uid_fields == [expected_uid] * 4)
+        self.run(["docker", "exec", database, "psql", "-U", "artex", "-d", "artex", "-v", "ON_ERROR_STOP=1",
+                  "-c", "CREATE TABLE security_restart_probe(value integer); INSERT INTO security_restart_probe VALUES (42);"])
+        self.run(["docker", "restart", "--time", "20", database])
+        for _ in range(60):
+            ready = subprocess.run(["docker", "exec", database, "pg_isready", "-U", "artex"],
+                                   capture_output=True, text=True, timeout=5)
+            if ready.returncode == 0:
+                break
+            time.sleep(1)
+        else:
+            raise RuntimeError("PostgreSQL did not recover after restart")
+        persisted = self.run(["docker", "exec", database, "psql", "-U", "artex", "-d", "artex",
+                              "-At", "-c", "SELECT value FROM security_restart_probe"]).stdout.strip()
+        self.check("PostgreSQL native helper preserves initialized data across restart", persisted == "42")
         app = self.run(self.command + ["ps", "-q", "artex"]).stdout.strip()
+        missing_interpreters = []
+        for executable in ["/bin/sh", "/usr/bin/python3", "/usr/local/bin/node", "/usr/bin/curl"]:
+            result = subprocess.run(["docker", "exec", app, executable, "--version"],
+                                    capture_output=True, text=True, timeout=10)
+            diagnostic = (result.stdout + result.stderr).lower()
+            missing_interpreters.append(result.returncode != 0 and "no such file or directory" in diagnostic)
+        self.check("Static API image contains no shell, Python, Node or curl", all(missing_interpreters))
         probe = '''import json,urllib.request
 from pathlib import Path
-token=Path('/run/secrets/worker-token').read_text().strip()
+token=Path('/run/probe-token').read_text().strip()
 identity={'session':'task-99','run_id':RUN_ID}
 def call(path,payload):
  req=urllib.request.Request('http://worker-broker:8790'+path,data=json.dumps(payload).encode(),headers={'Authorization':'Bearer '+token,'Content-Type':'application/json'})
@@ -160,7 +188,15 @@ finally:
  call('/v1/close',identity)
 print('worker probe passed')
 '''.replace("RUN_ID", repr(secrets.token_hex(16)))
-        self.run(["docker", "exec", app, "python3", "-c", probe])
+        # The API is a static scratch image. A disposable, unprivileged test
+        # client shares only its network namespace to exercise the real route.
+        self.run(["docker", "run", "--rm", "--name", self.project + "-network-probe",
+                  "--label", "com.docker.compose.project=" + self.project,
+                  "--network", "container:" + app, "--read-only", "--cap-drop", "ALL",
+                  "--security-opt", "no-new-privileges:true", "--user", "10001:10001",
+                  "--memory", "128m", "--cpus", "1", "--pids-limit", "32",
+                  "--mount", "type=bind,src=" + str(self.directory / ".secrets/worker-token") + ",dst=/run/probe-token,readonly",
+                  "--entrypoint", "python3", "artex-local:worker", "-c", probe])
         self.check("Compose API reaches broker and executes an isolated tool with cleanup", True)
         api_networks = json.loads(self.run(["docker", "inspect", app, "--format",
                                             "{{json .NetworkSettings.Networks}}"]).stdout)

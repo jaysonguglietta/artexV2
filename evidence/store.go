@@ -9,7 +9,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/fs"
 	"log"
 	"os"
 	"path/filepath"
@@ -17,6 +16,7 @@ import (
 	"time"
 
 	"github.com/Autumn-27/artex/db"
+	"github.com/Autumn-27/artex/storage"
 	"github.com/Autumn-27/artex/traffic"
 )
 
@@ -59,60 +59,8 @@ func verifyFile(path, hash string, length int64) error {
 
 // A new body becomes visible only after a durable write. Failed SQL commits may
 // leave unreferenced files; GC reaps those after a full day's grace period.
-func (s *Store) writeBody(r io.Reader, expectedLength int64, expectedHash string) (hash string, err error) {
-	stage := filepath.Join(s.Dir, ".staging")
-	if err = os.MkdirAll(stage, 0o700); err != nil {
-		return
-	}
-	f, err := os.CreateTemp(stage, "body-")
-	if err != nil {
-		return "", err
-	}
-	defer func() { f.Close(); os.Remove(f.Name()) }()
-	h := sha256.New()
-	n, err := io.Copy(io.MultiWriter(f, h), r)
-	if err != nil {
-		return "", err
-	}
-	hash = hex.EncodeToString(h.Sum(nil))
-	if n != expectedLength {
-		return "", fmt.Errorf("Incomplete body: expected %d bytes, read %d bytes", expectedLength, n)
-	}
-	if expectedHash != "" && expectedHash != hash {
-		return "", errors.New("Original traffic body hash mismatch")
-	}
-	if err = f.Sync(); err != nil {
-		return "", err
-	}
-	if err = f.Close(); err != nil {
-		return "", err
-	}
-	path, err := hashPath(s.Dir, hash)
-	if err != nil {
-		return "", err
-	}
-	if _, err = os.Stat(path); err == nil {
-		if err = verifyFile(path, hash, n); err != nil {
-			return "", err
-		}
-		// Refresh the grace period for a restored but not-yet-committed body.
-		now := time.Now()
-		return hash, os.Chtimes(path, now, now)
-	} else if !os.IsNotExist(err) {
-		return "", err
-	}
-	if err = os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
-		return "", err
-	}
-	if err = os.Rename(f.Name(), path); err != nil {
-		return "", err
-	}
-	d, err := os.Open(filepath.Dir(path))
-	if err != nil {
-		return "", err
-	}
-	defer d.Close()
-	return hash, d.Sync()
+func (s *Store) writeBody(r io.Reader, expectedLength int64, expectedHash string) (string, error) {
+	return s.writeQuotaBody(r, expectedLength, expectedHash)
 }
 
 // StageFindingsExport freezes bindings/report versions and makes private body
@@ -199,6 +147,11 @@ func (s *Store) Bind(ctx context.Context, findingID int64, refs []db.TrafficRef)
 		if err := db.LockFindingEvidenceTx(tx, findingID, nil); err != nil {
 			return err
 		}
+		if bucket, err := storage.Ensure(s.Dir, storage.Evidence); err != nil {
+			return err
+		} else if err = bucket.WithUnheld(func() error { return nil }); err != nil {
+			return err
+		}
 		prepared, err := s.prepare(ctx, refs)
 		if err != nil {
 			return err
@@ -255,10 +208,19 @@ func (s *Store) OpenBody(snapshot db.TrafficEvidenceSnapshot, side string) (*os.
 	if err != nil {
 		return nil, 0, err
 	}
-	if err = verifyFile(path, hash, length); err != nil {
+	relative, err := filepath.Rel(s.Dir, path)
+	if err != nil {
 		return nil, 0, err
 	}
-	f, err := os.Open(path)
+	root, err := os.OpenRoot(s.Dir)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer root.Close()
+	if err = verifyRootBody(root, relative, hash, length); err != nil {
+		return nil, 0, err
+	}
+	f, err := root.Open(relative)
 	return f, length, err
 }
 
@@ -285,20 +247,16 @@ func (s *Store) copySnapshots(snapshots []db.TrafficEvidenceSnapshot, dest strin
 				if err != nil {
 					return err
 				}
-				if err = os.MkdirAll(filepath.Dir(target), 0o700); err != nil {
-					return err
+				if err = storage.AtomicWrite(target, f, length, true); os.IsExist(err) {
+					root, openErr := os.OpenRoot(dest)
+					if openErr != nil {
+						return openErr
+					}
+					defer root.Close()
+					relative, _ := filepath.Rel(dest, target)
+					return verifyRootBody(root, relative, hash, length)
 				}
-				out, err := os.OpenFile(target, os.O_CREATE|os.O_WRONLY|os.O_EXCL, 0o600)
-				if os.IsExist(err) {
-					return verifyFile(target, hash, length)
-				}
-				if err != nil {
-					return err
-				}
-				_, copyErr := io.Copy(out, f)
-				syncErr := out.Sync()
-				closeErr := out.Close()
-				return errors.Join(copyErr, syncErr, closeErr)
+				return err
 			}(); err != nil {
 				return err
 			}
@@ -328,7 +286,16 @@ func (s *Store) WithInstalledSnapshots(ctx context.Context, snapshots []db.Traff
 					if err != nil {
 						return err
 					}
-					f, err := os.Open(path)
+					root, err := os.OpenRoot(source)
+					if err != nil {
+						return err
+					}
+					defer root.Close()
+					relative, err := filepath.Rel(source, path)
+					if err != nil {
+						return err
+					}
+					f, err := root.Open(relative)
 					if err != nil {
 						return err
 					}
@@ -345,62 +312,7 @@ func (s *Store) WithInstalledSnapshots(ctx context.Context, snapshots []db.Traff
 }
 
 func (s *Store) Collect(ctx context.Context, now time.Time) error {
-	return s.DB.WithEvidenceTx(ctx, func(tx *sql.Tx) error {
-		if _, err := tx.Exec(`UPDATE traffic_evidence_snapshots s SET unreferenced_at=$1
-WHERE unreferenced_at IS NULL AND NOT EXISTS(SELECT 1 FROM finding_traffic_bindings b WHERE b.snapshot_id=s.id)`, now); err != nil {
-			return err
-		}
-		if _, err := tx.Exec(`DELETE FROM traffic_evidence_snapshots s WHERE unreferenced_at<$1
-AND NOT EXISTS(SELECT 1 FROM finding_traffic_bindings b WHERE b.snapshot_id=s.id)`, now.Add(-24*time.Hour)); err != nil {
-			return err
-		}
-		rows, err := tx.Query(`SELECT req_hash FROM traffic_evidence_snapshots UNION SELECT resp_hash FROM traffic_evidence_snapshots`)
-		if err != nil {
-			return err
-		}
-		refs := map[string]bool{}
-		for rows.Next() {
-			var hash string
-			if err := rows.Scan(&hash); err != nil {
-				rows.Close()
-				return err
-			}
-			refs[hash] = true
-		}
-		err = rows.Err()
-		rows.Close()
-		if err != nil {
-			return err
-		}
-		for _, root := range []string{filepath.Join(s.Dir, "blobs"), filepath.Join(s.Dir, ".staging")} {
-			err := filepath.WalkDir(root, func(path string, entry fs.DirEntry, err error) error {
-				if os.IsNotExist(err) {
-					return nil
-				}
-				if err != nil {
-					return err
-				}
-				if entry.IsDir() {
-					return nil
-				}
-				if refs[strings.TrimSuffix(entry.Name(), ".bin")] {
-					return nil
-				}
-				info, err := entry.Info()
-				if err != nil {
-					return err
-				}
-				if now.Sub(info.ModTime()) < 24*time.Hour {
-					return nil
-				}
-				return os.Remove(path)
-			})
-			if err != nil {
-				return err
-			}
-		}
-		return nil
-	})
+	return s.collectBatch(ctx, now, 24*time.Hour)
 }
 
 func (s *Store) RunGC(ctx context.Context) {

@@ -3,7 +3,7 @@ package isolation
 import (
 	"context"
 	"errors"
-	"os"
+	"github.com/Autumn-27/artex/storage"
 	"path/filepath"
 	"strconv"
 	"time"
@@ -30,7 +30,7 @@ func RetireTask(ctx context.Context, taskID, dataDir string, discard bool) (err 
 	}()
 	if !discard {
 		root := filepath.Join(dataDir, "tasks", taskID)
-		if err = os.MkdirAll(root, 0700); err != nil {
+		if err = storage.MkdirAll(root, 0700); err != nil {
 			return err
 		}
 		var sent map[string][]byte

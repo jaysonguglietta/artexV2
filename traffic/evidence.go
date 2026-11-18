@@ -4,11 +4,13 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"crypto/sha256"
 	"database/sql"
+	"encoding/hex"
 	"errors"
 	"fmt"
+	"github.com/Autumn-27/artex/storage"
 	"io"
-	"os"
 	"path/filepath"
 	"strings"
 )
@@ -58,12 +60,12 @@ func (t *Traffic) readEvidence(id string, consume func(EvidenceExchange) error) 
 		if !filepath.IsLocal(legacy) {
 			return errors.New("Invalid legacy traffic path")
 		}
-		r, err := os.Open(filepath.Join(t.dir, legacy, "request.http"))
+		r, err := storage.OpenRegular(t.dir, filepath.Join(legacy, "request.http"))
 		if err != nil {
 			return err
 		}
 		defer r.Close()
-		p, err := os.Open(filepath.Join(t.dir, legacy, "response.http"))
+		p, err := storage.OpenRegular(t.dir, filepath.Join(legacy, "response.http"))
 		if err != nil {
 			return err
 		}
@@ -81,6 +83,8 @@ func (t *Traffic) readEvidence(id string, consume func(EvidenceExchange) error) 
 	if err != nil {
 		return err
 	}
+	reqSum, respSum := sha256.Sum256(req), sha256.Sum256(resp)
+	e.ReqHash, e.RespHash = hex.EncodeToString(reqSum[:]), hex.EncodeToString(respSum[:])
 	e.Request = bytes.NewReader(req)
 	e.Response = bytes.NewReader(resp)
 	if reqBlob.Valid && reqBlob.String != "" {
@@ -108,13 +112,17 @@ func splitLegacyEvidence(r io.Reader) (string, io.Reader, error) {
 	b := bufio.NewReader(r)
 	var head strings.Builder
 	for {
-		line, err := b.ReadString('\n')
+		fragment, err := b.ReadSlice('\n')
+		line := string(fragment)
 		if line == "\n" || line == "\r\n" {
 			return head.String(), b, nil
 		}
 		head.WriteString(line)
 		if head.Len() > 1<<20 {
 			return "", nil, errors.New("Legacy traffic headers are too large")
+		}
+		if errors.Is(err, bufio.ErrBufferFull) {
+			continue
 		}
 		if errors.Is(err, io.EOF) {
 			return head.String(), b, nil

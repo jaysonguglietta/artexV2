@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "max_database_age_hours": 72,
+  "max_exception_days": 30,
+  "max_image_bytes": 10737418240,
+  "components": {
+    "application": {
+      "os_families": [],
+      "allow_no_os_go_target": "app/artex",
+      "required_go_module": "github.com/Autumn-27/artex"
+    },
+    "worker": {
+      "os_families": [
+        "ubuntu"
+      ],
+      "os_versions": [
+        "26.04"
+      ],
+      "required_go_targets": {
+        "usr/local/bin/tool-worker": "github.com/Autumn-27/artex"
+      },
+      "required_node_packages": [
+        "npm",
+        "playwright",
+        "playwright-core"
+      ]
+    },
+    "broker": {
+      "os_families": [
+        "alpine"
+      ],
+      "required_go_targets": {
+        "usr/local/bin/worker-broker": "github.com/Autumn-27/artex",
+        "usr/local/bin/docker": "stdlib"
+      }
+    },
+    "postgres": {
+      "os_families": [
+        "alpine"
+      ]
+    }
+  },
+  "exceptions": []
+}

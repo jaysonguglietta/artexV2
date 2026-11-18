@@ -1564,7 +1564,7 @@ export interface FindingTrafficDetail {
   response: EvidenceBodyPreview;
 }
 
-/* GET /api/update/check compares the current version with the latest upstream stable release. */
+/* GET /api/update/check compares the current version with this fork's latest stable release. */
 export interface UpdateCheck {
   /* Running version; development builds use dev or a suffixed git-describe value. */
   current: string;
@@ -1573,7 +1573,10 @@ export interface UpdateCheck {
   os: string;
   arch: string;
   repo: string;
-  /* Whether a previous artex.old version is available for rollback. */
+  /* Production refuses in-process mutation; a missing capability also denies UI actions. */
+  in_process_updates?: boolean;
+  installation_instructions?: string;
+  /* Legacy compatibility; production always reports no in-process rollback backup. */
   has_backup: boolean;
   /* Startup self-update result, such as failed replacement or completed rollback; empty for no event. */
   boot_notice?: string;

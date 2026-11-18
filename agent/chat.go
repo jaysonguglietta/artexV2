@@ -2,13 +2,14 @@ package agent
 
 import (
 	"context"
-	"os"
+	"fmt"
 	"path/filepath"
 	"time"
 
 	"github.com/Autumn-27/artex/db"
 	"github.com/Autumn-27/artex/guard"
 	"github.com/Autumn-27/artex/intercept"
+	"github.com/Autumn-27/artex/storage"
 	"github.com/Autumn-27/norma/agentcore"
 	"github.com/Autumn-27/norma/llm"
 	"github.com/Autumn-27/norma/permission"
@@ -18,7 +19,8 @@ import (
 
 // ChatAgent is the generic, task-independent conversational runner behind the chat
 // page. It generalizes MainAgent.Chat: any agent (built-in OR a custom one, by
-// key) can be chatted with, multi-turn history resumed from the transcript. It is
+// key) can be chatted with, multi-turn history restored from bounded visible PostgreSQL records or an
+// explicitly enabled ephemeral transcript. It is
 // a PURE ASSISTANT — base tools are the SDK DefaultTools (Bash/Read/Write/Edit/
 // LS/Glob/Grep) plus whatever skills/MCP the key is made visible; NO pentest
 // graph/task context is injected (that stays exclusive to MainAgent).
@@ -112,8 +114,19 @@ func (c *ChatAgent) Chat(ctx context.Context, agentKey, sessionID, message strin
 	// Per-session working directory: <workDir>/sessions/<sessionID>/
 	// Isolates file writes across conversations, mirroring how workers use i<intentID>/.
 	sessionWorkDir := filepath.Join(c.workDir, "sessions", sessionID)
-	_ = os.MkdirAll(sessionWorkDir, 0o755)
+	if err := storage.MkdirAll(sessionWorkDir, 0o755); err != nil {
+		return "", fmt.Errorf("cannot create chat workspace: %w", err)
+	}
 	ctx = intercept.WithReviewWorkingDirectory(ctx, sessionWorkDir)
+	history, _ := ctx.Value(chatHistoryKey{}).([]llm.Message)
+	history = boundedChatHistory(history, c.HistoryReplayBudget())
+	expectsRawHistory := false
+	if c.tx != nil {
+		var err error
+		if expectsRawHistory, err = prepareChatRawResume(c.tx, sessionID, history); err != nil {
+			return "", err
+		}
+	}
 
 	// Pure assistant: DefaultTools as the base; AugmentTools layers in the key's
 	// visible skills/MCP and lets the DB tools table filter/override. DefaultTools
@@ -157,6 +170,15 @@ func (c *ChatAgent) Chat(ctx context.Context, agentKey, sessionID, message strin
 		NonStreaming: c.nonStreaming(), // Use Provider.Complete for profiles selecting nonstreaming mode.
 		MaxTokens:    c.maxTokens(),    // Zero omits the output cap and leaves the endpoint default.
 	}
+	if c.tx == nil {
+		if len(history) > 0 {
+			window := c.window
+			if window <= 0 {
+				window = defaultWindowK * 1000
+			}
+			opts.Provider = &chatHistoryProvider{Provider: c.prov, history: history, system: append([]string{}, opts.SystemPrompt...), window: window, budget: c.HistoryReplayBudget()}
+		}
+	}
 	if c.guard != nil {
 		opts.Hooks = c.guard.Hooks()
 	}
@@ -169,10 +191,16 @@ func (c *ChatAgent) Chat(ctx context.Context, agentKey, sessionID, message strin
 	ctx = attachSideCapture(ctx, &opts)
 	s := newAgentSession(ctx, opts)
 	defer s.Close()
-	// reload prior conversation so the agent has context across turns (each Chat is
-	// a fresh session). First turn: no file yet → Resume loads nothing and proceeds.
+	// Raw stores can be empty after a tmpfs restart. prepareChatRawResume seeds
+	// bounded visible history atomically before this single SDK read. Subsequent
+	// turns resume that seed along with new raw records without a second prefix.
 	if c.tx != nil {
-		_ = s.Resume(sessionID)
+		if err := s.Resume(sessionID); err != nil {
+			return "", fmt.Errorf("cannot restore raw conversation trace; archive or remove the damaged ephemeral trace and retry using PostgreSQL history: %w", err)
+		}
+		if expectsRawHistory && len(s.Messages()) == 0 {
+			return "", fmt.Errorf("cannot restore raw conversation: trace contains no usable messages; archive or remove the empty trace and retry using PostgreSQL history")
+		}
 	}
 	// re-unlock skill-gated MCPs from prior Skill() calls in the reloaded history so
 	// revealed tools stay callable across the fresh session.

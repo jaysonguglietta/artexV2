@@ -1,7 +1,11 @@
 # Local single-operator deployment. Do not publish the API or proxy publicly.
 services:
   postgres:
-    image: postgres:16-alpine@sha256:81e77a4833487b8132fe4b00bedd39dc3f74b8641e387f19312a48f7de218c2e
+    image: artex-local:postgres
+    build:
+      context: .
+      dockerfile: Dockerfile.source
+      target: postgres
     environment:
       POSTGRES_USER: artex
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set a strong unique POSTGRES_PASSWORD in .env}
@@ -35,6 +39,15 @@ services:
       ARTEX_LANG: en
       ARTEX_ENABLE_SELF_UPDATE: "0"
       ARTEX_INSECURE_TARGET_TLS: "0"
+      ARTEX_RAW_TRANSCRIPTS: ${ARTEX_RAW_TRANSCRIPTS:-ephemeral}
+      ARTEX_EVIDENCE_QUOTA_BYTES: ${ARTEX_EVIDENCE_QUOTA_BYTES-2147483648}
+      ARTEX_TRAFFIC_QUOTA_BYTES: ${ARTEX_TRAFFIC_QUOTA_BYTES-5368709120}
+      ARTEX_WORKSPACE_QUOTA_BYTES: ${ARTEX_WORKSPACE_QUOTA_BYTES-5368709120}
+      ARTEX_EVIDENCE_QUOTA_ENTRIES: ${ARTEX_EVIDENCE_QUOTA_ENTRIES-100000}
+      ARTEX_TRAFFIC_QUOTA_ENTRIES: ${ARTEX_TRAFFIC_QUOTA_ENTRIES-100000}
+      ARTEX_WORKSPACE_QUOTA_ENTRIES: ${ARTEX_WORKSPACE_QUOTA_ENTRIES-100000}
+      ARTEX_MAX_EVIDENCE_BODY_BYTES: ${ARTEX_MAX_EVIDENCE_BODY_BYTES-67108864}
+      ARTEX_MAX_TRAFFIC_EXCHANGES: ${ARTEX_MAX_TRAFFIC_EXCHANGES-100000}
       ARTEX_WORKER_URL: ${ARTEX_WORKER_URL:-}
       ARTEX_WORKER_TOKEN_FILE: /run/secrets/worker-token
     ports:
@@ -45,6 +58,7 @@ services:
     secrets: [worker-token]
     tmpfs:
       - /tmp:rw,nosuid,nodev,size=512m
+      - /app/data/transcripts:rw,nosuid,nodev,noexec,size=256m,nr_inodes=8192,uid=10001,gid=10001
     read_only: true
     cap_drop: [ALL]
     security_opt: ["no-new-privileges:true"]

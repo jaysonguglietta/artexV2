@@ -67,21 +67,18 @@ func run() int {
 		log.Print("Host execution is no longer supported. Configure an isolated worker broker instead.")
 		return 1
 	}
+	if os.Getenv("ARTEX_ENABLE_SELF_UPDATE") == "1" {
+		log.Print("In-process updates are disabled. Remove ARTEX_ENABLE_SELF_UPDATE and verify signed releases with scripts/signed-release.py before installing or redeploying.")
+		return 1
+	}
 	log.Print("SECURITY: tools require the isolated worker broker; the API never executes local tools.")
 
 	// capture backend logs into the in-memory sink (still to stderr) so the /logs
 	// page can show a live log stream. Do this first, to catch startup logs too.
 	server.StartLogCapture()
 
-	// Self-update bootstrap: swap in a staged binary, or count a post-swap boot
-	// attempt and roll back if the new build keeps dying. Must run before we open
-	// the stores or bind a port — this may end with "exit and let the start script
-	// relaunch me", and there is no point paying for either first.
-	action, upState := selfupdate.Bootstrap()
-	server.SetBootUpdateState(upState)
-	if action == selfupdate.Restart {
-		return selfupdate.ExitRestart
-	}
+	// Unsigned staged executables and old update markers are never applied here.
+	// Operators verify signed artifacts externally before installation/redeployment.
 
 	// surface which config file the binary reads (absolute, so `go run`'s relative
 	// "config.json" — resolved against the CWD — is unambiguous).
@@ -105,12 +102,6 @@ func run() int {
 		log.Fatalf("open stores: %v", err)
 	}
 	defer mgr.Close()
-
-	// Surviving this long means a freshly swapped-in build actually works, so drop
-	// the upgrade marker and stop counting attempts. Until it fires, every boot
-	// increments the count and a build that keeps dying gets rolled back.
-	settle := time.AfterFunc(selfupdate.SettleDelay, selfupdate.Settle)
-	defer settle.Stop()
 
 	skillDir := config.SkillDir()
 	if abs, err := filepath.Abs(skillDir); err == nil {

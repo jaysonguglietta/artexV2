@@ -38,6 +38,9 @@ type Progress func(ph Phase, pct int, msg string)
 
 // Stage downloads the current-platform ZIP, verifies it and stages artex.new. ZIP checksums match historical releases and preserve packaged skills for future synchronization. Completion lets the caller shut down cleanly and exit ExitRestart.
 func Stage(ctx context.Context, c *http.Client, rel *Release, currentVersion string, prog Progress) error {
+	if !runtimeUpdatesAllowed() {
+		return errExternalVerification
+	}
 	if prog == nil {
 		prog = func(Phase, int, string) {}
 	}

@@ -7,6 +7,7 @@ package traffic
 import (
 	"bytes"
 	"context"
+	"crypto/rand"
 	"crypto/sha256"
 	"database/sql"
 	"encoding/hex"
@@ -31,6 +32,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/Autumn-27/artex/db"
+	"github.com/Autumn-27/artex/storage"
 	"github.com/Autumn-27/norma/permission"
 	actool "github.com/Autumn-27/norma/tool"
 	mproxy "github.com/lqqyt2423/go-mitmproxy/proxy"
@@ -135,6 +137,14 @@ const TrafficSearchDescription = "Query target traffic captured by the recording
 
 // Traffic runs the recording proxy and owns the file tree + index.
 type Traffic struct {
+	quota             *storage.Bucket
+	indexBudget       int64
+	maxExchanges      int64
+	captureError      string
+	captureDisabled   bool
+	lastImportSkipped int64
+	blobGCCursor      string
+
 	dir   string
 	addr  string
 	db    *sql.DB
@@ -173,44 +183,56 @@ type Traffic struct {
 }
 
 // Open initializes the traffic tree, blob store and SQLite index under dir.
-func Open(dir, addr string) (*Traffic, error) {
+func Open(dir, addr string) (*Traffic, error) { return openConfiguredTraffic(dir, addr, false) }
+func OpenIndex(dir string) (*Traffic, error)  { return openConfiguredTraffic(dir, "127.0.0.1:0", true) }
+func openConfiguredTraffic(dir, addr string, captureDisabled bool) (*Traffic, error) {
+	config, configErr := storage.LoadConfig()
+	if configErr != nil {
+		return nil, configErr
+	}
+	quota, quotaErr := storage.Ensure(dir, storage.Traffic)
+	if quotaErr != nil {
+		return nil, quotaErr
+	}
+	indexBudget := config.Traffic.Bytes / 4
+
 	host, _, addrErr := net.SplitHostPort(addr)
 	ip := net.ParseIP(host)
 	if addrErr != nil || (host != "localhost" && (ip == nil || !ip.IsLoopback())) {
 		return nil, fmt.Errorf("recording proxy must bind to loopback; remote proxy access is unsupported")
 	}
 
-	for _, d := range []string{dir, filepath.Join(dir, "_index"), filepath.Join(dir, "_blobs"), filepath.Join(dir, "_ca")} {
-		if err := os.MkdirAll(d, 0o700); err != nil {
-			return nil, err
-		}
+	if err := initializeTrafficDirectories(dir, quota, captureDisabled); err != nil {
+		return nil, err
 	}
 	// busy_timeout is a per-connection setting, so it belongs in the DSN rather
 	// than in a one-off Exec: the pool opens connections on demand, and an Exec
 	// only configures whichever one happened to serve it — leaving every other
 	// connection to fail instantly the moment a writer holds the database.
-	// The driver splits the DSN at the first '?', so a data directory containing
-	// one would silently name a different file; that path falls back to a bare
-	// DSN, where initIndex still applies the pragmas to its own connection.
+	// Encode paths as file URIs so question marks and other URI syntax in a data
+	// directory cannot change the selected database or its connection pragmas.
 	index := filepath.Join(dir, "_index", "index.sqlite")
-	dsn := index
-	if !strings.ContainsRune(index, '?') {
-		dsn = "file:" + index + "?_pragma=busy_timeout(5000)&_pragma=journal_mode(WAL)"
-	}
-	db, err := sql.Open("sqlite", dsn)
-	if err != nil {
-		return nil, err
-	}
-	t := &Traffic{dir: dir, addr: addr, db: db, closed: make(chan struct{})}
-	if err := t.initIndex(); err != nil {
+	uri := url.URL{Scheme: "file", Path: filepath.ToSlash(index)}
+	dsn := uri.String() + "?_pragma=busy_timeout(5000)&_pragma=journal_mode(DELETE)"
+	db := sql.OpenDB(&quotaConnector{dsn: dsn, bytes: indexBudget})
+	t := &Traffic{dir: dir, addr: addr, db: db, closed: make(chan struct{}), quota: quota, indexBudget: indexBudget, maxExchanges: config.MaxTrafficExchanges, captureDisabled: captureDisabled}
+	if err := t.initializeIndex(); err != nil {
 		db.Close()
 		return nil, err
 	}
 
-	p, err := mproxy.NewProxy(&mproxy.Options{
-		Addr:        addr,
-		SslInsecure: os.Getenv("ARTEX_INSECURE_TARGET_TLS") == "1",
-		CaRootPath:  filepath.Join(dir, "_ca"),
+	if captureDisabled {
+		return t, nil
+	}
+	var p *mproxy.Proxy
+	err := t.initializeCA(func() error {
+		var err error
+		p, err = mproxy.NewProxy(&mproxy.Options{
+			Addr:        addr,
+			SslInsecure: os.Getenv("ARTEX_INSECURE_TARGET_TLS") == "1",
+			CaRootPath:  filepath.Join(dir, "_ca"),
+		})
+		return err
 	})
 	if err != nil {
 		db.Close()
@@ -262,7 +284,7 @@ func (t *Traffic) initIndex() error {
 	// Re-applied rather than left to the DSN so the bare-DSN fallback in Open is
 	// still correct: journal_mode persists in the file header, which is what every
 	// later connection reads.
-	for _, p := range []string{`PRAGMA journal_mode=WAL`, `PRAGMA busy_timeout=5000`} {
+	for _, p := range []string{`PRAGMA journal_mode=DELETE`, `PRAGMA busy_timeout=5000`} {
 		if _, err := conn.ExecContext(ctx, p); err != nil {
 			return err
 		}
@@ -309,6 +331,10 @@ func hostOnly(hostport string) string {
 // ProxyAddr returns the address workers should set as HTTP(S)_PROXY. A bare
 // ":port" means "bind all interfaces" (legacy default), so map it to loopback.
 func (t *Traffic) ProxyAddr() string {
+	if t.captureDisabled {
+		return ""
+	}
+
 	if strings.HasPrefix(t.addr, ":") {
 		return "http://127.0.0.1" + t.addr
 	}
@@ -362,7 +388,12 @@ func (t *Traffic) CACertPath() string {
 }
 
 // Start runs the proxy (blocking); run in a goroutine.
-func (t *Traffic) Start() error { return t.proxy.Start() }
+func (t *Traffic) Start() error {
+	if t.captureDisabled {
+		return errors.New("recording proxy is disabled")
+	}
+	return t.proxy.Start()
+}
 
 // Close waits for background tree reclamation to finish before closing the
 // index, so shutdown never leaves a goroutine unlinking files out from under a
@@ -439,17 +470,18 @@ func proxyCausedErr(err error) bool {
 // record persists one exchange entirely in SQLite: metadata, bodies and the
 // full-text index. Nothing is written to a per-request directory — only bodies
 // above maxInlineBody spill to the content-addressed blob store.
-func (t *Traffic) record(f *mproxy.Flow) {
+func (t *Traffic) recordWithinQuota(f *mproxy.Flow) error {
 	// The write lock covers blob + index writes, so DeleteHost (and its blob GC)
 	// can run under the same lock without racing a concurrent record.
-	t.wmu.Lock()
-	defer t.wmu.Unlock()
 	host := f.Request.URL.Hostname()
 	method := f.Request.Method
 	tmpl := db.TemplatePath(f.Request.URL.EscapedPath())
-	n := t.seq.Add(1)
 	now := time.Now()
-	id := fmt.Sprintf("%d-%04d", now.Unix(), n%10000)
+	var identity [16]byte
+	if _, err := rand.Read(identity[:]); err != nil {
+		return err
+	}
+	id := fmt.Sprintf("%d-%s", now.Unix(), hex.EncodeToString(identity[:]))
 
 	ct := f.Response.Header.Get("Content-Type")
 	url := f.Request.URL.String()
@@ -459,11 +491,14 @@ func (t *Traffic) record(f *mproxy.Flow) {
 	// work and must not sit inside the SQLite write lock.
 	reqB := t.spill(f.Request.Body, f.Request.Header.Get("Content-Type"))
 	respB := t.spill(f.Response.Body, ct)
+	if reqB.err != nil || respB.err != nil {
+		return errors.Join(reqB.err, respB.err)
+	}
 
 	tx, err := t.db.Begin()
 	if err != nil {
 		log.Printf("[traffic] failed to record %s (begin transaction): %v", url, err)
-		return
+		return err
 	}
 	defer tx.Rollback() //nolint:errcheck // no-op once committed
 
@@ -475,19 +510,19 @@ VALUES(?,?,?,?,?,?,?,?,?,?,'')`,
 		len(f.Request.Body), len(f.Response.Body))
 	if err != nil {
 		log.Printf("[traffic] failed to record %s (write index): %v", url, err)
-		return
+		return err
 	}
 	rowid, err := res.LastInsertId()
 	if err != nil {
 		log.Printf("[traffic] failed to record %s (get rowid): %v", url, err)
-		return
+		return err
 	}
 
 	if _, err := tx.Exec(`INSERT OR REPLACE INTO exchange_bodies(id,req_head,req_body,req_blob,resp_head,resp_body,resp_blob)
 VALUES(?,?,?,?,?,?,?)`,
 		id, reqHead, reqB.inline, nullIfEmpty(reqB.hash), respHead, respB.inline, nullIfEmpty(respB.hash)); err != nil {
 		log.Printf("[traffic] failed to record %s (write body): %v", url, err)
-		return
+		return err
 	}
 
 	for _, h := range []string{reqB.hash, respB.hash} {
@@ -496,7 +531,7 @@ VALUES(?,?,?,?,?,?,?)`,
 		}
 		if _, err := tx.Exec(`INSERT OR IGNORE INTO blob_refs(hash,exchange_id) VALUES(?,?)`, h, id); err != nil {
 			log.Printf("[traffic] failed to record %s (register blob reference): %v", url, err)
-			return
+			return err
 		}
 	}
 
@@ -506,19 +541,19 @@ VALUES(?,?,?,?,?,?,?)`,
 		idx := strings.Join([]string{url, reqHead, reqB.index, respHead, respB.index}, "\n")
 		if _, err := tx.Exec(`INSERT INTO ex_fts(rowid,content) VALUES(?,?)`, rowid, idx); err != nil {
 			log.Printf("[traffic] failed to record %s (write full-text index): %v", url, err)
-			return
+			return err
 		}
 	}
 
-	if err := tx.Commit(); err != nil {
-		log.Printf("[traffic] failed to record %s (commit): %v", url, err)
-	}
+	return tx.Commit()
 }
 
 // storedBody is one body after the inline/spill decision: inline is what goes in
 // the SQLite column (the whole body, or a preview when spilled), hash names the
 // blob when it spilled, and index is the text handed to FTS (empty for binary).
 type storedBody struct {
+	err error
+
 	inline []byte
 	hash   string
 	index  string
@@ -548,17 +583,8 @@ func (t *Traffic) spill(body []byte, contentType string) storedBody {
 	h := hex.EncodeToString(sum[:])
 	// One bucket level (256 buckets) is enough to keep any single directory small;
 	// the store only ever holds bodies above maxInlineBody, deduplicated by hash.
-	blobDir := filepath.Join(t.dir, "_blobs", "sha256", h[:2])
-	if err := os.MkdirAll(blobDir, 0o755); err != nil {
-		log.Printf("[traffic] failed to create blob directory: %v", err)
-		return storedBody{inline: clipBytes(body, blobPreview), index: indexText()}
-	}
-	blobPath := filepath.Join(blobDir, h+".bin")
-	if _, err := os.Stat(blobPath); os.IsNotExist(err) {
-		if err := os.WriteFile(blobPath, body, 0o600); err != nil {
-			log.Printf("[traffic] failed to write blob %s: %v", h, err)
-			return storedBody{inline: clipBytes(body, blobPreview), index: indexText()}
-		}
+	if err := t.writeRawBlob(h, body); err != nil {
+		return storedBody{err: err}
 	}
 	sb := storedBody{hash: h, index: indexText()}
 	if text {
@@ -716,7 +742,11 @@ func (t *Traffic) Blob(hash string) (*os.File, int64, error) {
 	if err != nil {
 		return nil, 0, err
 	}
-	f, err := os.Open(p)
+	relative, err := filepath.Rel(t.dir, p)
+	if err != nil {
+		return nil, 0, err
+	}
+	f, err := storage.OpenRegular(t.dir, relative)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -975,8 +1005,17 @@ FROM exchange_bodies b JOIN exchanges e ON e.id=b.id WHERE b.id=?`, id).
 	if strings.TrimSpace(rel) == "" {
 		return "", "", fmt.Errorf("Exchange %s has no body record", id)
 	}
-	rb, _ := os.ReadFile(filepath.Join(t.dir, rel, "request.http"))
-	pb, _ := os.ReadFile(filepath.Join(t.dir, rel, "response.http"))
+	if !filepath.IsLocal(rel) || rel == "." {
+		return "", "", errors.New("invalid legacy traffic path")
+	}
+	rb, readErr := readArchiveFile(t.dir, filepath.Join(rel, "request.http"), 65<<20)
+	if readErr != nil && !os.IsNotExist(readErr) {
+		return "", "", readErr
+	}
+	pb, readErr := readArchiveFile(t.dir, filepath.Join(rel, "response.http"), 65<<20)
+	if readErr != nil && !os.IsNotExist(readErr) {
+		return "", "", readErr
+	}
 	return string(rb), string(pb), nil
 }
 
@@ -1037,6 +1076,12 @@ func (t *Traffic) DeleteHost(host string) (int64, error) {
 	like := "%" + host + "%"
 	t.wmu.Lock()
 	defer t.wmu.Unlock()
+	release, err := t.acquireStorageDeletion()
+	if err != nil {
+		return 0, err
+	}
+	defer release()
+
 	// Resolved before the rows go away: with a substring match, the index is the
 	// only record of which host directories the filter actually hit.
 	legacy, err := t.hostTrees(`host LIKE ?`, like)
@@ -1089,6 +1134,12 @@ func (t *Traffic) DeleteHost(host string) (int64, error) {
 func (t *Traffic) DeleteAll() (deleted int64, reclaimed int64, err error) {
 	t.wmu.Lock()
 	defer t.wmu.Unlock()
+	release, holdErr := t.acquireStorageDeletion()
+	if holdErr != nil {
+		return 0, 0, holdErr
+	}
+	defer release()
+
 	before := t.indexBytes()
 	trees, err := t.allHostTrees()
 	if err != nil {
@@ -1392,6 +1443,8 @@ func (t *Traffic) DeleteHostsExact(hosts []string) (int64, error) {
 // reference for a host that is mid-deletion. Rolling back is just a transaction
 // rollback now that nothing is moved on disk.
 type HostDeleteStage struct {
+	storageRelease func()
+
 	traffic  *Traffic
 	tx       *sql.Tx
 	stageDir string
@@ -1434,10 +1487,20 @@ func (t *Traffic) stageDeleteHostsExact(hosts []string, archiveID, taskID int64)
 		return nil, cause
 	}
 	abort := func(cause error) (*HostDeleteStage, error) {
+		if stage.storageRelease != nil {
+			stage.storageRelease()
+			stage.storageRelease = nil
+		}
 		t.wmu.Unlock()
 		stage.done = true
 		return nil, cause
 	}
+
+	release, holdErr := t.acquireStorageDeletion()
+	if holdErr != nil {
+		return abort(holdErr)
+	}
+	stage.storageRelease = release
 
 	unique := make([]string, 0, len(hosts))
 	seen := make(map[string]struct{}, len(hosts))
@@ -1493,6 +1556,13 @@ func (t *Traffic) RecoverHostDeleteStages(archiveCommitted func(int64, int64) (b
 	}
 	if err != nil {
 		return err
+	}
+	if len(entries) > 0 {
+		release, holdErr := t.acquireStorageDeletion()
+		if holdErr != nil {
+			return holdErr
+		}
+		defer release()
 	}
 	var errs []error
 	needsGC := false
@@ -1644,6 +1714,10 @@ func (s *HostDeleteStage) rollbackLocked() error {
 	}
 	s.done = true
 	s.traffic.wmu.Unlock()
+	if s.storageRelease != nil {
+		s.storageRelease()
+		s.storageRelease = nil
+	}
 	return errors.Join(errs...)
 }
 
@@ -1659,6 +1733,10 @@ func (s *HostDeleteStage) Commit() error {
 		restoreErr := restoreTrees(s.stageDir, s.moves)
 		s.done = true
 		s.traffic.wmu.Unlock()
+		if s.storageRelease != nil {
+			s.storageRelease()
+			s.storageRelease = nil
+		}
 		return errors.Join(fmt.Errorf("Commit traffic-index deletion: %w", err), restoreErr)
 	}
 	// Unlinking the staged trees is what used to hold the write lock for hours;
@@ -1672,6 +1750,10 @@ func (s *HostDeleteStage) Commit() error {
 	}
 	s.done = true
 	s.traffic.wmu.Unlock()
+	if s.storageRelease != nil {
+		s.storageRelease()
+		s.storageRelease = nil
+	}
 	return errors.Join(errs...)
 }
 
@@ -1883,9 +1965,13 @@ func (t *Traffic) legacyBlobRefs(refs map[string]struct{}) error {
 		if nm := d.Name(); nm != "request.http" && nm != "response.http" {
 			return nil
 		}
-		b, err := os.ReadFile(p)
+		relative, err := filepath.Rel(t.dir, p)
 		if err != nil {
-			return nil
+			return err
+		}
+		b, err := readArchiveFile(t.dir, relative, 65<<20)
+		if err != nil {
+			return err
 		}
 		for _, m := range blobRe.FindAllSubmatch(b, -1) {
 			refs[string(m[1])] = struct{}{}

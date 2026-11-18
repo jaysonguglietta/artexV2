@@ -127,7 +127,10 @@ func (m *MainAgent) Chat(ctx context.Context, taskID int64, mainSeg int, as *db.
 	tools, def, cleanup := AugmentTools(ctx, "mainagent", base)
 	defer cleanup()
 	// Precreate the task workspace.
-	mainDir := ensureRunDir(m.workDir, taskID, 0)
+	mainDir, dirErr := ensureRunDir(m.workDir, taskID, 0)
+	if dirErr != nil {
+		return "", dirErr
+	}
 	ctx = intercept.WithReviewWorkingDirectory(ctx, mainDir)
 	system, boundary := deferredSystem(mainAgentSystem(goal, m.workDir, mainDir), def)
 	opts := agentcore.Options{
