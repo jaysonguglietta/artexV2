@@ -19,14 +19,15 @@ Medium/Low reviews, two actual active release-tag rulesets, physical
 PostgreSQL/log bounds and authenticated encrypted backups with disposable restore
 proof. Current local passes and pending final images/live worker/hosted checks are
 recorded in [validation](VALIDATION.md) and [security review](SECURITY-REVIEW.md).
-These edits passed the final local 53-check worker run, six actual tool/browser
-checks, 22 encrypted backup/restore checks and four-image ARM64 reviewed gate.
-The worker retains 94 explicitly accepted, expiring active Medium/Low records.
-They are not covered by the older hosted commit/image IDs below; the initial native
-standard image scan passed on both architectures, but Go CI failed PostgreSQL
-startup in integration/Compose. Reviewed-mode hosted/OIDC, diagnosis/rerun and
-a post-documentation source scan remain pending; full CI is not green. No
-formal production release or zero-active-finding result is claimed.
+These edits subsequently passed all six hosted Go jobs, all eight native reviewed
+image gates, documentation and the real main OIDC rehearsal at `375b2c3…`, which
+was fast-forwarded to main. The worker retains 94 explicitly accepted, expiring
+active Medium/Low records per platform; acceptance is not a fix or zero-active
+claim. Current sanitized image/runtime evidence and exact run identities are in
+[validation](VALIDATION.md). Earlier startup/quota-test failures below are historical;
+they are not the current implementation result. A post-edit source snapshot and
+credential scan remain pending. No formal release, version tag, package or enabling
+variable was created.
 
 ## 1. Executive Summary
 

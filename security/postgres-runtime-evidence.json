@@ -1,0 +1,577 @@
+{
+  "schema_version": 1,
+  "source_commit": "375b2c3f460d30cddfecd3437e47b543ec5b9b66",
+  "run_url": "https://github.com/jaysonguglietta/artexV2/actions/runs/44540981490",
+  "artifact": "runtime-security-evidence",
+  "artifact_retention_days": 30,
+  "passed": true,
+  "scope": "Six downloaded synthetic runtime-security reports, reduced to pass/check data, raw report SHA256 and repository source hashes. Source bindings verified against current files. No environment, credentials, private keys, SQL rows or customer evidence included. Runtime-job builds are separate from native image-scan builds; source identity is shared, image identity is not asserted equal.",
+  "reports": [
+    {
+      "name": "postgres-client-security.json",
+      "sha256": "2fcc24a872fc0f0eb161b1e0194339ca135df95303ceb38814218a5da8be54c5",
+      "passed": true,
+      "check_count": 11,
+      "checks": [
+        {
+          "check": "Production healthcheck uses the fixed trusted client dispatcher",
+          "passed": true
+        },
+        {
+          "check": "Production bootstrap includes only the reviewed MAC transition capability",
+          "passed": true
+        },
+        {
+          "check": "Client proof uses only the production bounded PostgreSQL state mount",
+          "passed": true
+        },
+        {
+          "check": "Actual Docker healthcheck executes successfully through the production privilege-drop guard",
+          "passed": true
+        },
+        {
+          "check": "Direct Docker exec UID0:0 cannot bypass the post-drop client guard",
+          "passed": true
+        },
+        {
+          "check": "Direct Docker exec UID70:70 cannot bypass the post-drop client guard",
+          "passed": true
+        },
+        {
+          "check": "The actual active psql process is UID/GID70 with all five capability sets zero and NNP",
+          "passed": true
+        },
+        {
+          "check": "The actual active psql process has the single enforcing Docker AppArmor profile",
+          "passed": true
+        },
+        {
+          "check": "The confined client completes a real database request",
+          "passed": true
+        },
+        {
+          "check": "Reviewed production and test source stayed unchanged throughout the live proof",
+          "passed": true
+        },
+        {
+          "check": "Only the private client-proof container and volume were removed",
+          "passed": true
+        }
+      ],
+      "source_sha256": {
+        "postgres/bounded-entrypoint.sh": "2deb6cadb751da48bfc36fec25e41e9bc6b0b91d80c78bff831455d2ab29125c",
+        "docker-compose.yml": "98433f7d21c5cf1107c7dacb8c379bed5eb178dc8849019ac446d6b898563ea9",
+        "scripts/test-postgres-clients.py": "470edaebf36dd59e808f8c6ea88f3931f5f3a92d2d78222d1cd3e4e72ba3b3af"
+      }
+    },
+    {
+      "name": "worker-security.json",
+      "sha256": "1e84d7d8e5e29faf0be3f28e36edcb3d89bcc58300a73ce1ede93fd4690dfa11",
+      "passed": true,
+      "check_count": 53,
+      "checks": [
+        {
+          "check": "Unauthenticated broker access rejected",
+          "passed": true
+        },
+        {
+          "check": "Missing task target policy rejected",
+          "passed": true
+        },
+        {
+          "check": "Normal RPC requires trusted run identity",
+          "passed": true
+        },
+        {
+          "check": "Close control rejects executable request fields",
+          "passed": true
+        },
+        {
+          "check": "Lease cannot create a worker",
+          "passed": true
+        },
+        {
+          "check": "Tool subprocess has UID10001, all capabilities empty and no-new-privileges",
+          "passed": true
+        },
+        {
+          "check": "API/broker credentials and service environment are absent",
+          "passed": true
+        },
+        {
+          "check": "Worker has no Docker socket or broker secret mount",
+          "passed": true
+        },
+        {
+          "check": "Private worker filesystems execute local CLI artifacts without added privilege",
+          "passed": true
+        },
+        {
+          "check": "Explicit synthetic target is reachable",
+          "passed": true
+        },
+        {
+          "check": "Denied-address positive control reaches the same target",
+          "passed": true
+        },
+        {
+          "check": "Adjacent unapproved synthetic address is denied",
+          "passed": true
+        },
+        {
+          "check": "Docker host gateway is denied",
+          "passed": true
+        },
+        {
+          "check": "Worker cannot weaken its firewall",
+          "passed": true
+        },
+        {
+          "check": "Worker cannot renew the privileged watchdog",
+          "passed": true
+        },
+        {
+          "check": "Worker cannot signal the root watchdog",
+          "passed": true
+        },
+        {
+          "check": "Same-task sibling has a different private filesystem",
+          "passed": true
+        },
+        {
+          "check": "Different task filesystem is isolated",
+          "passed": true
+        },
+        {
+          "check": "Same run retains its own workspace",
+          "passed": true
+        },
+        {
+          "check": "Other-task cleanup succeeds",
+          "passed": true
+        },
+        {
+          "check": "closed-run: detached double-fork positive control",
+          "passed": true
+        },
+        {
+          "check": "surviving-sibling: detached double-fork positive control",
+          "passed": true
+        },
+        {
+          "check": "Actual Docker exec RPC client has UID10001 and all capability sets empty",
+          "passed": true
+        },
+        {
+          "check": "PID1 watchdog is root with all capability sets empty",
+          "passed": true
+        },
+        {
+          "check": "Lease works while foreground scan holds execution gate",
+          "passed": true
+        },
+        {
+          "check": "Urgent close bypasses foreground execution gate",
+          "passed": true
+        },
+        {
+          "check": "Urgent close cancels the active foreground request",
+          "passed": true
+        },
+        {
+          "check": "Closed run cannot be replayed",
+          "passed": true
+        },
+        {
+          "check": "Lease cannot resurrect a closed run",
+          "passed": true
+        },
+        {
+          "check": "Close stops unmanaged setsid/double-fork network descendants",
+          "passed": true
+        },
+        {
+          "check": "Closing one run preserves the sibling scan",
+          "passed": true
+        },
+        {
+          "check": "orphan: detached double-fork positive control",
+          "passed": true
+        },
+        {
+          "check": "Unrenewed orphan container exits within the bounded watchdog lease",
+          "passed": true
+        },
+        {
+          "check": "Watchdog exit stops orphan double-fork network descendants",
+          "passed": true
+        },
+        {
+          "check": "Renewed idle sibling survives the orphan timeout",
+          "passed": true
+        },
+        {
+          "check": "Expired orphan can be explicitly retired",
+          "passed": true
+        },
+        {
+          "check": "Surviving sibling cleanup succeeds",
+          "passed": true
+        },
+        {
+          "check": "Real tmpfs snapshots preserve and merge all sibling artifacts",
+          "passed": true
+        },
+        {
+          "check": "All snapshot siblings are paused",
+          "passed": true
+        },
+        {
+          "check": "Preservation failure can resume all paused siblings",
+          "passed": true
+        },
+        {
+          "check": "Task retirement removes every sibling container",
+          "passed": true
+        },
+        {
+          "check": "Conflicting sibling artifacts explicitly refuse preservation",
+          "passed": true
+        },
+        {
+          "check": "Failed sibling snapshot resumes both runtimes",
+          "passed": true
+        },
+        {
+          "check": "Conflicting task can be explicitly discarded",
+          "passed": true
+        },
+        {
+          "check": "Oversized tmpfs preservation fails explicitly",
+          "passed": true
+        },
+        {
+          "check": "Oversized task can be explicitly discarded",
+          "passed": true
+        },
+        {
+          "check": "Crash fixture leaves an orphan for startup cleanup",
+          "passed": true
+        },
+        {
+          "check": "Broker restart reaps its owner-labeled orphan",
+          "passed": true
+        },
+        {
+          "check": "Persistent ledger rejects a previously active identity after crash",
+          "passed": true
+        },
+        {
+          "check": "Persistent ledger retains already-closed tombstones after crash",
+          "passed": true
+        },
+        {
+          "check": "Fresh identity works without stale workspace after restart",
+          "passed": true
+        },
+        {
+          "check": "Fresh replacement cleanup succeeds",
+          "passed": true
+        },
+        {
+          "check": "All fixture containers, aliases, network and state volume removed",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "compose-security.json",
+      "sha256": "14fa7325c8cd9f4aedcb561bf0e6fe242c6e51f0028e16f6c73ab591479a3d98",
+      "passed": true,
+      "check_count": 17,
+      "checks": [
+        {
+          "check": "PostgreSQL bounded-filesystem preflight succeeds without touching database volumes",
+          "passed": true
+        },
+        {
+          "check": "Fresh setup creates or verifies the dedicated worker bridge",
+          "passed": true
+        },
+        {
+          "check": "Repeated setup preserves the private broker token",
+          "passed": true
+        },
+        {
+          "check": "Combined production Compose configuration validates",
+          "passed": true
+        },
+        {
+          "check": "Fresh Compose API and PostgreSQL initialize and authenticate",
+          "passed": true
+        },
+        {
+          "check": "PostgreSQL supervisor and server have nonroot UIDs, zero capabilities and no-new-privileges",
+          "passed": true
+        },
+        {
+          "check": "PostgreSQL supervisor and server re-enter enforcing docker-default after bootstrap",
+          "passed": true
+        },
+        {
+          "check": "PostgreSQL persists on a fixed 512 MiB ext4 backing filesystem",
+          "passed": true
+        },
+        {
+          "check": "PostgreSQL native helper preserves initialized data across restart",
+          "passed": true
+        },
+        {
+          "check": "Static API image contains no shell, Python, Node or curl",
+          "passed": true
+        },
+        {
+          "check": "Compose API reaches broker and executes an isolated tool with cleanup",
+          "passed": true
+        },
+        {
+          "check": "artex uses finite Docker local log rotation",
+          "passed": true
+        },
+        {
+          "check": "postgres uses finite Docker local log rotation",
+          "passed": true
+        },
+        {
+          "check": "worker-broker uses finite Docker local log rotation",
+          "passed": true
+        },
+        {
+          "check": "API is never attached to the worker bridge",
+          "passed": true
+        },
+        {
+          "check": "Disposable Compose containers, volumes, service networks and fixture files removed",
+          "passed": true
+        },
+        {
+          "check": "Only the worker bridge created by this fixture is removed; pre-existing bridges preserved",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "pgdisk-security.json",
+      "sha256": "578a3f856e2927377e36137931857e988275f172ad0ab5b449faa1f74fa0a5d8",
+      "passed": true,
+      "check_count": 16,
+      "checks": [
+        {
+          "check": "Supervisor and PostgreSQL are UID70 with all capability sets zero and NNP",
+          "passed": true
+        },
+        {
+          "check": "Supervisor and PostgreSQL re-enter the enforcing Docker AppArmor profile",
+          "passed": true
+        },
+        {
+          "check": "PGDATA is an ext4 filesystem, not an unbounded volume directory",
+          "passed": true
+        },
+        {
+          "check": "PostgreSQL cannot open or grow its backing image",
+          "passed": true
+        },
+        {
+          "check": "PostgreSQL cannot consume or delete the protected recovery reserve",
+          "passed": true
+        },
+        {
+          "check": "A concurrent second mount of the same backing image is refused",
+          "passed": true
+        },
+        {
+          "check": "Existing filesystem is never resized or reformatted for a changed bound",
+          "passed": true
+        },
+        {
+          "check": "The inherited legacy data volume cannot bypass the PostgreSQL disk bound",
+          "passed": true
+        },
+        {
+          "check": "The kernel refuses additional writes at the fixed filesystem boundary",
+          "passed": true
+        },
+        {
+          "check": "Disk exhaustion does not enlarge the persistent backing image",
+          "passed": true
+        },
+        {
+          "check": "PostgreSQL refuses new persistent database growth at disk exhaustion",
+          "passed": true
+        },
+        {
+          "check": "Explicit offline recovery frees only the generated zero reserve",
+          "passed": true
+        },
+        {
+          "check": "Previously committed data survives disk-full shutdown and offline reclamation",
+          "passed": true
+        },
+        {
+          "check": "New committed writes remain durable across another restart",
+          "passed": true
+        },
+        {
+          "check": "Released recovery space is never recreated automatically on restart",
+          "passed": true
+        },
+        {
+          "check": "Only the disposable database container and backing volume were removed",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "pgdisk-migration-security.json",
+      "sha256": "c773fbc584ec25a4c1cf87a64f4d63345d69319e94274b78f9737c428f5732e8",
+      "passed": true,
+      "check_count": 7,
+      "checks": [
+        {
+          "check": "An active source volume is refused before target creation",
+          "passed": true
+        },
+        {
+          "check": "A cleanly stopped legacy database is copied and byte-verified into a new bounded target",
+          "passed": true
+        },
+        {
+          "check": "The bounded migrated database preserves original committed rows",
+          "passed": true
+        },
+        {
+          "check": "An existing migration target is refused rather than overwritten",
+          "passed": true
+        },
+        {
+          "check": "The original legacy volume remains independently readable after migration",
+          "passed": true
+        },
+        {
+          "check": "A durable pending marker blocks database startup after interrupted migration",
+          "passed": true
+        },
+        {
+          "check": "Only synthetic migration containers and volumes were removed",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "backup-security.json",
+      "sha256": "90370aaf077e6f6379b1c5213cab5c889931d283aaf34975d503d30a74c49eb7",
+      "passed": true,
+      "check_count": 22,
+      "checks": [
+        {
+          "check": "PostgreSQL bounded-filesystem preflight succeeds without touching database volumes",
+          "passed": true
+        },
+        {
+          "check": "Fresh setup creates or verifies the dedicated worker bridge",
+          "passed": true
+        },
+        {
+          "check": "Repeated setup preserves the private broker token",
+          "passed": true
+        },
+        {
+          "check": "Combined production Compose configuration validates",
+          "passed": true
+        },
+        {
+          "check": "Fresh Compose API and PostgreSQL initialize and authenticate",
+          "passed": true
+        },
+        {
+          "check": "PostgreSQL supervisor and server have nonroot UIDs, zero capabilities and no-new-privileges",
+          "passed": true
+        },
+        {
+          "check": "PostgreSQL supervisor and server re-enter enforcing docker-default after bootstrap",
+          "passed": true
+        },
+        {
+          "check": "PostgreSQL persists on a fixed 512 MiB ext4 backing filesystem",
+          "passed": true
+        },
+        {
+          "check": "PostgreSQL native helper preserves initialized data across restart",
+          "passed": true
+        },
+        {
+          "check": "Static API image contains no shell, Python, Node or curl",
+          "passed": true
+        },
+        {
+          "check": "Compose API reaches broker and executes an isolated tool with cleanup",
+          "passed": true
+        },
+        {
+          "check": "artex uses finite Docker local log rotation",
+          "passed": true
+        },
+        {
+          "check": "postgres uses finite Docker local log rotation",
+          "passed": true
+        },
+        {
+          "check": "worker-broker uses finite Docker local log rotation",
+          "passed": true
+        },
+        {
+          "check": "API is never attached to the worker bridge",
+          "passed": true
+        },
+        {
+          "check": "Actual snapshot is encrypted, pinned-signer authenticated and restored in a separate bounded PostgreSQL",
+          "passed": true
+        },
+        {
+          "check": "Standalone verification repeats schema/table/file hashes and private-key/config scope",
+          "passed": true
+        },
+        {
+          "check": "Backup restores prior artex availability",
+          "passed": true
+        },
+        {
+          "check": "Backup restores prior worker-broker availability",
+          "passed": true
+        },
+        {
+          "check": "Disposable restore never overwrites or replaces the source database",
+          "passed": true
+        },
+        {
+          "check": "Disposable Compose containers, volumes, service networks and fixture files removed",
+          "passed": true
+        },
+        {
+          "check": "Only the worker bridge created by this fixture is removed; pre-existing bridges preserved",
+          "passed": true
+        }
+      ],
+      "source_sha256": {
+        "scripts/artex-backup.py": "bf091b96f2b579761164508c9d961cb912f720e608a1c3cf8a89913ea6b0f208",
+        "scripts/backup_crypto.py": "f33a0040dc7eae42babdeff1cd2fd4481c2f0be61425964871bebf40aa5c2015",
+        "scripts/pgdisk.py": "43032dab09c001bd5d3f76b586269ef733222c5506f6ceb17cbb09a3065d9a27",
+        "scripts/test-compose.py": "f024513248e3da463da87527b5babbb0ff5469f967bfaa048838e5ccd10a9fec",
+        "postgres/bounded-entrypoint.sh": "2deb6cadb751da48bfc36fec25e41e9bc6b0b91d80c78bff831455d2ab29125c",
+        "docker-compose.yml": "98433f7d21c5cf1107c7dacb8c379bed5eb178dc8849019ac446d6b898563ea9",
+        "compose.workers.yml": "25ef234ca6a6e2e7a43f149d480ffad8704477b107ef782573fa6b4f02b3060e"
+      }
+    }
+  ]
+}

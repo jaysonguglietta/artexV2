@@ -6,11 +6,78 @@ IDs and hosted runs below are historical checkpoints for their exact source;
 they do not establish results for the current storage/toolchain/release edits.
 No local pass implies hosted CI, real OIDC or production publication passed.
 
-## Current PostgreSQL/client verification — local passed, hosted incomplete
+## Current native reviewed images — passed at `375b2c3…`
+
+[Native image run44540981464](https://github.com/jaysonguglietta/artexV2/actions/runs/44540981464)
+passed all **eight** component/architecture gates at source
+`375b2c3f460d30cddfecd3437e47b543ec5b9b66`. Top-level and every image record are
+`reviewed-findings`, with **zero blocking and 94 exact reviews per platform**.
+Both workers retain **85 Medium/9 Low active OS records**, no High/Critical/Unknown;
+application/broker/PostgreSQL report zero at all severities. These are explicit,
+contained, expiring accepted risks, not repaired packages or a zero-active result.
+
+[Current image evidence](../security/image-followup-evidence.json) records all
+eight image/config/rootfs identities, both native scanner/DB identities, full
+remaining findings and exact applied review data, and **16 verified report/SBOM
+hashes**. The 188 reviews match current policy SHA256
+`21649a8477f1a8e73456b1f3350ca6e8db2d97d23628c2b4aa5ead4c3c93f738`.
+Trivy 0.76.2 used DB `UpdatedAt=2026-11-19T13:02:29.533007734Z`, SHA256
+`923c9ac4d894e62da8020926c64e7bbff80f2562944708ac6804388eb1debec9`.
+Review expiry remains `2026-12-19T12:00:00Z`. Earlier local/standard/strict proofs
+are retained in explicitly historical fields; old PostgreSQL `2f4821…` is not a
+current scan identity. These are native local-export IDs, not published release
+digests.
+
+| Current platform/component | Scanned image ID | Authenticated config digest |
+|---|---|---|
+| linux/amd64/application | `sha256:b9d7207dac7c820d67ca56b60713bf0ea839e663b7a1d49694670f747987fd01` | `sha256:b9d7207dac7c820d67ca56b60713bf0ea839e663b7a1d49694670f747987fd01` |
+| linux/amd64/worker | `sha256:628abc892e913bb67fbd84cf041f11d3519df95fa95e6532d12ee540a92034f2` | `sha256:628abc892e913bb67fbd84cf041f11d3519df95fa95e6532d12ee540a92034f2` |
+| linux/amd64/broker | `sha256:d9445a1575aa70c3aad2bfc952bb83af8c1be2e8bb61d2cdfe09227652d0e194` | `sha256:d9445a1575aa70c3aad2bfc952bb83af8c1be2e8bb61d2cdfe09227652d0e194` |
+| linux/amd64/postgres | `sha256:d5c1110eca34642d92ab4849ce90052737b781533410b123b05d397f2f647969` | `sha256:d5c1110eca34642d92ab4849ce90052737b781533410b123b05d397f2f647969` |
+| linux/arm64/application | `sha256:8b3559fb779f554d12a74cae1eec47d0bc943f160fa12c51a38315138e351b68` | `sha256:8b3559fb779f554d12a74cae1eec47d0bc943f160fa12c51a38315138e351b68` |
+| linux/arm64/worker | `sha256:e293501744834e199d18e77e42dbe8145d3beb2504fa43085d0b65107d676292` | `sha256:e293501744834e199d18e77e42dbe8145d3beb2504fa43085d0b65107d676292` |
+| linux/arm64/broker | `sha256:8e5603091c71c9737d737d0676d062f9563debc539d763c908fc3fe99abf9b5b` | `sha256:8e5603091c71c9737d737d0676d062f9563debc539d763c908fc3fe99abf9b5b` |
+| linux/arm64/postgres | `sha256:05e97f5b2e5d3fbb5a02084ac5e91d6b4dc5e129cb29e1140b4014c4d17c2712` | `sha256:05e97f5b2e5d3fbb5a02084ac5e91d6b4dc5e129cb29e1140b4014c4d17c2712` |
+
+| Current hosted check at `375b2c3…` | Status |
+|---|---|
+| Native reviewed image gates, run44540981464 | **8/8 passed**, as above |
+| [Go run44540981490](https://github.com/jaysonguglietta/artexV2/actions/runs/44540981490): integration/frontend/unit/security/recon | **Passed** |
+| Same run: worker/Compose/capacity/backup boundary job | **Passed**: client11/tools6/worker53/Compose17/disk16/migration7/backup22. All six Go jobs are green for this exact source. |
+| [Documentation run44540981537](https://github.com/jaysonguglietta/artexV2/actions/runs/44540981537) | **Passed** at `375b2c3…`; these later documentation/evidence edits require their own checks |
+| Main promotion | Fast-forwarded without force to tested `375b2c3f460d30cddfecd3437e47b543ec5b9b66` after branch CI passed |
+| [Real main OIDC run44542433712](https://github.com/jaysonguglietta/artexV2/actions/runs/44542433712), attempt1 | **Passed** at `375b2c3…`: actual GitHub OIDC/Fulcio/Rekor blob/image verification and all eight negative cases. Policy/dry-run jobs succeeded; production jobs were skipped as expected. |
+| Source publication | Pinned Gitleaks v8.30.1 checks the prepared source: six individually reviewed synthetic matches, zero unresolved matches. ZIP/manifest/Git bytes, modes and paths are compared before upload. The companion `.validation.json` receipt records the exact archive, manifest, commit and scan identities; it is stored outside the source tree to avoid a self-referential hash. |
+| Later documentation descendants | The implementation results above bind `375b2c3…`. Check the [latest main workflows](https://github.com/jaysonguglietta/artexV2/actions?query=branch%3Amain) for any later documentation/evidence-only commit; earlier image IDs are not relabeled as newer builds. |
+
+The preceding `af9eeb56…` hosted run passed client11/tools6/worker53/Compose17
+but then failed an overly compressible database-growth assertion. The current
+harness forces 128 MiB of inline digest payload and requires explicit `ENOSPC` or
+SQLSTATE53100. Its new local **16/16** report SHA256 is
+`578a3f856e2927377e36137931857e988275f172ad0ab5b449faa1f74fa0a5d8`;
+the current hosted replacement also passed all 16 checks.
+[Sanitized runtime evidence](../security/postgres-runtime-evidence.json) contains
+all six downloaded passing reports: check labels/results, original report hashes
+and repository source bindings only. All report passes and current source hashes
+were verified. The CI boundary job retains them in `runtime-security-evidence`
+for 30 days. Runtime-job and image-scan builds share source identity; their image
+IDs are not asserted equal. Image
+reports/SBOMs have their separate 30-day retention; raw backups are not published.
+
+The real main rehearsal rejected wrong repository/workflow/issuer/commit/ref,
+tampered signed checksums, altered archive and correctly signed provenance with
+the wrong repository. Candidate artifact `14537843596` is retained seven days.
+No production release, version tag, GHCR package or enabling-variable change was
+created. Main repeat [Go run44542391954](https://github.com/jaysonguglietta/artexV2/actions/runs/44542391954)
+and [image run44542391959](https://github.com/jaysonguglietta/artexV2/actions/runs/44542391959)
+also passed for that same source, including all six Go jobs and all eight native image gates.
+
+## Local PostgreSQL/client checkpoint at `af9eeb56…`
 
 The final local suite passed for implementation
 `af9eeb56d8852dd0f5a6c236e5cc33004770284e`, pushed only to the validation branch.
-`main` remains at `e30fe09`; no release-enabling variable, tag or release was created.
+At that earlier checkpoint `main` was `e30fe09`; it has since been fast-forwarded
+to tested `375b2c3…`, as recorded above. No release variable, tag or release was created.
 These current results supersede the earlier PostgreSQL startup failures, while
 those older runs/image IDs below remain historical checkpoints.
 
@@ -32,15 +99,16 @@ Later local PostgreSQL rebuild indices differed, but their canonical runtime
 Config/RootFS hash remained
 `d7cd706737960d2714d75b7fa1db4f34151d6ccfcd9a5501fcc326537acda3a8`.
 The application/worker/broker image IDs were unchanged. Runtime equivalence is
-not a new-index vulnerability scan; fresh exact hosted-image results remain pending.
+not a new-index vulnerability scan. The current `375b2c3…` images were separately
+scanned by exact identity in the native proof above.
 
-| Current hosted check at `af9eeb56…` | Status |
+| Historical hosted check at `af9eeb56…` | Recorded status |
 |---|---|
 | [Go/PostgreSQL run44538242290](https://github.com/jaysonguglietta/artexV2/actions/runs/44538242290): integration, frontend, unit, security and recon | **Passed** |
-| Same run: worker/Compose boundary job | **Pending**; no full hosted CI pass claimed yet |
-| [Native image run44538242184](https://github.com/jaysonguglietta/artexV2/actions/runs/44538242184) | **Pending** |
+| Same run: worker/Compose boundary job | Client11/tools6/worker53/Compose17 passed; job later **failed** its old compressible disk-growth assertion. The new harness result is tracked above. |
+| [Native image run44538242184](https://github.com/jaysonguglietta/artexV2/actions/runs/44538242184) | Historical run; authoritative current native results are `375b2c3…` above. |
 | [Documentation run44538242357](https://github.com/jaysonguglietta/artexV2/actions/runs/44538242357) | **Passed** for that source; later documentation edits need their own check |
-| Current-source OIDC rehearsal and credential snapshot | **Pending**; older proofs remain scoped to their checked source |
+| OIDC/credential state at that historical checkpoint | Was pending then; current `375b2c3…` main OIDC passed above. The post-edit final source credential snapshot remains separate. |
 
 The revised root bootstrap temporarily uses `MAC_OVERRIDE` to enter one exact
 `docker-default (enforce)` profile on first exec into `setpriv`. It then drops
@@ -89,11 +157,11 @@ source credential snapshot even when implementation remains identical.
 | Concurrent-removal race validation | Latest `go test -race ./isolation` passed in **8.176 seconds**, including the adjacent cleanup-failure fix and concurrent-close/removal regressions. The final rebuilt-image 53-check live run also passed separately. |
 | Final Compose acceptance | **17/17 passed**, including bounded PostgreSQL startup/confinement/restart persistence, static API contents, isolated tool execution, log rotation, network separation and cleanup. This is separate from the 22-check backup integration. |
 | Independent strict diagnostic | **Earlier expected refusal verified**: the real `--require-no-active-findings` scan of the earlier `8e4ca64…` worker checkpoint blocked **94 active records**, with zero scanner errors. This remains historical zero-active-policy negative proof; it does not test or approve the new reviewed-findings publication policy. |
-| Reviewed-findings publication policy | **188 exact reviews configured**, 94 per platform (85 Medium/9 Low each), with severity and `fixed_version: null`. ARM64 review `2026-11-19T13:04:35.549172Z`; amd64 review `2026-11-19T13:19:24.496638+00:00` follows actual native report verification. All expire `2026-12-19T12:00:00Z`. Only worker Ubuntu 26.04 OS vendor-unfixed Medium/Low is eligible, with a primary Ubuntu CVE reference and concrete containment. No High/Critical/Unknown or fixable waiver. The actual final ARM64 four-image reviewed scan passed with 94 reviews applied and zero blocking; hosted amd64/arm64 standard inventory passed separately; the new reviewed-mode hosted rerun is pending. |
+| Reviewed-findings publication policy | **188 exact reviews configured**, 94 per platform (85 Medium/9 Low each), with severity and `fixed_version: null`. ARM64 review `2026-11-19T13:04:35.549172Z`; amd64 review `2026-11-19T13:19:24.496638+00:00` follows actual native report verification. All expire `2026-12-19T12:00:00Z`. Only worker Ubuntu 26.04 OS vendor-unfixed Medium/Low is eligible, with a primary Ubuntu CVE reference and concrete containment. No High/Critical/Unknown or fixable waiver. The actual final ARM64 four-image reviewed scan passed with 94 reviews applied and zero blocking; hosted amd64/arm64 standard inventory passed separately; that pending checkpoint was superseded by current `375b2c3…` native reviewed passes above. |
 | Host daemon and journal policy | **Activated and tested** on the dedicated `colima-artex-test` VM: Docker and journald restarted/active; a new container inherited `local`, `10m × 3`, compression. A 41,779,200-byte stdout fixture rotated to 3,188,369 bytes while retaining its final marker. Journal configured at 256 MiB persistent/64 MiB runtime/7 days; measured usage 16.0 MiB. This does not retrofit unrelated existing containers or cap all host storage. |
 | Hosted native image checkpoint | [Run44531004586 passed](https://github.com/jaysonguglietta/artexV2/actions/runs/44531004586) on native amd64 and arm64, four components each, source `a2b0c63`. This was **standard mode**, not a new reviewed-mode publication result. All 16 report/SBOM hashes were verified. |
 | Hosted Go/PostgreSQL checkpoint | [Run44531004483 failed](https://github.com/jaysonguglietta/artexV2/actions/runs/44531004483) at PostgreSQL startup in integration and Compose. Hosted 53 worker and six tool checks passed, along with frontend/unit/security/recon; full hosted CI is **not green**. Diagnosis and rerun are pending. |
-| Hosted reviewed-mode/OIDC follow-up | **Pending** after adding exact amd64 reviews and configuring CI with `--require-reviewed-findings`. `main` remains unchanged; no release was enabled or published. |
+| Hosted reviewed-mode/OIDC follow-up at that checkpoint | Was pending then; current `375b2c3…` reviewed images/Go/docs/main OIDC subsequently passed and main was fast-forwarded. No release was enabled or published. |
 | Prepared-source credential checkpoint | Gitleaks reviewed a **953-file snapshot** (952 source files plus manifest): six individually reviewed synthetic fixture matches, zero unresolved. Snapshot SHA256 `7e2368cf228aea3fa4c55bc7804198b6b35fd0114eb72534d8687589ea94814b`. This predates these documentation/evidence edits; **a fresh snapshot scan is required**, and this is not labeled the final updated-source pass. |
 | Production version-tag release | **Not enabled or published.** The operator authorized the narrow review allowance, not a release-enabling variable, tag or publication. Publication still requires protected-tag identity, explicit opt-in, complete tests and `--require-reviewed-findings` on every exact image/platform. Accepted residual risk is not a package fix or zero-active result. |
 
@@ -106,10 +174,10 @@ See [database/log/backup operations](POSTGRES-BACKUP.md),
 [image policy](IMAGE-SECURITY.md), [signed releases](SIGNED-RELEASES.md) and
 [product readiness](PRODUCT-READINESS-REVIEW.md) for controls and limits.
 
-## November 19 final local ARM64 reviewed-image evidence
+## Earlier November 19 local ARM64 reviewed-image checkpoint
 
-[Sanitized image evidence](../security/image-followup-evidence.json) records the
-actual final `reviewed-findings` result and retains all **94 active package/advisory
+The historical local field in [image evidence](../security/image-followup-evidence.json)
+records this earlier ARM64 `reviewed-findings` result and retains all **94 active package/advisory
 records (49 unique vulnerability IDs)**, their exact risk-review records,
 image/config/rootfs identity, scanner/DB/policy hashes and all eight full report/
 SBOM hashes. Every report/SBOM hash and applied review was verified when refreshing
@@ -151,8 +219,8 @@ integration**. The backup report remains byte-identical at the hash above and al
 seven watched source hashes matched at that checkpoint. Later PostgreSQL/client
 edits need fresh restore evidence. The evidence JSON binds these local report
 hashes without publishing private backup data. Initial native architecture standard scans subsequently passed; new reviewed-mode
-hosted verification, PostgreSQL startup diagnosis and a fresh source credential
-scan after documentation changes remain separate pending work. No production-release variable, version tag or publication was enabled.
+hosted verification and PostgreSQL diagnosis were completed by the current
+`375b2c3…` results above. A fresh post-documentation source credential scan remains separate. No production-release variable, version tag or publication was enabled.
 
 ## November 19 initial hosted native image checkpoint
 
@@ -173,7 +241,8 @@ reviews; differing checkpoint/current policy hashes are expected.
 [Go run44531004483](https://github.com/jaysonguglietta/artexV2/actions/runs/44531004483)
 failed PostgreSQL startup in integration and Compose; it is **not an all-green
 result**. Hosted 53 worker/six tools and frontend/unit/security/recon passed.
-Diagnosis, the new reviewed-mode native rerun and OIDC follow-up remain pending.
+Those pending checks were subsequently completed at `375b2c3…`, as recorded
+above; this older failing run is preserved as history, not the current outcome.
 
 ## November 18 targeted follow-up checkpoint
 

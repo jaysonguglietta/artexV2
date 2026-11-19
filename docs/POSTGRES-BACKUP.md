@@ -71,8 +71,10 @@ Temporary bootstrap `MAC_OVERRIDE` is an explicit tradeoff for that transition;
 it is dropped with every other capability before database work. The design does
 not add `MAC_ADMIN`, `CAP_KILL`, a permissive signal rule or a global kernel/sysctl
 relaxation. The revised bootstrap/client source passed its fresh local privilege and
-backup/integration checks below. Full native hosted boundary/image completion
-and current-source OIDC remain pending; older image IDs do not become new scans.
+backup/integration checks below. All six hosted Go jobs and eight native reviewed-image gates passed at
+`375b2c3…`; the real main OIDC rehearsal also passed with eight negative cases.
+The final post-edit source snapshot remains separate. Older image IDs do not
+become new scans.
 
 ### Automatic readiness, SQL and backup clients
 
@@ -117,7 +119,10 @@ also passed **22 backup/restore**, **16 disk-full**, **7 migration**, **3 reserv
 with one optional provider skip and 13 additional packages. The fresh backup report
 SHA256 is `90370aaf077e6f6379b1c5213cab5c889931d283aaf34975d503d30a74c49eb7`;
 all seven watched sources match. See [validation](VALIDATION.md) for tested
-`af9eeb56…`, exact client proof and the still-pending full hosted boundary/images.
+`af9eeb56…` local proof and the completed `375b2c3…` hosted boundary/images.
+[Sanitized hosted runtime evidence](../security/postgres-runtime-evidence.json)
+contains all six passing check/report-hash/source-only records; runtime and scan
+image IDs remain independently bound.
 Runtime-equivalent rebuilds are not automatically new-index vulnerability scans.
 
 The container root filesystem is read-only; `/tmp` and the socket directory are

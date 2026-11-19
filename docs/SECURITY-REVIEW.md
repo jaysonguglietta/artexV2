@@ -8,7 +8,7 @@ vulnerability class. The [validation record](VALIDATION.md) records the checked
 snapshot and results; the [worker guide](WORKER-ISOLATION.md) defines deployment
 requirements.
 
-## PostgreSQL bootstrap/client boundary — fixed and verified locally
+## PostgreSQL bootstrap/client boundary — fixed and verified
 
 The current PostgreSQL hardening changes are **not covered** by the earlier
 local backup/Compose/image checkpoints below. Native reviewed-image
@@ -27,7 +27,11 @@ tradeoff. Current source `af9eeb56…` passed 11 actual client-boundary checks,
 fresh 22-check encrypted restore, 16/7/3 database capacity checks, 5 AppArmor/15
 backup unit tests and 869 PostgreSQL/Go cases (one optional skip), plus 13 packages.
 Current hosted integration/frontend/unit/security/recon passed; full hosted
-worker/Compose boundary, exact images and OIDC remain pending in [validation](VALIDATION.md).
+worker/Compose/capacity/backup also passed in all-six-job hosted CI at `375b2c3…`,
+as did all eight native reviewed-image gates. Real main OIDC/Fulcio/Rekor
+verification and eight negative cases also passed at the same exact source.
+[Validation](VALIDATION.md) separates
+exact source/identity and completed jobs.
 
 ### PG-01: Automatic database clients could retain bootstrap authority
 
@@ -52,7 +56,7 @@ root/mount/device authority in that container. No such exploitable client defect
 was demonstrated. Docker/VM administrators are already trusted and can deliberately
 exec arbitrary privileged commands; the fix does not claim to restrict them.
 
-**Fixed and verified locally; full hosted completion pending:**
+**Fixed and verified locally and in hosted CI at `375b2c3…`:**
 [bounded-entrypoint.sh](../postgres/bounded-entrypoint.sh) now shares `exec_confined`
 and the guarded `--run-client` branch with the server boundary. The Compose
 healthcheck is fixed `CMD /usr/local/bin/artex-postgres-entrypoint --healthcheck`.
@@ -76,7 +80,35 @@ of unconfined/stacked/complain/retained-capability paths. Run the bounded backup
 integration on new images and both native hosted architectures, preserving source
 volumes. A string/config unit test alone cannot close this deployment gap.
 
-## November 19 operational follow-up
+## Current native image proof and remaining hosted scope
+
+[Run44540981464](https://github.com/jaysonguglietta/artexV2/actions/runs/44540981464)
+passed all eight native reviewed images at
+`375b2c3f460d30cddfecd3437e47b543ec5b9b66`, including final PostgreSQL/client
+source. Both summaries and every image are `reviewed-findings`: zero blocking,
+94 exact reviews per platform, raw85Medium/9Low per worker and zero findings in
+other components. This accepts the documented contained residual risk; it does
+not repair packages. [Current evidence](../security/image-followup-evidence.json)
+retains all eight config/rootfs identities, scanner/DB/policy identity, full raw
+findings/reviews and 16 verified report/SBOM hashes. Older PostgreSQL `2f4821…`
+and local/standard/strict results are separate historical checkpoints.
+
+[Current Go run44540981490](https://github.com/jaysonguglietta/artexV2/actions/runs/44540981490)
+passed **all six jobs**, including client11/tools6/worker53/Compose17/disk16/
+migration7/backup22. [Runtime evidence](../security/postgres-runtime-evidence.json)
+retains all six downloaded check/hash/source-only JSON reports; all pass results
+and source bindings were verified. Documentation run44540981537 passed at the
+same source. `main` was fast-forwarded without force to tested `375b2c3…`.
+The earlier `af9eeb56…` passed client11/tools6/worker53/Compose17
+before failing an overly compressible growth test. Its replacement uses 128 MiB
+inline payload and explicit ENOSPC/SQLSTATE53100 and passed all 16 locally.
+The [real main OIDC run44542433712](https://github.com/jaysonguglietta/artexV2/actions/runs/44542433712)
+also passed, attempt1 at `375b2c3…`: actual keyless blob/image verification and
+eight identity/tamper negatives. Production jobs were skipped; no release/tag/
+package/enabling variable was created. The source archive has a separate
+credential/byte-parity verification receipt; a passed rehearsal is not production publication.
+
+## Earlier November 19 operational follow-up
 
 The four authorized workstreams now have concrete implementation and scoped local
 proof: image remediation/stricter publication policy, actual hosted tag protection,
@@ -132,8 +164,10 @@ Initial hosted native amd64/arm64 standard image scans passed, with identical
 verified. The separate Go run failed PostgreSQL startup in integration and Compose;
 worker53/tool6 and frontend/unit/security/recon passed. Full hosted CI is not green.
 
-**Pending:** PostgreSQL diagnosis/rerun, hosted reviewed-mode/OIDC and a source credential snapshot
-after these documentation/evidence edits. A prior 953-file source snapshot had
+**At that earlier checkpoint, pending:** PostgreSQL diagnosis, reviewed-mode/OIDC
+and source scan. The current `375b2c3…` Go/images/docs/main OIDC checks above
+supersede those implementation concerns; a fresh post-edit credential snapshot
+is still required. A prior 953-file source snapshot had
 six individually reviewed synthetic matches and zero unresolved; it is not the
 fresh updated-source scan. [Validation](VALIDATION.md) records the checkpoint
 hash, tested implementation `a2b0c63…` and all current identities. The validation
@@ -345,7 +379,8 @@ Earlier November 18 local/hosted passes and raw counts remain in
 [validation](VALIDATION.md), bound to those exact source/image/DB identities.
 The actual current ARM64 reviewed-mode result is recorded above, with all 94
 active worker records and their reviews visible. Initial native amd64/arm64 standard scans passed, while the new reviewed-mode
-hosted run remains pending; there is no all-CVE clean or zero-active claim.
+hosted reviewed-mode run passed at `375b2c3…`; there is no all-CVE clean or
+zero-active claim.
 
 Production cannot enable the retained unsigned updater: apply/rollback routes
 always refuse, the legacy flag is rejected, and production bootstrap/staging does

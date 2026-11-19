@@ -25,13 +25,14 @@ the concurrent-removal and adjacent cleanup-failure fix. Host activation/rotatio
 The current 188 reviews cover 94 exact native records per platform and expire
 `2026-12-19T12:00:00Z`; amd64 entries followed actual hosted inventory verification.
 
-Initial native amd64/arm64 standard image scans passed. The Go run failed
-PostgreSQL startup in integration/Compose, although worker53/tool6 and frontend/
-unit/security/recon passed. Full hosted CI is not green. Diagnosis, the new
-reviewed-mode hosted run, OIDC and a post-documentation source credential scan
-remain pending. The implementation was pushed on a
-validation branch while `main` remained unchanged; no version tag, enabling
-variable or release was created. The feature inventory, in-progress labels and
+Current `375b2c3…` subsequently passed all six hosted Go jobs, all eight native
+reviewed-image gates and documentation, was fast-forwarded to main, then passed
+the real main OIDC rehearsal. [Validation](VALIDATION.md) and sanitized runtime/image
+evidence bind those source/run/report identities. Earlier startup and compressible
+quota-test failures are preserved as historical checkpoints; the corrected inline
+payload fixture passed. The prepared source archive is credential-scanned and
+compared with Git; its companion receipt records the exact publication identity. No version tag, formal release, package or enabling variable was created.
+The feature inventory, in-progress labels and
 PR-01–PR-09 entries below remain the `e30fe09` product-review baseline; those nine
 backlog proposals were not implemented by this security follow-up. For operational
 portions of PR-06/07/08, consult the new evidence rather than assuming the original

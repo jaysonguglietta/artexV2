@@ -28,36 +28,41 @@ package-manager source-runtime suites passed. The release driver requires
 `reviewed-findings` on the top-level summary and every image; standard and
 strict-diagnostic summaries cannot authorize publication.
 
-The actual final four-image **ARM64 reviewed-findings scan passed**, with zero
-blocking and 94 exact risk reviews applied. Worker raw inventory remains
-**85 Medium + 9 Low active records**, all without `FixedVersion`; application,
-broker and PostgreSQL have zero reported findings at every severity. The operator
-explicitly accepted the contained, expiring worker residual risk; it is not fixed
-or a zero-active result. No withdrawal classification was used.
-[Sanitized evidence](../security/image-followup-evidence.json) retains all 94
-records (49 unique IDs), applied reviews and authenticated image/DB/report/SBOM
-identity. The DB updated at `2026-11-19T07:06:49.809946527Z`, SHA256
-`ebba0a2f709d971b1b49f06569bb7cded629f9f87a5cf71bb5cb8dec015a07c0`.
+The current [native reviewed run44540981464](https://github.com/jaysonguglietta/artexV2/actions/runs/44540981464)
+passed **all eight images** at source
+`375b2c3f460d30cddfecd3437e47b543ec5b9b66`: `reviewed-findings` at top-level and
+every component, zero blocking, **94 exact reviews per platform**. Each worker
+retains **85 Medium + 9 Low active vendor-unfixed OS records**; application,
+broker and PostgreSQL report zero at all severities. This is accepted contained
+residual risk, not a repair, zero-active result or production-release approval.
 
-The final rebuilt implementation passed **53/53 live worker checks**, **6/6 actual
-worker/browser checks**, the **22-check backup integration** and a fresh isolation
-race run in **8.176 seconds**, including the concurrent-removal/cleanup-failure
-fix. The six tools/browser checks used the exact scanned worker
-`sha256:859d81ed57517566bfde55f03f02137c4c50b7c29a855c1c131d416922b3f9b2`.
-The earlier strict diagnostic refusal on the older `8e4ca64…` worker remains
-separate historical proof; it is not the current-image reviewed-mode result.
+[Authoritative current evidence](../security/image-followup-evidence.json) records
+all eight image/config/rootfs bindings, complete raw residual inventory and
+applied reviews, both native scanner/DB identities and **16 verified report/SBOM
+hashes**. Current policy SHA256 is
+`21649a8477f1a8e73456b1f3350ca6e8db2d97d23628c2b4aa5ead4c3c93f738`.
+DB update: `2026-11-19T13:02:29.533007734Z`; DB SHA256:
+`923c9ac4d894e62da8020926c64e7bbff80f2562944708ac6804388eb1debec9`.
+Historical local/standard/strict checkpoints are separate; older PostgreSQL
+`2f4821…` is not a current image. A changed OCI index is never bound to an old scan
+merely because runtime Config/RootFS happens to match.
 
-The initial native amd64/arm64 [image run](https://github.com/jaysonguglietta/artexV2/actions/runs/44531004586)
-also passed standard-mode inventory: the same 94 worker OS records/versions on
-each platform, other components zero, all 16 artifact hashes verified. Its newer
-DB identity and exact images are retained separately in the evidence JSON. This
-is not a hosted reviewed-mode pass. The [Go run](https://github.com/jaysonguglietta/artexV2/actions/runs/44531004483)
-failed PostgreSQL startup in integration/Compose despite passing worker/tool and
-frontend/unit/security/recon checks. Diagnosis, reviewed-mode native rerun, OIDC
-and a fresh source credential snapshot remain pending in [validation](VALIDATION.md).
-These results do not authorize enabling or publishing a release. No enabling
-variable, version tag or production release was created. Local scanning remains
-available under the documented supported boundary.
+The local PostgreSQL/client suites passed, including 11 live client checks and
+22 encrypted restore checks. The earlier hosted `af9eeb56…` passed client11,
+tools6, worker53 and Compose17, then failed its compressible-growth assertion.
+The replacement 128 MiB inline-payload/explicit-ENOSPC fixture passed all 16 locally.
+[Current Go run44540981490](https://github.com/jaysonguglietta/artexV2/actions/runs/44540981490)
+passed **all six jobs**, including actual client11/tools6/worker53/Compose17,
+disk16/migration7/backup22. [Sanitized runtime evidence](../security/postgres-runtime-evidence.json)
+records the six downloaded check/hash/source-only reports; native image binding
+remains separate. Documentation run44540981537 also passed at `375b2c3…`.
+`main` was fast-forwarded without force to that tested commit. The
+[real main OIDC rehearsal](https://github.com/jaysonguglietta/artexV2/actions/runs/44542433712)
+passed at `375b2c3…`, including actual Fulcio/Rekor blob/image verification and
+eight negative cases. Production jobs were skipped; no release variable, tag,
+package or formal release was created. The repeated same-source main checks also
+passed. Source-publication verification and its scope are recorded in
+[validation](VALIDATION.md).
 
 ## Local use
 
@@ -229,7 +234,8 @@ added only after actual hosted inventory verification, reviewed
 `2026-11-19T13:19:24.496638+00:00`. All expire `2026-12-19T12:00:00Z`, within
 30 days, and explicitly match severity and `fixed_version: null`. The initial
 hosted standard reports and local reviewed report keep their earlier policy
-hash; fresh reviewed-mode hosted CI is pending after this configuration change.
+hash. The current native reviewed run independently passed with the current
+188-entry policy hash; prior standard runs are not reclassified.
 Publication has not been enabled and no release/tag was created.
 
 Each review must include `fixed_version: null` and name one exact CVE, package,
@@ -298,7 +304,7 @@ or untrusted SARIF upload. Image/release publication must separately require the
 reviewed-findings gate for the exact architecture-specific image IDs it will
 publish. Both native image jobs also run actual browser/Python/npm tool behavior
 checks; configured workflow steps are not proof that a new hosted run passed.
-Current source proof and pending runs are separated in [validation](VALIDATION.md).
+Exact source proof and verification scope are recorded in [validation](VALIDATION.md).
 
 Run the offline gate regressions before changing policy or tooling:
 

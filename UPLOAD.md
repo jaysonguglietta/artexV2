@@ -6,13 +6,11 @@ Its HTTPS remote is `https://github.com/jaysonguglietta/artexV2.git`.
 These are reusable upload and recovery instructions, not a claim that a push has
 already completed. The [product readiness review](docs/PRODUCT-READINESS-REVIEW.md)
 separates verified feature slices from unverified journeys and proposed improvements.
-The November 19 implementation is on the `security/storage-image-hardening`
-validation branch at `a2b0c63f6fa1aa632e0cf727835bfd0943d8a530`; `main` was unchanged
-at that checkpoint. Local final ARM64 reviewed-image and runtime/backup checks
-passed; native two-architecture standard scans also passed, supporting 188 exact
-reviews. PostgreSQL startup failed in hosted integration/Compose, so full CI is
-not green. Diagnosis, reviewed-mode/OIDC and the post-documentation credential
-snapshot remain separate checks in validation. No version tag, release or enabling variable was created.
+Implementation `375b2c3f460d30cddfecd3437e47b543ec5b9b66` passed all six Go
+jobs, eight native reviewed-image gates, documentation and the real main OIDC
+rehearsal, then reached main through a fast-forward. The final post-edit source
+snapshot/credential scan remains separate in [validation](docs/VALIDATION.md).
+No version tag, formal release, package or enabling variable was created.
 
 The prepared source copy excludes Git history, installed dependencies, compiled
 binaries, local configuration, private keys, database state and runtime captures.

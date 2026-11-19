@@ -55,16 +55,14 @@ output remain untrusted data even after an isolated tool run succeeds. The stati
 API image has no assessment toolchain; those tools belong in isolated workers.
 Production in-process update/rollback is unavailable. Hosted signing/publication
 status and final integrated checks are reported separately in the validation record.
-The November 19 follow-up has local storage, restore, tag-policy and package-manager
-proof. Final local ARM64 reviewed-image gates, 53 worker checks, six real tool/
-browser checks and 22 backup checks passed. Initial native standard image scans
-also passed on both platforms; Go CI failed PostgreSQL startup in integration/
-Compose. Diagnosis, new reviewed-mode/OIDC runs and a fresh credential snapshot
-remain pending; full hosted CI is not green. Signed
-publication requires exact, expiring reviews for any remaining vendor-unfixed
-Medium/Low worker Ubuntu OS record. No High/Critical/Unknown or fixable finding
-can be waived; this is residual-risk acceptance, not a clean-scan claim. The new
-policy's actual local ARM64 pass and pending native hosted proof are recorded
-separately in validation. After actual native inventory verification, 188 exact
-reviews cover 94 records per platform; reviewed-mode hosted rerun is pending.
-This does not disable local authorized assessment workflows.
+Current implementation `375b2c3…` passed all six hosted Go jobs, eight native
+reviewed-image gates, documentation and the real main OIDC rehearsal. Main was
+fast-forwarded to that source. [Runtime evidence](../security/postgres-runtime-evidence.json)
+records the six sanitized check/source/report-hash artifacts; [image evidence](../security/image-followup-evidence.json)
+records every current native image/config/rootfs, all 16 report/SBOM hashes and
+188 exact expiring risk reviews (94 per platform). Worker findings remain active
+85 Medium/9 Low per platform; acceptance is not a package fix. No formal release,
+version tag, package or enabling variable was created. A fresh final source
+snapshot/credential scan follows these documentation changes. Exact source/run
+identities, historical failures and separately pending same-source main repeats
+are in [validation](VALIDATION.md).

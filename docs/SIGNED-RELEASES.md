@@ -88,9 +88,10 @@ summary; nothing is silently dropped. See [image security](IMAGE-SECURITY.md).
 No production version-tag release has been published. The November 19 follow-up
 has local 7 tag-policy, 15 signing and 15 publication tests passing. The actual
 final four-image ARM64 reviewed gate passed with 94 exact reviews/zero blocking;
-the initial native amd64/arm64 standard inventory run also passed. The new
-reviewed-mode native run, PostgreSQL startup diagnosis and OIDC remain pending
-in [validation](VALIDATION.md); full hosted CI is not green.
+the current eight native reviewed-image gates and all six Go jobs passed at
+`375b2c3…`. The real main OIDC rehearsal also passed at the same source, with
+eight negative cases and production jobs skipped. [Validation](VALIDATION.md)
+links exact runs and describes the separate source-archive verification receipt.
 Two actual tag rulesets are active, but that configuration does not bypass the
 reviewed-findings gate or enable release publication. The operator authorized
 this narrow residual-risk allowance, not a version tag, enabling variable or
@@ -212,8 +213,17 @@ The real main-only rehearsal [passed on 18 November 2026](https://github.com/jay
 for commit `d06f7d8a28c9a562c885a85237811234018eb01c`, attempt 1. Actual
 checksum/provenance and image signatures verified, and all eight negative cases
 were refused. This proves that historical candidate run, before the November 19 toolchain,
-storage and stricter image-policy changes. Their hosted follow-up is pending;
-no production release was published.
+storage and stricter image-policy changes. Their current follow-up subsequently
+passed at `375b2c3…`; the historical candidate run remains scoped to its own source.
+No production release was published.
+
+The [current real main rehearsal](https://github.com/jaysonguglietta/artexV2/actions/runs/44542433712)
+passed at `375b2c3f460d30cddfecd3437e47b543ec5b9b66`, attempt1, with real
+Fulcio/Rekor blob/image verification and all eight rejection cases. Policy/dry-run
+jobs succeeded; production jobs were skipped. Candidate artifact14537843596 is
+retained seven days. No formal release, version tag, package or enabling-variable
+change was created. This proves that candidate rehearsal, not production-tag
+publication.
 
 ## Tests and operational checks
 

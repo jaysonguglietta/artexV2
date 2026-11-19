@@ -162,20 +162,20 @@ workflow, protected tag, commit and run. Two active
 [release-tag rulesets](docs/RELEASE-TAG-PROTECTION.md) restrict creation to the
 personal owner and forbid updates/deletions without bypass. Publication also
 requires explicit opt-in and all gates. A main-only rehearsal uses real OIDC
-without publishing. Earlier hosted passes apply to their recorded November 18
-commit. An earlier November 19 local ARM64 **reviewed-findings** checkpoint passed with
-zero blocking and 94 exact expiring reviews applied: worker inventory still has
-85 Medium/9 Low active records; the other three images report zero. Full
-[residual evidence](security/image-followup-evidence.json) remains visible. The
-final rebuilt implementation passed **53 worker checks**, **six actual worker/
-browser checks**, the **22-check encrypted backup integration** and a fresh
-isolation race run. Initial native amd64/arm64 standard image scans also passed;
-188 exact reviews now cover 94 records per platform. Earlier Go CI failed
-PostgreSQL startup; current `af9eeb56…` integration/frontend/unit/security/recon
-passed. Worker/Compose and native images, OIDC and a fresh source snapshot remain pending
-in [validation](docs/VALIDATION.md).
-The implementation was pushed to the validation branch; `main` is unchanged at
-this checkpoint. No production release, version tag or enabling variable was created.
+without publishing. [Current native image gates](docs/VALIDATION.md) passed all
+**eight amd64/arm64 components** at `375b2c3…`, with zero blocking and 94 exact
+expiring reviews per platform. Worker raw findings remain 85 Medium/9 Low each;
+other components report zero. [Evidence](security/image-followup-evidence.json)
+binds every current image/config/rootfs and all 16 verified report/SBOM hashes.
+All six hosted Go jobs and documentation passed at the same source, including
+client11/tools6/worker53/Compose17/disk16/migration7/backup22.
+[Runtime evidence](security/postgres-runtime-evidence.json) preserves the downloaded
+checks and source/report hashes. `main` was fast-forwarded to tested `375b2c3…`
+without force. The [real main OIDC rehearsal](https://github.com/jaysonguglietta/artexV2/actions/runs/44542433712)
+also passed at that exact source, including eight tamper/identity negatives.
+Production jobs were skipped; no release variable, tag, package or formal release
+was created. The prepared source is credential-scanned and compared with Git and
+the ZIP by bytes, modes and paths; the companion archive receipt records that result.
 
 [Evidence storage](docs/EVIDENCE-STORAGE.md) defines independent admission budgets
 for evidence, traffic and workspace files, 30-day raw retention and whole-bucket
@@ -184,7 +184,8 @@ uses bounded ephemeral tmpfs, excluded from durable holds. PostgreSQL UI history
 is separate. [Database/log/backup controls](docs/POSTGRES-BACKUP.md) now add a
 preallocated bounded ext4 database, per-container log rotation and encrypted,
 authenticated backups verified by a disposable restore. The earlier 22-check exact-source
-backup integration passed; later PostgreSQL/client changes need a fresh repeat. On the reviewed dedicated VM, Docker/journal policy
+backup integration passed; its revised client-boundary repeat also passed locally
+and in hosted CI. On the reviewed dedicated VM, Docker/journal policy
 was activated through service restarts and an actual stdout-rotation test; new
 containers inherit finite local logging. These controls do not cap all VM, image
 or backup storage; retain separate capacity and audit policies.
@@ -197,8 +198,10 @@ now use the fixed entrypoint launcher to drop privileges explicitly; PID1's drop
 alone does not cover them. Current `af9eeb56…` passed 11 real client-boundary
 checks, a fresh 22-check encrypted restore and 869 PostgreSQL/Go cases (one optional
 provider skip), plus the capacity and regression suites. Hosted integration,
-frontend/unit/security/recon passed; full worker/Compose boundary, exact image
-gates and OIDC remain pending in [validation](docs/VALIDATION.md).
+frontend/unit/security/recon and the full hosted client/worker/Compose/capacity/
+backup boundary passed at `375b2c3…`; all eight native image gates passed too.
+The real main OIDC rehearsal also passed at that exact source; see
+[validation](docs/VALIDATION.md) for exact run identities and source-publication checks.
 
 The worker uses Ubuntu 26.04, copied official Python 3.14.10 and Node 24.22.3,
 with explicit [npm](tools/npm/README.md) and [pip](tools/python/README.md) security

@@ -212,9 +212,9 @@
     },
     {
       "path": "README.md",
-      "bytes": 34357,
+      "bytes": 34616,
       "mode": "0o644",
-      "sha256": "a485d9f2a818df05947215e314948e595fb1cfdc621c64a4e3187fe4e422c5fd"
+      "sha256": "86341d7c6d7e2f3dde4f7a2c48dd5e67286602d776ec2abdbd3fa0a0a5a612d7"
     },
     {
       "path": "README.zh.md",
@@ -242,9 +242,9 @@
     },
     {
       "path": "UPLOAD.md",
-      "bytes": 6767,
+      "bytes": 6568,
       "mode": "0o644",
-      "sha256": "b889a0fd015391c2ec9c1765c9e84bcd9b08cea4418adb6fc879f93d30cc8161"
+      "sha256": "d77c0b035c2435d9d502c00dd01c0700c8ee66b0b48db0d412d14ca47f12f0a0"
     },
     {
       "path": "agent/assembly.go",
@@ -1742,9 +1742,9 @@
     },
     {
       "path": "docs/IMAGE-SECURITY.md",
-      "bytes": 19759,
+      "bytes": 20093,
       "mode": "0o644",
-      "sha256": "a30007a8180589c2ea93a9508e4329b9627c6ac49e73b5cfe2babc698c813eed"
+      "sha256": "2ad1103a6665fb1561e7b351d608c7156a276f0d284113e24386fb4c4488d2bf"
     },
     {
       "path": "docs/OPERATIONS.md",
@@ -1754,21 +1754,21 @@
     },
     {
       "path": "docs/POSTGRES-BACKUP.md",
-      "bytes": 22985,
+      "bytes": 23302,
       "mode": "0o644",
-      "sha256": "2ac0bbe4409de73638768ecb6f57b97aeee316c7c8da2c97d10bb2886e1b0f29"
+      "sha256": "d95998b696aa1c37a8a8e821164837fad40e0fd35556d630e4f0d04d75380c31"
     },
     {
       "path": "docs/PRODUCT-READINESS-REVIEW.md",
-      "bytes": 57189,
+      "bytes": 57365,
       "mode": "0o644",
-      "sha256": "a1e9cfd278d9d8bfec04d6451f5a46f26b6021bc8af0dace920597a2a4ddc267"
+      "sha256": "9495bcde972e7b0a2cd38d018541e826964bd6b06003662bbb427a88fd6db828"
     },
     {
       "path": "docs/README.md",
-      "bytes": 4615,
+      "bytes": 4511,
       "mode": "0o644",
-      "sha256": "46f51bdb2a099743b93765748e55fab85afb86349b5b25377de16e2a3b40e4f7"
+      "sha256": "476a926bfff9b000bd77b8b6d7ead02c5c687996f832bc7623a715a215604797"
     },
     {
       "path": "docs/RELEASE-TAG-PROTECTION.md",
@@ -1778,33 +1778,33 @@
     },
     {
       "path": "docs/SECURE-DEPLOYMENT.md",
-      "bytes": 6317,
+      "bytes": 6511,
       "mode": "0o644",
-      "sha256": "51321032d7a7f472adc7770738291444ed5d01cc1cdc46a480cfcaba1e843eb7"
+      "sha256": "08c30ee12945e5e8008a2db2ec16d9336bee482e2dc259da9d218a07268c0cad"
     },
     {
       "path": "docs/SECURITY-AUDIT.md",
-      "bytes": 68792,
+      "bytes": 68848,
       "mode": "0o644",
-      "sha256": "bf13b15fb9b219ab3931ce39db6972b103de126ff16a08828eff398e34d54a9a"
+      "sha256": "4d54558d78ddd17df325469419f79a4ffec7c35b9d4f4542053cbb52ebb01fd1"
     },
     {
       "path": "docs/SECURITY-REVIEW.md",
-      "bytes": 32315,
+      "bytes": 34650,
       "mode": "0o644",
-      "sha256": "b9bf90428aed7a1d13c62007c8b692840771443d818f4579e22a901df93ab9fc"
+      "sha256": "69d677cede9fa359dbe193decd8842e07675b8dd500dfccc3f6a926361e23294"
     },
     {
       "path": "docs/SIGNED-RELEASES.md",
-      "bytes": 15789,
+      "bytes": 16490,
       "mode": "0o644",
-      "sha256": "c4ba6a8020dea1e59486ad2e4f1a7ad4c1f6abf537918ec5880a806ce49e393f"
+      "sha256": "6c6f7434edff200271974483c695f0171ca9d971289ed342a8659d772501c2db"
     },
     {
       "path": "docs/VALIDATION.md",
-      "bytes": 38161,
+      "bytes": 44957,
       "mode": "0o644",
-      "sha256": "f0ac2d0b43b7156be8cd80dcf3a41a05ccdf3b4d5d5dc054b2801f5980ca3d36"
+      "sha256": "85f624b3a1917ae6f5449003411c2b4be91d3bd0afa6d9944c48001304828338"
     },
     {
       "path": "docs/WORKER-ISOLATION.md",
@@ -2780,9 +2780,9 @@
     },
     {
       "path": "security/image-followup-evidence.json",
-      "bytes": 612721,
+      "bytes": 832642,
       "mode": "0o644",
-      "sha256": "813938e0d73b672b3aa8372dde3b471f1dfbe206c9668cf87158d63e01697d8d"
+      "sha256": "9cfe1ab2ff5e7b32713f9b7463c2f6fd06337fac299d1077bb8cb8792434ea19"
     },
     {
       "path": "security/image-policy.json",
@@ -2801,6 +2801,12 @@
       "bytes": 2288,
       "mode": "0o644",
       "sha256": "6b616bf9c1317280ea276d2f7b6b2caabaeb04ecf3ac1ab291d1ee8822e77e64"
+    },
+    {
+      "path": "security/postgres-runtime-evidence.json",
+      "bytes": 19096,
+      "mode": "0o644",
+      "sha256": "b0b1b8bc5094cec7051c7d2110f4fdf46b6b3d5d98134693492045ab72d6358f"
     },
     {
       "path": "security/release-tag-policy-evidence.json",
