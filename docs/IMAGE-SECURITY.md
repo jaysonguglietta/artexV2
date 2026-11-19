@@ -10,7 +10,30 @@ expiring review for any active vendor-unfixed Medium/Low worker Ubuntu OS findin
 The operator authorized this narrow residual-risk allowance; it does not authorize
 turning on publication, creating a version tag or publishing a release.
 
-## November 19 follow-up status
+## jq/util-linux follow-up — fresh verification pending
+
+The operator authorized actual jq upgrading and a reviewed util-linux security upgrade
+while preserving scanning, both native architectures and isolation. Package
+integration and fresh runtime/image results are still in progress. The earlier
+85 Medium/9 Low counts, 188 risk entries and `375b2c3…` image IDs below are
+historical baseline evidence, not results for this new build.
+[Worker security packages](WORKER-SECURITY-PATCHES.md) explains native packaging
+and the distinction between Ubuntu advisory status and upstream fixes.
+
+In this guide, **vendor-unfixed means the scanned Ubuntu advisory feed has no
+fixed Ubuntu package version at that DB snapshot**. It does not mean upstream
+has no patch/release or that a compatible backport is unavailable. Review actual
+upstream fixes before accepting residual risk; an empty `FixedVersion` field
+alone cannot justify saying an issue has no published fix.
+
+A new honest ARTEX native package may still receive the Ubuntu feed's raw CVE
+attribution after a proven upstream fix. Record raw findings, source-remediation
+proof, actually unpatched residual exposure and exact gate reviews separately.
+Source/patch annotations do not suppress raw alerts or authorize a VEX bypass;
+new versions/architectures need fresh exact review entries if still reported.
+No post-upgrade count is claimed before actual scans.
+
+## Earlier November 19 baseline at `375b2c3…`
 
 The worker retains Ubuntu 26.04 and reviewed Node 24.22.3, uses official Python
 3.14.10, and installs explicit honest-version
@@ -28,7 +51,7 @@ package-manager source-runtime suites passed. The release driver requires
 `reviewed-findings` on the top-level summary and every image; standard and
 strict-diagnostic summaries cannot authorize publication.
 
-The current [native reviewed run44540981464](https://github.com/jaysonguglietta/artexV2/actions/runs/44540981464)
+The baseline [native reviewed run44540981464](https://github.com/jaysonguglietta/artexV2/actions/runs/44540981464)
 passed **all eight images** at source
 `375b2c3f460d30cddfecd3437e47b543ec5b9b66`: `reviewed-findings` at top-level and
 every component, zero blocking, **94 exact reviews per platform**. Each worker
@@ -36,15 +59,15 @@ retains **85 Medium + 9 Low active vendor-unfixed OS records**; application,
 broker and PostgreSQL report zero at all severities. This is accepted contained
 residual risk, not a repair, zero-active result or production-release approval.
 
-[Authoritative current evidence](../security/image-followup-evidence.json) records
+[Recorded baseline evidence](../security/image-followup-evidence.json) records
 all eight image/config/rootfs bindings, complete raw residual inventory and
 applied reviews, both native scanner/DB identities and **16 verified report/SBOM
-hashes**. Current policy SHA256 is
+hashes**. Its recorded policy SHA256 is
 `21649a8477f1a8e73456b1f3350ca6e8db2d97d23628c2b4aa5ead4c3c93f738`.
 DB update: `2026-11-19T13:02:29.533007734Z`; DB SHA256:
 `923c9ac4d894e62da8020926c64e7bbff80f2562944708ac6804388eb1debec9`.
 Historical local/standard/strict checkpoints are separate; older PostgreSQL
-`2f4821…` is not a current image. A changed OCI index is never bound to an old scan
+`2f4821…` was not the image checked in that baseline. A changed OCI index is never bound to an old scan
 merely because runtime Config/RootFS happens to match.
 
 The local PostgreSQL/client suites passed, including 11 live client checks and

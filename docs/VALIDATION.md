@@ -6,7 +6,17 @@ IDs and hosted runs below are historical checkpoints for their exact source;
 they do not establish results for the current storage/toolchain/release edits.
 No local pass implies hosted CI, real OIDC or production publication passed.
 
-## Current native reviewed images — passed at `375b2c3…`
+## Current jq/util-linux change — fresh results pending
+
+The operator authorized actual jq upgrading and a reviewed util-linux security upgrade
+against the `3062e9c…` publication baseline. New package builds, both native
+architecture scans and isolation/scanning regressions are **pending**. Earlier
+`375b2c3…` passes and 85 Medium/9 Low counts remain scoped historical evidence;
+they do not validate this change. A missing Ubuntu `FixedVersion` is not proof
+that no upstream fix exists. See [worker security packages](WORKER-SECURITY-PATCHES.md)
+for honest packaging and the required fresh evidence.
+
+## Earlier native reviewed images — passed at `375b2c3…`
 
 [Native image run44540981464](https://github.com/jaysonguglietta/artexV2/actions/runs/44540981464)
 passed all **eight** component/architecture gates at source
@@ -16,7 +26,7 @@ Both workers retain **85 Medium/9 Low active OS records**, no High/Critical/Unkn
 application/broker/PostgreSQL report zero at all severities. These are explicit,
 contained, expiring accepted risks, not repaired packages or a zero-active result.
 
-[Current image evidence](../security/image-followup-evidence.json) records all
+[Baseline image evidence](../security/image-followup-evidence.json) records all
 eight image/config/rootfs identities, both native scanner/DB identities, full
 remaining findings and exact applied review data, and **16 verified report/SBOM
 hashes**. The 188 reviews match current policy SHA256

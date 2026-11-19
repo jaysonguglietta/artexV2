@@ -2,9 +2,9 @@
   "files": [
     {
       "path": ".dockerignore",
-      "bytes": 567,
+      "bytes": 600,
       "mode": "0o644",
-      "sha256": "e55315d40a9ae820718789c3232b7baf5957b86c8d210ebb9ef8d39ead483d09"
+      "sha256": "9a5abe81273b73da9773fc1c9d63d495a3ec681db2f51465302d1bff07caa665"
     },
     {
       "path": ".env.example",
@@ -68,9 +68,9 @@
     },
     {
       "path": ".github/workflows/ci.yml",
-      "bytes": 4657,
+      "bytes": 4716,
       "mode": "0o644",
-      "sha256": "aec2f3e87ba167a391f6a0992f26fcc3e9f90626b7c3b1d8d4ab08c97bb91447"
+      "sha256": "2e3ce18b81a45d432e94acdc84b8bb5aab0ee9659ec754c88d2933ac120d12a3"
     },
     {
       "path": ".github/workflows/detections.yml",
@@ -92,9 +92,9 @@
     },
     {
       "path": ".github/workflows/image-security.yml",
-      "bytes": 2524,
+      "bytes": 3272,
       "mode": "0o644",
-      "sha256": "d107cf7922ab1a1ce40f3d6b49536fcf5b2066289bf6b5a12e287001e2a90c32"
+      "sha256": "64bcec90753ca986d8d335ddb1938418c66bfb87bbac52b178479a7b236b5aec"
     },
     {
       "path": ".github/workflows/release.yml",
@@ -170,9 +170,9 @@
     },
     {
       "path": "Dockerfile.source",
-      "bytes": 8802,
+      "bytes": 11499,
       "mode": "0o644",
-      "sha256": "edd09c32ac36815bae0a2c58c436dff2cd97eb71ff34746e2ab72fc24042a52f"
+      "sha256": "6a20d85130b78f7542fe49ab1d4928627efb4561be41170b0046e4691f3c67ef"
     },
     {
       "path": "LICENSE",
@@ -212,9 +212,9 @@
     },
     {
       "path": "README.md",
-      "bytes": 34616,
+      "bytes": 35213,
       "mode": "0o644",
-      "sha256": "86341d7c6d7e2f3dde4f7a2c48dd5e67286602d776ec2abdbd3fa0a0a5a612d7"
+      "sha256": "4fb8281587e95517cba29c16b42406a9ff3ca6beb7e32a358c8a95152705eadb"
     },
     {
       "path": "README.zh.md",
@@ -242,9 +242,9 @@
     },
     {
       "path": "UPLOAD.md",
-      "bytes": 6568,
+      "bytes": 6930,
       "mode": "0o644",
-      "sha256": "d77c0b035c2435d9d502c00dd01c0700c8ee66b0b48db0d412d14ca47f12f0a0"
+      "sha256": "f41b2951ab8a2b50cad34985cc51177f07f4272e2fae12541a8af837acbb1445"
     },
     {
       "path": "agent/assembly.go",
@@ -1742,9 +1742,9 @@
     },
     {
       "path": "docs/IMAGE-SECURITY.md",
-      "bytes": 20093,
+      "bytes": 21549,
       "mode": "0o644",
-      "sha256": "2ad1103a6665fb1561e7b351d608c7156a276f0d284113e24386fb4c4488d2bf"
+      "sha256": "95c04841f397836dbc2fc2426f05815472bb74c8f6699b28504e249c00b1e0dd"
     },
     {
       "path": "docs/OPERATIONS.md",
@@ -1754,15 +1754,15 @@
     },
     {
       "path": "docs/POSTGRES-BACKUP.md",
-      "bytes": 23302,
+      "bytes": 26740,
       "mode": "0o644",
-      "sha256": "d95998b696aa1c37a8a8e821164837fad40e0fd35556d630e4f0d04d75380c31"
+      "sha256": "a4b93906914f1023d51c593b5af2264f6d7b7bdd33b9085b398263c00112ad8b"
     },
     {
       "path": "docs/PRODUCT-READINESS-REVIEW.md",
-      "bytes": 57365,
+      "bytes": 57953,
       "mode": "0o644",
-      "sha256": "9495bcde972e7b0a2cd38d018541e826964bd6b06003662bbb427a88fd6db828"
+      "sha256": "b391c56cbf41ea2265c4717d18893a7fa887e342f20d090e33cea1c3f314a3b4"
     },
     {
       "path": "docs/README.md",
@@ -1790,9 +1790,9 @@
     },
     {
       "path": "docs/SECURITY-REVIEW.md",
-      "bytes": 34650,
+      "bytes": 35267,
       "mode": "0o644",
-      "sha256": "69d677cede9fa359dbe193decd8842e07675b8dd500dfccc3f6a926361e23294"
+      "sha256": "6d2d508dce6ea0b9d69d948879ad2c266e880bf749de0b27d632b94dbd5ff372"
     },
     {
       "path": "docs/SIGNED-RELEASES.md",
@@ -1802,15 +1802,21 @@
     },
     {
       "path": "docs/VALIDATION.md",
-      "bytes": 44957,
+      "bytes": 45566,
       "mode": "0o644",
-      "sha256": "85f624b3a1917ae6f5449003411c2b4be91d3bd0afa6d9944c48001304828338"
+      "sha256": "273cf4ee3888a2cb354729709797b8b8ea861b405b15031ada59cb8cc95eac01"
     },
     {
       "path": "docs/WORKER-ISOLATION.md",
       "bytes": 10645,
       "mode": "0o644",
       "sha256": "fdbc4d98f3311f218c26c9282541624cbf7b131e8749efa404c0245ad5e04b95"
+    },
+    {
+      "path": "docs/WORKER-SECURITY-PATCHES.md",
+      "bytes": 8039,
+      "mode": "0o644",
+      "sha256": "80043b8c91342c887565e2e0debe8a1e2e129eb5b5070a0ca2bf62454d3efcde"
     },
     {
       "path": "docs/defense-en.md",
@@ -2761,16 +2767,22 @@
       "sha256": "78a95f7060f6d81783c670b381e04b885b6e66221f4e3af475f6ada1d3f68f97"
     },
     {
-      "path": "scripts/test-worker-tools.py",
-      "bytes": 5001,
+      "path": "scripts/test-worker-tools-proof.py",
+      "bytes": 6596,
       "mode": "0o644",
-      "sha256": "a4f71975e7e3edca8207a847ac6b5ede070579db76ce6f7bdfd8a0f841ddf9e1"
+      "sha256": "0e3013a9d146c6c37b44c46171f63422bea1d8da95c0564ab5c5de2c8aa6aa64"
+    },
+    {
+      "path": "scripts/test-worker-tools.py",
+      "bytes": 7720,
+      "mode": "0o644",
+      "sha256": "5ab82e57f8654a92db9f56d090aa73fd6397026a9c392ace8c1dfe0934fc5aaf"
     },
     {
       "path": "scripts/test-workers.py",
-      "bytes": 31721,
+      "bytes": 33221,
       "mode": "0o644",
-      "sha256": "5338cac0345c920e7edbdfd27d8e25dca7d4689e08716d2eee0a46d394c88699"
+      "sha256": "873a4d9f699963930fdba00d1d265a4878d58be0d3b29294de5d61f6c6e9594e"
     },
     {
       "path": "scripts/translation-inventory.py",
@@ -2786,9 +2798,9 @@
     },
     {
       "path": "security/image-policy.json",
-      "bytes": 151317,
+      "bytes": 163873,
       "mode": "0o644",
-      "sha256": "21649a8477f1a8e73456b1f3350ca6e8db2d97d23628c2b4aa5ead4c3c93f738"
+      "sha256": "e05344a053d103be5da9c93c33b54adc57afc542cdccb2bb1eb27741e4f632f0"
     },
     {
       "path": "security/npm-fork-validation.json",
@@ -4207,6 +4219,36 @@
       "sha256": "085ebcab84a87a1d09c51dcf845830c8df474ddc3ec9d09b7431d4462ba55414"
     },
     {
+      "path": "tools/jq/README.md",
+      "bytes": 5999,
+      "mode": "0o644",
+      "sha256": "f6c29437ea8f3656fd24a3c0666141898feb340b681744675a267d544fa2bdaf"
+    },
+    {
+      "path": "tools/jq/abi-symbols.txt",
+      "bytes": 2841,
+      "mode": "0o644",
+      "sha256": "281c4c47bd8445040bd4a7cc94f44b9b75c0f6a254d89ed12d6a5711c459d0db"
+    },
+    {
+      "path": "tools/jq/build-debs.sh",
+      "bytes": 5606,
+      "mode": "0o644",
+      "sha256": "c4d4a85d67c2bd200f4474b90c5c290a475288fc67d174d18e9195e964f504d5"
+    },
+    {
+      "path": "tools/jq/source.json",
+      "bytes": 390,
+      "mode": "0o644",
+      "sha256": "ce7b699ad860a0d54121e0a801210568c41762ddce3d943cbb1a4485ea262d8e"
+    },
+    {
+      "path": "tools/jq/test-behavior.py",
+      "bytes": 6662,
+      "mode": "0o644",
+      "sha256": "74765423941c66fd68951168b3d95b2a66f021c4b09ccbc65534a94edc8aa345"
+    },
+    {
       "path": "tools/npm/README.md",
       "bytes": 4983,
       "mode": "0o644",
@@ -4247,6 +4289,84 @@
       "bytes": 11153,
       "mode": "0o644",
       "sha256": "bcefb80a0611bb05036827699b3b33bab295dc479b6b9d0ae91df9b7f67d1ed7"
+    },
+    {
+      "path": "tools/util-linux/README.md",
+      "bytes": 8387,
+      "mode": "0o644",
+      "sha256": "29edba578f38317d2be6f3ab0fa67469b1b30f4ebf12cc82e7b736518d1de389"
+    },
+    {
+      "path": "tools/util-linux/build-packages.sh",
+      "bytes": 1906,
+      "mode": "0o755",
+      "sha256": "32a46aa58ceb0da00d137005511329b55ca1d7aa18bce105b4b95377c9d1991c"
+    },
+    {
+      "path": "tools/util-linux/install-build-deps.sh",
+      "bytes": 2188,
+      "mode": "0o755",
+      "sha256": "faf2e3145dca4224b4c5ee90f8e6d1724c7610f95276c1e5a739093ac6c193e4"
+    },
+    {
+      "path": "tools/util-linux/install-packages.sh",
+      "bytes": 1154,
+      "mode": "0o755",
+      "sha256": "3aac331c07884c8abf847eb4a55bdfaf92f531f39a3e4c38960397e63f8fd6a9"
+    },
+    {
+      "path": "tools/util-linux/lsfd-usrbin-2.42.patch",
+      "bytes": 414,
+      "mode": "0o644",
+      "sha256": "a11637010ce75755ac63e889b9641ef3fb816a7f4dd5e182dd34b1adea098712"
+    },
+    {
+      "path": "tools/util-linux/nsenter-interpose.c",
+      "bytes": 1943,
+      "mode": "0o644",
+      "sha256": "d228e93cb8004c06f28477742cd142551b5792d50d15416f0e93d7de5a7c3102"
+    },
+    {
+      "path": "tools/util-linux/prepare-source.py",
+      "bytes": 7830,
+      "mode": "0o755",
+      "sha256": "cacedb9e60e6d1793bd2310fd61c7b237df38b9e98686168b2e3ae5f1d040dc6"
+    },
+    {
+      "path": "tools/util-linux/security-regressions.c",
+      "bytes": 6365,
+      "mode": "0o644",
+      "sha256": "c2f5c34a56f2f26c97eb6f20095d09da9b26f79794c18d614822ed9c1f16e5a5"
+    },
+    {
+      "path": "tools/util-linux/source.json",
+      "bytes": 24667,
+      "mode": "0o644",
+      "sha256": "d35ce405e23aaee649f7eed118afef7f5a30df28d8bd10b2fc177d13b68d9584"
+    },
+    {
+      "path": "tools/util-linux/sulogin-static-sh-2.42.patch",
+      "bytes": 638,
+      "mode": "0o644",
+      "sha256": "1e4f9614f9b11047e68d6ec43b88ad2d1c835d13ce54b866d4df80f4d91984c6"
+    },
+    {
+      "path": "tools/util-linux/test-behavior.py",
+      "bytes": 3614,
+      "mode": "0o644",
+      "sha256": "30c15d5bb97cad62c6b4706ced2debc9ac1bddfa6b9e4f6b7bba389215c2f5ac"
+    },
+    {
+      "path": "tools/util-linux/test-built-source.sh",
+      "bytes": 1123,
+      "mode": "0o755",
+      "sha256": "d0de7a3a6b5922f4a600bcc7841a435c86446a58ba2202179b7ac05491888e42"
+    },
+    {
+      "path": "tools/util-linux/test-source-security.py",
+      "bytes": 1928,
+      "mode": "0o644",
+      "sha256": "bdc7a67c65ee0614a81220f526b9a2eeb8b839b8c8803cdbfb6afe403533e061"
     },
     {
       "path": "traffic/archive.go",

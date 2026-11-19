@@ -25,7 +25,7 @@ the concurrent-removal and adjacent cleanup-failure fix. Host activation/rotatio
 The current 188 reviews cover 94 exact native records per platform and expire
 `2026-12-19T12:00:00Z`; amd64 entries followed actual hosted inventory verification.
 
-Current `375b2c3…` subsequently passed all six hosted Go jobs, all eight native
+The earlier `375b2c3…` subsequently passed all six hosted Go jobs, all eight native
 reviewed-image gates and documentation, was fast-forwarded to main, then passed
 the real main OIDC rehearsal. [Validation](VALIDATION.md) and sanitized runtime/image
 evidence bind those source/run/report identities. Earlier startup and compressible
@@ -38,6 +38,16 @@ backlog proposals were not implemented by this security follow-up. For operation
 portions of PR-06/07/08, consult the new evidence rather than assuming the original
 gap still exists.
 No complete browser-to-assessment workflow is newly certified.
+
+## jq/util-linux follow-up status
+
+The operator authorized actual jq upgrading and a reviewed util-linux security upgrade
+against the `3062e9c…` publication baseline. New package builds, both native
+architecture scans and isolation/scanning regressions are **pending**. Earlier
+`375b2c3…` passes and 85 Medium/9 Low counts remain scoped historical evidence;
+they do not validate this change. A missing Ubuntu `FixedVersion` is not proof
+that no upstream fix exists. See [worker security packages](WORKER-SECURITY-PATCHES.md)
+for honest packaging and the required fresh evidence.
 
 ## 12. Product Review Executive Summary
 

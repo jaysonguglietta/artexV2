@@ -225,6 +225,79 @@ Desktop, merge the daemon settings through Docker Engine settings; VM/system log
 policy is also subject to Desktop's supported controls. Do not overwrite an
 existing daemon configuration wholesale or claim templates alone changed a host.
 
+### Persist daemon logging in a Colima profile
+
+For Colima, configure the **host-side profile as well as the running VM**.
+Colima's [profile `docker` mapping](https://github.com/abiosoft/colima/blob/main/embedded/defaults/colima.yaml)
+feeds Docker's daemon configuration at VM startup. In this follow-up, restarting
+the dedicated VM after a disk expansion replaced the manually configured local
+logging default with `json-file`, because its host profile still had `docker: {}`.
+Compose's explicit per-service policy did not establish the daemon default for
+other new containers.
+
+For the `artex-test` profile, first make a uniquely named private mode0600 backup
+of `~/.colima/artex-test/colima.yaml`, outside the source/publication tree. Edit
+its **existing** `docker` mapping to include:
+
+```yaml
+docker:
+  # Retain unrelated existing daemon options in this mapping.
+  log-driver: local
+  log-opts:
+    max-size: "10m"
+    max-file: "3"
+    compress: "true"
+```
+
+Merge these logging settings; do not replace the complete profile or discard its
+CPU, disk, network, mounts, runtime or other Docker settings. Keep option values
+quoted strings. Replace incompatible options from the previous logging driver
+rather than carrying them into the new driver's `log-opts` mapping.
+
+From the repository root on the host, apply the matching live VM daemon/journal
+settings with the reviewed helper:
+
+```sh
+colima --profile artex-test ssh -- sudo python3 - --apply < scripts/configure-docker-logs.py
+```
+
+Schedule a maintenance window and stop its workloads. Restart the **whole Colima
+profile**, using the intended profile explicitly and preserving the active context:
+
+```sh
+colima --profile artex-test stop
+colima --profile artex-test start --activate=false
+docker --context colima-artex-test info --format '{{.LoggingDriver}}'
+```
+
+The result must be `local`. Create a new disposable synthetic log fixture using
+that exact Docker context, then inspect its effective settings:
+
+```sh
+docker --context colima-artex-test inspect YOUR_NEW_FIXTURE \
+  --format '{{json .HostConfig.LogConfig}}'
+```
+
+Verify `Type=local` and the three expected options, generate enough bounded
+synthetic stdout to exercise rotation, and confirm the newest record survives.
+Recheck journald's effective 256 MiB/64 MiB/seven-day policy and service state.
+Remove only the fixture you created. Existing containers keep their own logging
+configuration until deliberately recreated; never remove data volumes to apply
+this change. Repeat this persistence check after profile, VM or disk changes.
+
+**Whole-profile restart persistence passed** on the dedicated test VM, observed
+`2026-11-19T16:24:46.160294+00:00`, after a second full Colima stop/start. Docker
+reported `LoggingDriver=local`; a new container with no explicit logging flags
+inherited `Type=local` and string options `compress=true`, `max-file=3`,
+`max-size=10m`. Docker and systemd-journald were active. All four pre-existing
+volumes remained; this was a preservation/inventory check, not a byte-hash audit.
+The test VM had a 32 GiB disk, 2 CPUs and 4 GiB memory. The private proof report
+SHA256 is `a3cf49410b1dc71213de2eefd6fbdc2da9f17d2cbe5ea0a271ad47ea4451aff1`.
+
+This verifies profile-default logging persistence on that VM. The older rotation
+checkpoint below remains separate; the new worker/image/54-check/eight-tool-group
+and native-CI results are still pending and are not inferred from this restart.
+
 Rotation discards older logs. Send required audit records to a separately managed,
 authenticated sink before relying on local rotation; disk limits do not provide
 immutable audit retention. Application files written outside stdout/stderr,

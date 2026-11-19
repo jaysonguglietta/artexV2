@@ -8,6 +8,16 @@ vulnerability class. The [validation record](VALIDATION.md) records the checked
 snapshot and results; the [worker guide](WORKER-ISOLATION.md) defines deployment
 requirements.
 
+## Current jq/util-linux follow-up — verification pending
+
+The operator authorized actual jq upgrading and a reviewed util-linux security upgrade
+against the `3062e9c…` publication baseline. New package builds, both native
+architecture scans and isolation/scanning regressions are **pending**. Earlier
+`375b2c3…` passes and 85 Medium/9 Low counts remain scoped historical evidence;
+they do not validate this change. A missing Ubuntu `FixedVersion` is not proof
+that no upstream fix exists. See [worker security packages](WORKER-SECURITY-PATCHES.md)
+for honest packaging and the required fresh evidence.
+
 ## PostgreSQL bootstrap/client boundary — fixed and verified
 
 The current PostgreSQL hardening changes are **not covered** by the earlier
@@ -80,7 +90,7 @@ of unconfined/stacked/complain/retained-capability paths. Run the bounded backup
 integration on new images and both native hosted architectures, preserving source
 volumes. A string/config unit test alone cannot close this deployment gap.
 
-## Current native image proof and remaining hosted scope
+## Earlier native image proof and hosted scope at `375b2c3…`
 
 [Run44540981464](https://github.com/jaysonguglietta/artexV2/actions/runs/44540981464)
 passed all eight native reviewed images at
@@ -88,7 +98,7 @@ passed all eight native reviewed images at
 source. Both summaries and every image are `reviewed-findings`: zero blocking,
 94 exact reviews per platform, raw85Medium/9Low per worker and zero findings in
 other components. This accepts the documented contained residual risk; it does
-not repair packages. [Current evidence](../security/image-followup-evidence.json)
+not repair packages. [Baseline evidence](../security/image-followup-evidence.json)
 retains all eight config/rootfs identities, scanner/DB/policy identity, full raw
 findings/reviews and 16 verified report/SBOM hashes. Older PostgreSQL `2f4821…`
 and local/standard/strict results are separate historical checkpoints.

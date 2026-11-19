@@ -1,0 +1,16 @@
+Description: Refresh Ubuntu packaging patch for util-linux 2.42.4
+Author: Artex maintainers
+Forwarded: not-needed
+Origin: vendor, Ubuntu util-linux 2.41.3-3ubuntu2.2
+
+--- a/lsfd-cmd/Makemodule.am
++++ b/lsfd-cmd/Makemodule.am
+@@ -2,7 +2,7 @@
+ 
+ lsfd-cmd/error.c: errnos.h
+ 
+-bin_PROGRAMS += lsfd
++usrbin_exec_PROGRAMS += lsfd
+ MANPAGES += lsfd-cmd/lsfd.1
+ dist_noinst_DATA += lsfd-cmd/lsfd.1.adoc
+ lsfd_SOURCES = \

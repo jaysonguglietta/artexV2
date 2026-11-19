@@ -12,6 +12,12 @@ rehearsal, then reached main through a fast-forward. The final post-edit source
 snapshot/credential scan remains separate in [validation](docs/VALIDATION.md).
 No version tag, formal release, package or enabling variable was created.
 
+The jq/util-linux remediation authorized after the `3062e9c…` baseline is in
+progress. Its fresh builds, native scans, worker regressions and source/archive
+verification must complete before a new upload copy is labeled validated. Older
+85 Medium/9 Low and `375b2c3…` results are historical. See
+[worker security packages](docs/WORKER-SECURITY-PATCHES.md).
+
 The prepared source copy excludes Git history, installed dependencies, compiled
 binaries, local configuration, private keys, database state and runtime captures.
 Original licensing and attribution remain. `SOURCE-MANIFEST.json` records the

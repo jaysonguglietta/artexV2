@@ -40,7 +40,7 @@ RUN python3 /tmp/patch-pip.py /tmp/pip-26.3-py3-none-any.whl /tmp/pip-26.3+artex
     && python3 -m pip install --no-index --no-deps --no-cache-dir /tmp/pip-26.3+artex.1-py3-none-any.whl
 COPY tools/python/test-behavior.py /tmp/test-pip-behavior.py
 RUN --network=none python3 /tmp/test-pip-behavior.py
-FROM ubuntu:26.04@sha256:d66b366dac61b575bee2aef07e9c26e8070096fbe84a3d4d3eb0da069b5d76db AS tools
+FROM ubuntu:26.04@sha256:d66b366dac61b575bee2aef07e9c26e8070096fbe84a3d4d3eb0da069b5d76db AS ubuntu-security-base
 COPY --from=python-runtime /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY worker/apt-security.conf /etc/apt/apt.conf.d/99-artex-security
 # The upstream container service is not part of a task worker.
@@ -54,6 +54,36 @@ RUN rm -f /usr/bin/pebble \
         -e "s|https://archive.ubuntu.com/ubuntu|$artex_ubuntu_mirror|g" \
         -e "s|https://security.ubuntu.com/ubuntu|$artex_ubuntu_mirror|g" \
         /etc/apt/sources.list.d/ubuntu.sources
+
+# Build genuine native packages from pinned sources. Compiler tooling and
+# build dependencies never enter the worker runtime.
+FROM ubuntu-security-base AS jq-security
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      build-essential dpkg-dev libonig-dev python3 \
+    && rm -rf /var/lib/apt/lists/*
+ADD --checksum=sha256:71b8d6e8f5fe81f6c6d0d110e3892251f6ce76ed095abd315e26e6e1193af3af https://github.com/jqlang/jq/releases/download/jq-1.8.2/jq-1.8.2.tar.gz /build/jq-1.8.2.tar.gz
+COPY tools/jq/ /build/jq/
+RUN --network=none sh /build/jq/build-debs.sh /build/jq-1.8.2.tar.gz /out \
+    && dpkg --path-include='/usr/share/doc/jq/*' --path-include='/usr/share/doc/libjq1/*' \
+        --path-include='/usr/share/man/man1/jq.1.gz' -i /out/*.deb && ldconfig \
+    && python3 /build/jq/test-behavior.py
+
+
+FROM ubuntu-security-base AS util-linux-packages
+COPY tools/util-linux/install-build-deps.sh /opt/artex-util-linux/install-build-deps.sh
+RUN /bin/sh /opt/artex-util-linux/install-build-deps.sh
+ADD --checksum=sha256:fbd62a100ab7bb8746ba0661255c3c48185b1e9021507c624da01fbc696330ec https://cdn.kernel.org/pub/linux/utils/util-linux/v2.42/util-linux-2.42.4.tar.xz /sources/util-linux-2.42.4.tar.xz
+ADD --checksum=sha256:e8f366168a1483616c1baf06420e341789340dcd2a98b9d8423f076d6cffa043 https://azure.archive.ubuntu.com/ubuntu/pool/main/u/util-linux/util-linux_2.41.3-3ubuntu2.2.debian.tar.xz /sources/util-linux_2.41.3-3ubuntu2.2.debian.tar.xz
+COPY tools/util-linux/prepare-source.py tools/util-linux/build-packages.sh tools/util-linux/source.json tools/util-linux/*.patch /opt/artex-util-linux/
+RUN --network=none /bin/sh /opt/artex-util-linux/build-packages.sh /sources /out
+
+# Keep package compilation independently cacheable; the final worker consumes
+# only the following stage, after all mandatory offline security tests pass.
+FROM util-linux-packages AS util-linux-security
+COPY tools/util-linux/test-built-source.sh tools/util-linux/test-source-security.py tools/util-linux/*.c /opt/artex-util-linux/
+RUN --network=none /bin/sh /opt/artex-util-linux/test-built-source.sh /out
+
+FROM ubuntu-security-base AS tools
 RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
     libstdc++6 libatomic1 \
     libbz2-1.0 libdb5.3t64 libffi8 libgdbm6t64 liblzma5 libncursesw6 \
@@ -76,6 +106,10 @@ RUN cd /opt/artex-browser && npm ci --ignore-scripts --omit=dev \
     && groupadd --gid 10001 artex && useradd --uid 10001 --gid 10001 --no-create-home artex \
     && mkdir -p /app/data/home /app/private /app/skills \
     && chown -R artex:artex /app /ms-playwright
+COPY --from=jq-security /out/*.deb /tmp/artex-jq/
+RUN dpkg --path-include='/usr/share/doc/jq/*' --path-include='/usr/share/doc/libjq1/*' \
+    --path-include='/usr/share/man/man1/jq.1.gz' -i /tmp/artex-jq/*.deb \
+    && ldconfig && rm -rf /tmp/artex-jq
 ENV PATH="/opt/artex-browser/node_modules/.bin:${PATH}" \
     PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
     ARTEX_KEY_DIR=/app/private \
@@ -93,6 +127,10 @@ LABEL org.opencontainers.image.source="https://github.com/jaysonguglietta/artexV
 USER root
 RUN apt-get update && apt-get install -y --no-install-recommends iptables util-linux iproute2 \
     && rm -rf /var/lib/apt/lists/*
+COPY --from=util-linux-security /out/debs/ /tmp/util-linux-security/
+COPY tools/util-linux/install-packages.sh /tmp/install-util-linux-security
+RUN /bin/sh /tmp/install-util-linux-security /tmp/util-linux-security \
+    && rm -rf /tmp/util-linux-security /tmp/install-util-linux-security
 COPY --from=backend --chmod=0555 /out/tool-worker /usr/local/bin/tool-worker
 COPY --chmod=0555 worker/entrypoint.sh /usr/local/bin/worker-entrypoint
 WORKDIR /workspace

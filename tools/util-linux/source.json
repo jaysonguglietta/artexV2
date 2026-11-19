@@ -1,0 +1,551 @@
+{
+  "schema_version": 1,
+  "upstream_version": "2.42.4",
+  "source_package_version": "2.42.4-0artex1",
+  "reviewed_at": "2026-11-19T15:47:17.971933+00:00",
+  "artifacts": {
+    "util-linux-2.42.4.tar.xz": {
+      "sha256": "fbd62a100ab7bb8746ba0661255c3c48185b1e9021507c624da01fbc696330ec",
+      "url": "https://cdn.kernel.org/pub/linux/utils/util-linux/v2.42/util-linux-2.42.4.tar.xz"
+    },
+    "util-linux_2.41.3-3ubuntu2.2.debian.tar.xz": {
+      "sha256": "e8f366168a1483616c1baf06420e341789340dcd2a98b9d8423f076d6cffa043",
+      "url": "https://azure.archive.ubuntu.com/ubuntu/pool/main/u/util-linux/util-linux_2.41.3-3ubuntu2.2.debian.tar.xz"
+    }
+  },
+  "upstream_signature": {
+    "url": "https://cdn.kernel.org/pub/linux/utils/util-linux/v2.42/util-linux-2.42.4.tar.sign",
+    "sha256": "d3b4e930a38c3b4512761708d0d226a55a1420995e3996c1efca0910d7effd3e",
+    "verified_fingerprint": "B0C64D14301CC6EFAEDF60E4E4B71D5EEC39C284",
+    "verification": "Manual gpgv GOODSIG and VALIDSIG against the uncompressed release tar before pinning; builds enforce SHA256, not live OpenPGP verification.",
+    "key_retrieval_url": "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xB0C64D14301CC6EFAEDF60E4E4B71D5EEC39C284",
+    "independent_key_identity_references": [
+      "https://lists.archlinux.org/pipermail/arch-commits/2018-February/462844.html",
+      "https://lists.archlinux.org/pipermail/arch-commits/2019-November/668636.html"
+    ],
+    "identity_limit": "Full fingerprint is independently published by official Arch package maintainers as Karel Zak. Keyserver retrieval alone is not identity authentication; no claim of a newly established upstream web of trust."
+  },
+  "ubuntu_packaging": {
+    "version": "2.41.3-3ubuntu2.2",
+    "descriptor_url": "https://azure.archive.ubuntu.com/ubuntu/pool/main/u/util-linux/util-linux_2.41.3-3ubuntu2.2.dsc",
+    "descriptor_sha256": "b9eacaa3492855d3260d45cabbc82aa8313718bf60ec86f12cd2c74095c2de2b",
+    "descriptor_signature_verified": false,
+    "authentication": "Packaging tar SHA256 cross-checked against the official HTTPS descriptor; descriptor developer signature not independently verified. Build dependencies use signed Ubuntu APT metadata."
+  },
+  "expected_ubuntu_patch_series": [
+    "debian/man-getopt-examples.patch",
+    "debian/verbose-tests.patch",
+    "debian/hardlink-tests-known-failed.patch",
+    "debian/lsfd-usrbin.patch",
+    "debian/sensible-pager.patch",
+    "debian/login-support-LOG_OK_LOGINS.patch",
+    "debian/login-do-not-print-motd-done-by-PAM.patch",
+    "debian/login-turn-off-btmp-utmp-lastlog-writing.patch",
+    "debian/salsa-ci-skip-tests.patch",
+    "upstream/ldattach-Allow-changing-the-MTU-for-GSM0710-framing.patch",
+    "upstream/libfdisk-modernize-ZFS-GPT-type-description.patch",
+    "upstream/unshare-add-owner-to-set-user-namespace-owner-uid-and-gid.patch",
+    "upstream/unshare-remove-get_mnt_ino-check-in-bind_ns_files_from_ch.patch",
+    "upstream/unshare-fix-user-namespace-bind-mounts.patch",
+    "ubuntu/sulogin-fallback-static-sh.patch",
+    "ubuntu/sulogin-lockedpwd.patch",
+    "ubuntu/su-pty-drop-caps.patch",
+    "CVE-2026-13595.patch",
+    "CVE-2026-27456.patch",
+    "CVE-2026-3184.patch",
+    "CVE-2026-53612.patch",
+    "CVE-2026-53613-pre1.patch",
+    "CVE-2026-53613.patch",
+    "CVE-2026-53614.patch",
+    "CVE-2026-53615.patch",
+    "tests-fincore-force-the-use-of-GNU-dd-over-uutils.patch"
+  ],
+  "retained_patch_series": [
+    "debian/man-getopt-examples.patch",
+    "debian/verbose-tests.patch",
+    "debian/hardlink-tests-known-failed.patch",
+    "artex/lsfd-usrbin-2.42.patch",
+    "debian/sensible-pager.patch",
+    "debian/login-support-LOG_OK_LOGINS.patch",
+    "debian/login-do-not-print-motd-done-by-PAM.patch",
+    "debian/login-turn-off-btmp-utmp-lastlog-writing.patch",
+    "debian/salsa-ci-skip-tests.patch",
+    "artex/sulogin-static-sh-2.42.patch",
+    "ubuntu/sulogin-lockedpwd.patch",
+    "ubuntu/su-pty-drop-caps.patch",
+    "tests-fincore-force-the-use-of-GNU-dd-over-uutils.patch"
+  ],
+  "patch_dispositions": [
+    {
+      "path": "debian/man-getopt-examples.patch",
+      "sha256": "3f0f7fbf691825c72848516935be63afc7993fa1a7b025432beb8d2dfa5cd55d",
+      "disposition": "retained",
+      "retained_path": "debian/man-getopt-examples.patch",
+      "reason": "Unchanged Ubuntu/Debian integration patch retained in the same order."
+    },
+    {
+      "path": "debian/verbose-tests.patch",
+      "sha256": "fa5081c64bf805ac11da75e16420e523c823da6c0b793fadc1be911e4a0e545d",
+      "disposition": "retained",
+      "retained_path": "debian/verbose-tests.patch",
+      "reason": "Unchanged Ubuntu/Debian integration patch retained in the same order."
+    },
+    {
+      "path": "debian/hardlink-tests-known-failed.patch",
+      "sha256": "74cf3bafdf0a5023f13bc23cb6e0c83a30e35b23338de3631cc8e8f2a5980ac7",
+      "disposition": "retained",
+      "retained_path": "debian/hardlink-tests-known-failed.patch",
+      "reason": "Unchanged Ubuntu/Debian integration patch retained in the same order."
+    },
+    {
+      "path": "debian/lsfd-usrbin.patch",
+      "sha256": "3855ccf229151d6df6646d82a27dc78fa0303dbc4f9272bce9607fb311cb025c",
+      "disposition": "refreshed",
+      "retained_path": "artex/lsfd-usrbin-2.42.patch",
+      "replacement_sha256": "a11637010ce75755ac63e889b9641ef3fb816a7f4dd5e182dd34b1adea098712",
+      "reason": "Only context is refreshed for the equivalent Ubuntu install-path or emergency static-shell behavior."
+    },
+    {
+      "path": "debian/sensible-pager.patch",
+      "sha256": "74e085f9570489969cc9a8a326f80c9c55060fe32094c50a315cd18e95b40579",
+      "disposition": "retained",
+      "retained_path": "debian/sensible-pager.patch",
+      "reason": "Unchanged Ubuntu/Debian integration patch retained in the same order."
+    },
+    {
+      "path": "debian/login-support-LOG_OK_LOGINS.patch",
+      "sha256": "5ffc665634966fd0502081b9d9a53eb92bc59a47f8090b0827cc78bae370702c",
+      "disposition": "retained",
+      "retained_path": "debian/login-support-LOG_OK_LOGINS.patch",
+      "reason": "Unchanged Ubuntu/Debian integration patch retained in the same order."
+    },
+    {
+      "path": "debian/login-do-not-print-motd-done-by-PAM.patch",
+      "sha256": "49950c9678570625ef3da59b4789c306ec25e2e0378e0eeb94fc123689520f8c",
+      "disposition": "retained",
+      "retained_path": "debian/login-do-not-print-motd-done-by-PAM.patch",
+      "reason": "Unchanged Ubuntu/Debian integration patch retained in the same order."
+    },
+    {
+      "path": "debian/login-turn-off-btmp-utmp-lastlog-writing.patch",
+      "sha256": "c5c32909c7c1a44b4b18225077446250938eb634508f608d5f343db7c44be626",
+      "disposition": "retained",
+      "retained_path": "debian/login-turn-off-btmp-utmp-lastlog-writing.patch",
+      "reason": "Unchanged Ubuntu/Debian integration patch retained in the same order."
+    },
+    {
+      "path": "debian/salsa-ci-skip-tests.patch",
+      "sha256": "822251fd89c4e58c2c9d854b04a24ab5245357d613b577553cb4cc94f814e1f0",
+      "disposition": "retained",
+      "retained_path": "debian/salsa-ci-skip-tests.patch",
+      "reason": "Unchanged Ubuntu/Debian integration patch retained in the same order."
+    },
+    {
+      "path": "upstream/ldattach-Allow-changing-the-MTU-for-GSM0710-framing.patch",
+      "sha256": "656705e979b6770aa3ac2325b03bf379301b31bad2015cb8d2473d13a7d000e4",
+      "disposition": "superseded",
+      "upstream_commit": "308811f67d68403ce1671a6863efa92d41ee2544",
+      "upstream_commit_url": "https://github.com/util-linux/util-linux/commit/308811f67d68403ce1671a6863efa92d41ee2544",
+      "reason": "Retains configurable GSM0710 MTU/MRU support.",
+      "proof_files": [
+        {
+          "path": "sys-utils/ldattach.c",
+          "sha256": "7af71e69fdbf32a29658ebc4575df32fec6d558be3550f37d6d6c6efd3af04fc",
+          "required_strings": [
+            "c.mru = mtu;",
+            "c.mtu = mtu;",
+            "gsm0710_set_conf(tty_fd, gsm_mtu);"
+          ],
+          "forbidden_strings": []
+        }
+      ]
+    },
+    {
+      "path": "upstream/libfdisk-modernize-ZFS-GPT-type-description.patch",
+      "sha256": "7969811a243cdf9dae260f12eab51a719066eb3204926456bfddabb2f975b40f",
+      "disposition": "superseded",
+      "upstream_commit": "11a38ec82c4db476c47be9e5dc19fc4d6d159cce",
+      "upstream_commit_url": "https://github.com/util-linux/util-linux/commit/11a38ec82c4db476c47be9e5dc19fc4d6d159cce",
+      "reason": "Retains the modern ZFS pool-member GPT description.",
+      "proof_files": [
+        {
+          "path": "include/pt-gpt-partnames.h",
+          "sha256": "55c6d84a5f9ec39660a3a650fe92dbd9e7e22eaac08fd9b94d012d2eb8d6ba01",
+          "required_strings": [
+            "ZFS pool member"
+          ],
+          "forbidden_strings": []
+        }
+      ]
+    },
+    {
+      "path": "upstream/unshare-add-owner-to-set-user-namespace-owner-uid-and-gid.patch",
+      "sha256": "e867300584d42c23d44e8c135b05b0289f1400bd02fa6a0791ce4964808498de",
+      "disposition": "superseded",
+      "upstream_commit": "926b207cae709b05ba53acf0ee4b88e529d51729",
+      "upstream_commit_url": "https://github.com/util-linux/util-linux/commit/926b207cae709b05ba53acf0ee4b88e529d51729",
+      "reason": "Retains explicit user-namespace owner UID/GID handling.",
+      "proof_files": [
+        {
+          "path": "sys-utils/unshare.c",
+          "sha256": "881e7a8048f448af078c3cf60c1521b63de466953b7a774eda70c769197efa8e",
+          "required_strings": [
+            "case OPT_OWNER:",
+            "setgid(ownergroup)",
+            "setuid(owneruser)"
+          ],
+          "forbidden_strings": []
+        }
+      ]
+    },
+    {
+      "path": "upstream/unshare-remove-get_mnt_ino-check-in-bind_ns_files_from_ch.patch",
+      "sha256": "b5f4b14ac2911684950f7df0f008614f0f9c1e25d23cbf0de743e9c6534419df",
+      "disposition": "superseded",
+      "upstream_commit": "35f142d33fbb758da7787f8040258b45f324b35e",
+      "upstream_commit_url": "https://github.com/util-linux/util-linux/commit/35f142d33fbb758da7787f8040258b45f324b35e",
+      "reason": "Retains eventfd synchronization; obsolete mount-inode helper remains removed.",
+      "proof_files": [
+        {
+          "path": "sys-utils/unshare.c",
+          "sha256": "881e7a8048f448af078c3cf60c1521b63de466953b7a774eda70c769197efa8e",
+          "required_strings": [
+            "eventfd(0, EFD_CLOEXEC)",
+            "static pid_t bind_ns_files_from_child(int *fd)"
+          ],
+          "forbidden_strings": [
+            "get_mnt_ino"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "upstream/unshare-fix-user-namespace-bind-mounts.patch",
+      "sha256": "6f7fcf998e1861b2d5cdaedc919b36f0b45b6a84c32fac30cf867e6e5700ee68",
+      "disposition": "superseded",
+      "upstream_commit": "8f84322ecf618b9c84040e08e346341f2853a139",
+      "upstream_commit_url": "https://github.com/util-linux/util-linux/commit/8f84322ecf618b9c84040e08e346341f2853a139",
+      "reason": "Namespace-file persistence includes user namespaces when creating the binding child.",
+      "proof_files": [
+        {
+          "path": "sys-utils/unshare.c",
+          "sha256": "881e7a8048f448af078c3cf60c1521b63de466953b7a774eda70c769197efa8e",
+          "required_strings": [
+            "if (npersists && (unshare_flags & (CLONE_NEWNS | CLONE_NEWUSER)))",
+            "pid_bind = bind_ns_files_from_child(&fd_bind);"
+          ],
+          "forbidden_strings": []
+        }
+      ]
+    },
+    {
+      "path": "ubuntu/sulogin-fallback-static-sh.patch",
+      "sha256": "a730895556610bea46864782e6014339c2005b2c63881e2a1019bd1f5b73383e",
+      "disposition": "refreshed",
+      "retained_path": "artex/sulogin-static-sh-2.42.patch",
+      "replacement_sha256": "1e4f9614f9b11047e68d6ec43b88ad2d1c835d13ce54b866d4df80f4d91984c6",
+      "reason": "Only context is refreshed for the equivalent Ubuntu install-path or emergency static-shell behavior."
+    },
+    {
+      "path": "ubuntu/sulogin-lockedpwd.patch",
+      "sha256": "a17e4f7f6c2371158796c3b92d437582dc9225c56f17d7447adf43fe46972a90",
+      "disposition": "retained",
+      "retained_path": "ubuntu/sulogin-lockedpwd.patch",
+      "reason": "Unchanged Ubuntu/Debian integration patch retained in the same order."
+    },
+    {
+      "path": "ubuntu/su-pty-drop-caps.patch",
+      "sha256": "1444ca72986cdd79e2b33194adabdf0023e4d2c1026612fc1dfd1f6ca4d5b670",
+      "disposition": "retained",
+      "retained_path": "ubuntu/su-pty-drop-caps.patch",
+      "reason": "Unchanged Ubuntu/Debian integration patch retained in the same order."
+    },
+    {
+      "path": "CVE-2026-13595.patch",
+      "sha256": "935ae9372061b9988c58297d1d5b12aa04cbc01e538e8606d0103b401f68de1c",
+      "disposition": "superseded",
+      "upstream_commit": "c0186f14fbdb02f64c8e0ba701ce727ea764ff4c",
+      "upstream_commit_url": "https://github.com/util-linux/util-linux/commit/c0186f14fbdb02f64c8e0ba701ce727ea764ff4c",
+      "reason": "Partition objects are individually allocated behind a pointer array, preventing reallocation from invalidating nested partition references.",
+      "proof_files": [
+        {
+          "path": "libblkid/src/partitions/partitions.c",
+          "sha256": "909472d13fdbbe3387d12b58295c9f81ad7c9845db06d702e4cc69b1ea0a0891",
+          "required_strings": [
+            "array of pointers to partitions",
+            "free(ls->parts[i]);"
+          ],
+          "forbidden_strings": []
+        }
+      ]
+    },
+    {
+      "path": "CVE-2026-27456.patch",
+      "sha256": "41c07bf368d90e24573646f02049ecae999e6320384f0855d57ec8d86625c270",
+      "disposition": "superseded",
+      "upstream_commit": "5e390467b26a3cf3fecc04e1a0d482dff3162fc4",
+      "upstream_commit_url": "https://github.com/util-linux/util-linux/commit/5e390467b26a3cf3fecc04e1a0d482dff3162fc4",
+      "reason": "No-follow loop-device mode is retained and uses the all-component no-symlink opener.",
+      "proof_files": [
+        {
+          "path": "lib/loopdev.c",
+          "sha256": "0c5d58080d03202f483ba6c41d3af30b656cd8be86862f6b847dfffa7167a25e",
+          "required_strings": [
+            "LOOPDEV_FL_NOFOLLOW",
+            "ul_open_no_symlinks(lc->filename, mode | flags, 0)"
+          ],
+          "forbidden_strings": []
+        },
+        {
+          "path": "libmount/src/hook_loopdev.c",
+          "sha256": "fc7e636f34a17ef2df157a69230bd48774560665dd8dc2ec7db2392d7d75b838",
+          "required_strings": [
+            "LOOPDEV_FL_NOFOLLOW"
+          ],
+          "forbidden_strings": []
+        }
+      ]
+    },
+    {
+      "path": "CVE-2026-3184.patch",
+      "sha256": "da612ed9aef33bcd2c6ccc36234996ce7e5991bb888976d9831f95daa39cb0d7",
+      "disposition": "superseded",
+      "upstream_commit": "8b29aeb081e297e48c4c1ac53d88ae07e1331984",
+      "upstream_commit_url": "https://github.com/util-linux/util-linux/commit/8b29aeb081e297e48c4c1ac53d88ae07e1331984",
+      "reason": "PAM_RHOST receives the original command-line FQDN instead of a shortened host.",
+      "proof_files": [
+        {
+          "path": "login-utils/login.c",
+          "sha256": "e3383d7419a5e3d87c1de51bb0eb4c4d5c7d673d00992fcbf9e73285bf09452d",
+          "required_strings": [
+            "pam_set_item(pamh, PAM_RHOST, cxt->cmd_hostname)",
+            "cxt->cmd_hostname = xstrdup(remotehost);"
+          ],
+          "forbidden_strings": []
+        }
+      ]
+    },
+    {
+      "path": "CVE-2026-53612.patch",
+      "sha256": "fecc288f8c7d9f1566fbbe31462d27f730d5b15a3ad3d8cb9787d9e68a20c93d",
+      "disposition": "superseded",
+      "upstream_commit": "24da33905c7115c4cbccd0afb2a469804e96467a",
+      "upstream_commit_url": "https://github.com/util-linux/util-linux/commit/24da33905c7115c4cbccd0afb2a469804e96467a",
+      "reason": "Ownership/mode changes operate on pinned descriptors, including a descriptor-path fallback for older kernels.",
+      "proof_files": [
+        {
+          "path": "libmount/src/hook_owner.c",
+          "sha256": "38c738f721d837945948d045e4c8b31cae2edb4f144d095d3f1369f04ad57cab",
+          "required_strings": [
+            "fchownat(fd, \"\", hd->owner, hd->group, AT_EMPTY_PATH)",
+            "fchmodat2(fd, \"\", hd->mode, AT_EMPTY_PATH)",
+            "ul_fd_mkpath(buf, sizeof(buf), fd)"
+          ],
+          "forbidden_strings": []
+        }
+      ]
+    },
+    {
+      "path": "CVE-2026-53613-pre1.patch",
+      "sha256": "6cea6a8bb283e4e34d9911219e3cda7897f97b0f05fee57399aa3414b808a5a8",
+      "disposition": "superseded",
+      "upstream_commit": "e01e38b24346a21f1d01498c265486a12c009e61",
+      "upstream_commit_url": "https://github.com/util-linux/util-linux/commit/e01e38b24346a21f1d01498c265486a12c009e61",
+      "reason": "All-component symlink rejection remains available through openat2 and a Linux fallback.",
+      "proof_files": [
+        {
+          "path": "lib/fileutils.c",
+          "sha256": "a5875d138c8b3c4633de899bdd3a0c09496dde19dc1fce942a8cf674003950f1",
+          "required_strings": [
+            "int ul_open_no_symlinks(const char *path, int flags, mode_t mode)",
+            "RESOLVE_NO_SYMLINKS",
+            "open_no_symlinks_fallback(path, flags, mode)"
+          ],
+          "forbidden_strings": []
+        }
+      ]
+    },
+    {
+      "path": "CVE-2026-53613.patch",
+      "sha256": "61cd947c7515db436af376273f05081dfcacff295777eddf54eeadd6cf3f466a",
+      "disposition": "superseded",
+      "upstream_commit": "78a860982e036f38fe9c0b3344998df5ac2c2ff5",
+      "upstream_commit_url": "https://github.com/util-linux/util-linux/commit/78a860982e036f38fe9c0b3344998df5ac2c2ff5",
+      "reason": "Restricted mount targets are pinned; the legacy mount path still consumes the target descriptor.",
+      "proof_files": [
+        {
+          "path": "libmount/src/context.c",
+          "sha256": "e8a67883eb37f459f255047ca325ffffc12427708487d3baab9d33ec9cb298e8",
+          "required_strings": [
+            "cxt->fd_target = ul_open_no_symlinks(target,"
+          ],
+          "forbidden_strings": []
+        },
+        {
+          "path": "libmount/src/hook_mount_legacy.c",
+          "sha256": "5da9bcd36169e8e2fd1a7b46ff47cb4ff91fd6c283f44024d5c48f172045f919",
+          "required_strings": [
+            "mnt_context_get_target_fd(cxt)"
+          ],
+          "forbidden_strings": []
+        }
+      ]
+    },
+    {
+      "path": "CVE-2026-53614.patch",
+      "sha256": "b004b8af1d5e7c738b7b4723f965a1fb0fd72e0684476da4e9400a46481adecf",
+      "disposition": "superseded",
+      "upstream_commit": "9cbfb823500f510b34767edabd3ffd5b436987b4",
+      "upstream_commit_url": "https://github.com/util-linux/util-linux/commit/9cbfb823500f510b34767edabd3ffd5b436987b4",
+      "reason": "SUID environment override uses safe_getenv and restricted legacy multi-step mounts are refused outside the new-mount compile guard.",
+      "proof_files": [
+        {
+          "path": "libmount/src/hook_mount.c",
+          "sha256": "f84acd5a48fabecc926db33041d7e1a0757412cafaf9fbcce7f0329d551a3a63",
+          "required_strings": [
+            "safe_getenv(\"LIBMOUNT_FORCE_MOUNT2\")"
+          ],
+          "forbidden_strings": []
+        },
+        {
+          "path": "libmount/src/hook_mount_legacy.c",
+          "sha256": "5da9bcd36169e8e2fd1a7b46ff47cb4ff91fd6c283f44024d5c48f172045f919",
+          "required_strings": [
+            "if (mnt_context_is_restricted(cxt))",
+            "multi-step mount(2) refused for non-root user",
+            "return -EPERM;"
+          ],
+          "forbidden_strings": []
+        }
+      ]
+    },
+    {
+      "path": "CVE-2026-53615.patch",
+      "sha256": "63aeb1b85eecbf470d218d33bdffe420cfc07915c84d770ad24ce2723457601c",
+      "disposition": "superseded",
+      "upstream_commit": "e9d544d013267ea86b70ee8ff78abd280e6641af",
+      "upstream_commit_url": "https://github.com/util-linux/util-linux/commit/e9d544d013267ea86b70ee8ff78abd280e6641af",
+      "reason": "Both EBR data partitions and the next EBR link are bounded by the master extended area.",
+      "proof_files": [
+        {
+          "path": "libblkid/src/partitions/dos.c",
+          "sha256": "6541b1cc289ee462f00d2a770c2977429e8ae52f48eb431393b0d8a943775446",
+          "required_strings": [
+            "uint64_t ex_end = (uint64_t) ex_start + ex_size;",
+            "if (abs < ex_start || abs + size > ex_end)",
+            "if (next + size > ex_end)",
+            "if (next <= cur_start)"
+          ],
+          "forbidden_strings": []
+        }
+      ]
+    },
+    {
+      "path": "tests-fincore-force-the-use-of-GNU-dd-over-uutils.patch",
+      "sha256": "440e6d32a50186ac7bee0a87eef8b5b7ebb85c3b65669259d3279e5ceb16cdac",
+      "disposition": "retained",
+      "retained_path": "tests-fincore-force-the-use-of-GNU-dd-over-uutils.patch",
+      "reason": "Unchanged Ubuntu/Debian integration patch retained in the same order."
+    }
+  ],
+  "abi": {
+    "policy": "Preserve every Ubuntu symbol entry and dh_makeshlibs -c4; allow only listed additive upstream 2.42 symbols.",
+    "additions": {
+      "libmount1.symbols": {
+        "node": "MOUNT_2_42",
+        "minimum_version": "2.42",
+        "functions": [
+          "mnt_context_enable_beneath",
+          "mnt_context_enable_exclusive",
+          "mnt_context_is_beneath",
+          "mnt_context_is_exclusive",
+          "mnt_fs_is_attached",
+          "mnt_fs_is_detached",
+          "mnt_fs_is_moved",
+          "mnt_monitor_enable_fanotify",
+          "mnt_monitor_enable_mountinfo",
+          "mnt_monitor_event_next_fs"
+        ]
+      },
+      "libsmartcols1.symbols": {
+        "node": "SMARTCOLS_2.42",
+        "minimum_version": "2.42",
+        "functions": [
+          "scols_column_get_annotation",
+          "scols_column_get_headercolor",
+          "scols_column_refer_annotation",
+          "scols_column_set_headercolor",
+          "scols_filter_has_holder"
+        ]
+      },
+      "libfdisk1.symbols": {
+        "node": "FDISK_2_42",
+        "minimum_version": "2.42",
+        "functions": [
+          "fdisk_is_collision_area"
+        ]
+      }
+    }
+  },
+  "package_versions": {
+    "bsdutils": "1:2.42.4-0artex1",
+    "libblkid1": "2.42.4-0artex1",
+    "libmount1": "2.42.4-0artex1",
+    "libsmartcols1": "2.42.4-0artex1",
+    "libuuid1": "2.42.4-0artex1",
+    "login": "1:4.16.0-2+really2.42.4-0artex1",
+    "mount": "2.42.4-0artex1",
+    "util-linux": "2.42.4-0artex1"
+  },
+  "legacy_mount_review": "Ubuntu --disable-libmount-mountfd-support remains unchanged. Target pinning, safe environment access and restricted multi-step checks are present in legacy mount code; relevant guards are outside USE_LIBMOUNT_MOUNTFD_SUPPORT-only blocks.",
+  "security_fixes": {
+    "CVE-2026-76642": {
+      "release_notes": "https://www.kernel.org/pub/linux/utils/util-linux/v2.42/v2.42.3-ReleaseNotes",
+      "reason": "Post-mount hooks run only after a successful mount stage, including helper status.",
+      "proof_files": [
+        {
+          "path": "libmount/src/context_mount.c",
+          "sha256": "e486b4095f9d88bde837fcd1dad564549496bf1f6ad371f05d911f5ac6fc6363",
+          "required_strings": [
+            "if (res == 0 && !is_mount_stage_failed(cxt))",
+            "mnt_context_call_hooks(cxt, MNT_STAGE_MOUNT_POST)"
+          ],
+          "forbidden_strings": []
+        }
+      ]
+    },
+    "CVE-2026-78408": {
+      "release_notes": "https://www.kernel.org/pub/linux/utils/util-linux/v2.42/v2.42.4-ReleaseNotes",
+      "reason": "Includes close-on-exec hardening and the subsequent explicit close of the cgroup.procs authority descriptor.",
+      "proof_files": [
+        {
+          "path": "sys-utils/nsenter.c",
+          "sha256": "db0c619b03479b611f6d0d863f52b03ae0084d71e5698554889759576e007ff0",
+          "required_strings": [
+            "open(fdpath, O_WRONLY | O_APPEND | O_CLOEXEC)",
+            "close(cgroup_procs_fd);",
+            "cgroup_procs_fd = -1;"
+          ],
+          "forbidden_strings": []
+        }
+      ]
+    },
+    "CVE-2026-78410": {
+      "release_notes": "https://www.kernel.org/pub/linux/utils/util-linux/v2.42/v2.42.4-ReleaseNotes",
+      "reason": "Includes later legacy mount source pinning for restricted bind/move mounts, not only new-mount API changes.",
+      "proof_files": [
+        {
+          "path": "libmount/src/hook_mount_legacy.c",
+          "sha256": "5da9bcd36169e8e2fd1a7b46ff47cb4ff91fd6c283f44024d5c48f172045f919",
+          "required_strings": [
+            "if (mnt_context_target_fd_required(cxt)",
+            "(flags & (MS_BIND | MS_MOVE))",
+            "fd_src = ul_open_no_symlinks(src, O_PATH | O_CLOEXEC, 0);",
+            "ul_fd_mkpath(srcfdpath, sizeof(srcfdpath), fd_src)"
+          ],
+          "forbidden_strings": []
+        }
+      ]
+    }
+  }
+}

@@ -11,6 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
       - run: python3 -I scripts/test-image-security.py
+      - run: python3 -I scripts/test-worker-tools-proof.py
       - run: python3 -I scripts/test-signed-release.py
       - run: python3 -I scripts/test-release-publication.py
       - run: python3 -I scripts/test-release-tag-policy.py
@@ -80,7 +81,7 @@ jobs:
 
   worker-boundary:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
       - run: docker build --target worker -f Dockerfile.source -t artex-local:worker .

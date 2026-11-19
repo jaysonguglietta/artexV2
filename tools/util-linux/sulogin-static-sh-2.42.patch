@@ -1,0 +1,19 @@
+Description: Refresh Ubuntu packaging patch for util-linux 2.42.4
+Author: Artex maintainers
+Forwarded: not-needed
+Origin: vendor, Ubuntu util-linux 2.41.3-3ubuntu2.2
+
+--- a/login-utils/sulogin.c
++++ b/login-utils/sulogin.c
+@@ -945,6 +945,11 @@
+ 	xsetenv("SHELL", _PATH_BSHELL, 1);
+ 	execl(_PATH_BSHELL, profile ? "-sh" : "sh", (char *)NULL);
+ 	warn(_("failed to execute %s"), _PATH_BSHELL);
++
++	/* Retain Ubuntu's emergency static-shell fallback. */
++	xsetenv("SHELL", "/bin/static-sh", 1);
++	execl("/bin/static-sh", profile ? "-sh" : "sh", (char *)NULL);
++	warn(_("failed to execute %s"), "/bin/static-sh");
+ }
+ 
+ #ifdef HAVE_LIBSELINUX

@@ -143,6 +143,16 @@ including with the legacy enabling flag; version checks remain read-only.
 Use a dedicated assessment VM and retain the AGPL license and upstream attribution.
 
 
+### jq and util-linux follow-up
+
+The operator authorized actual jq upgrading and a reviewed util-linux security upgrade
+against the `3062e9c…` publication baseline. New package builds, both native
+architecture scans and isolation/scanning regressions are **pending**. Earlier
+`375b2c3…` passes and 85 Medium/9 Low counts remain scoped historical evidence;
+they do not validate this change. A missing Ubuntu `FixedVersion` is not proof
+that no upstream fix exists. See [worker security packages](docs/WORKER-SECURITY-PATCHES.md)
+for honest packaging and the required fresh evidence.
+
 ### Release and evidence controls
 
 [Runtime image security](docs/IMAGE-SECURITY.md) records exact image/platform,
@@ -162,11 +172,11 @@ workflow, protected tag, commit and run. Two active
 [release-tag rulesets](docs/RELEASE-TAG-PROTECTION.md) restrict creation to the
 personal owner and forbid updates/deletions without bypass. Publication also
 requires explicit opt-in and all gates. A main-only rehearsal uses real OIDC
-without publishing. [Current native image gates](docs/VALIDATION.md) passed all
+without publishing. [Earlier native image gates](docs/VALIDATION.md) passed all
 **eight amd64/arm64 components** at `375b2c3…`, with zero blocking and 94 exact
 expiring reviews per platform. Worker raw findings remain 85 Medium/9 Low each;
 other components report zero. [Evidence](security/image-followup-evidence.json)
-binds every current image/config/rootfs and all 16 verified report/SBOM hashes.
+binds every recorded baseline image/config/rootfs and all 16 verified report/SBOM hashes.
 All six hosted Go jobs and documentation passed at the same source, including
 client11/tools6/worker53/Compose17/disk16/migration7/backup22.
 [Runtime evidence](security/postgres-runtime-evidence.json) preserves the downloaded

@@ -106,6 +106,7 @@ class Fixture:
         host = 2 + 2 * secrets.randbelow(100)
         self.allowed, self.denied = f'198.18.{octet}.{host}', f'198.18.{octet}.{host + 1}'
         self.worker_image = self.broker_image = ''
+        self.image_identities = {}
 
     def redact(self, value):
         return str(value).replace(self.token, '[REDACTED]')
@@ -251,6 +252,19 @@ while True:
     def setup(self):
         self.worker_image = docker('image', 'inspect', self.args.worker_image, '--format', '{{.Id}}')
         self.broker_image = docker('image', 'inspect', self.args.broker_image, '--format', '{{.Id}}')
+        for component, identity in [('worker', self.worker_image), ('broker', self.broker_image)]:
+            inspected = json.loads(docker('image', 'inspect', identity))[0]
+            self.image_identities[component] = {
+                'image_id': identity,
+                'platform': inspected['Os'] + '/' + inspected['Architecture'],
+                'rootfs_diff_ids': inspected['RootFS']['Layers'],
+            }
+        if self.image_identities['worker']['platform'] != self.image_identities['broker']['platform']:
+            raise RuntimeError('Worker and broker must use the same native platform')
+        daemon_arch = docker('info', '--format', '{{.Architecture}}')
+        native_arch = {'aarch64': 'arm64', 'arm64': 'arm64', 'x86_64': 'amd64', 'amd64': 'amd64'}.get(daemon_arch)
+        if native_arch is None or self.image_identities['worker']['platform'] != 'linux/' + native_arch:
+            raise RuntimeError('Isolation validation requires native worker and broker images for this daemon')
         (self.base / 'token').write_text(self.token)
         (self.base / 'token').chmod(0o644)
         policy = {'sessions': {'task-1': [self.allowed + '/32'], 'task-2': [self.allowed + '/32']},
@@ -334,6 +348,11 @@ while True:
         denied = f'http://{self.denied}:{self.port}/'
         self.check('Explicit synthetic target is reachable', 'authorized synthetic target' in
                    self.output('task-1', a, f'curl --max-time 3 --noproxy "*" {allowed}'))
+        scanned = self.output('task-1', a,
+                              f'nmap -sT -Pn -n --max-retries 0 --host-timeout 8s '
+                              f'-p {self.port} --open -oG - {self.allowed}')
+        self.check('Unprivileged Nmap scanning discovers the approved synthetic target port',
+                   f'Host: {self.allowed} ' in scanned and f'{self.port}/open/tcp/' in scanned)
         self.check('Denied-address positive control reaches the same target',
                    'authorized synthetic target' in docker('exec', self.broker, 'wget', '-q', '-T', '3', '-O', '-', denied))
         self.check('Adjacent unapproved synthetic address is denied', 'DENIED' in
@@ -559,7 +578,8 @@ def main():
                                         'detail': type(error).__name__ + ': ' + failure})
         finally:
             cleanup_errors = fixture.cleanup()
-            summary = {'schema_version': 2, 'passed': completed and failure is None and not cleanup_errors,
+            summary = {'schema_version': 3, 'passed': completed and failure is None and not cleanup_errors,
+                       'images': fixture.image_identities,
                        'elapsed_seconds': round(time.monotonic() - fixture.started, 2),
                        'checks': fixture.results}
             if failure:
