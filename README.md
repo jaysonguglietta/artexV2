@@ -104,6 +104,8 @@ Screenshots are examples from the inherited project; live deployment behavior fo
 
 ## Quick start (Docker Compose)
 
+**New installation, especially macOS:** follow the complete [installation and first-run guide](docs/INSTALLATION.md) for prerequisites, private credentials, login, worker setup, verification and troubleshooting.
+
 > **Prerequisites:** Docker and Docker Compose. The database is **PostgreSQL**, brought up by compose. Exploration requires an **LLM** (`ANTHROPIC_API_KEY` or `OPENAI_API_KEY`; can also be set in the UI).
 
 The included Compose configuration builds the reviewed local source instead of
@@ -116,7 +118,7 @@ image. Image gates and release signatures cover all four components.
 ```sh
 cp .env.example .env
 # Set a unique POSTGRES_PASSWORD and ARTEX_ADMIN_PASSWORD in .env.
-./scripts/setup-workers.sh --secret-only
+sh scripts/setup-workers.sh --secret-only
 docker compose build postgres
 sh scripts/setup-postgres.sh
 docker compose up --build -d

@@ -4,6 +4,9 @@ ARTEX is a single-operator assessment application. Use it only on systems you ow
 or have permission to test. Deploy it in a dedicated assessment VM with a dedicated
 Docker daemon; do not use shared multi-tenant hosting.
 
+For step-by-step prerequisites, Mac VM setup, first login and troubleshooting,
+start with [Installation and first run](INSTALLATION.md).
+
 ## Execution boundary
 
 Follow [Isolated task execution](WORKER-ISOLATION.md) to build the task image,
@@ -22,7 +25,7 @@ it into the API or worker, publish the broker port, or relax its network isolati
 ```sh
 cp .env.example .env
 # Set unique POSTGRES_PASSWORD and ARTEX_ADMIN_PASSWORD values in .env.
-./scripts/setup-workers.sh --secret-only
+sh scripts/setup-workers.sh --secret-only
 docker compose build postgres
 sh scripts/setup-postgres.sh
 docker compose up --build -d

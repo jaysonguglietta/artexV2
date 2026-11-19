@@ -41,14 +41,17 @@ and fixes the worker entrypoint. Do not weaken those deployment settings.
 
 ## Build and start
 
-Use the repository's pinned Dockerfile and lockfiles:
+Complete [installation prerequisites and private configuration](INSTALLATION.md)
+first. Preserve the resulting `.env`; do not copy the example over configured
+credentials. Use the repository's pinned Dockerfile and lockfiles:
 
 ```sh
-cp .env.example .env
-# Set a strong URL-safe POSTGRES_PASSWORD and unique ARTEX_ADMIN_PASSWORD.
+# .env must already contain your private credentials from the installation guide.
 docker build -f Dockerfile.source --target worker -t artex-local:worker .
 docker build -f Dockerfile.source --target broker -t artex-local:broker .
-./scripts/setup-workers.sh
+sh scripts/setup-workers.sh
+docker compose build postgres
+sh scripts/setup-postgres.sh
 # Review .secrets/worker-policy.json and .env.workers before starting.
 docker compose --env-file .env --env-file .env.workers \
   -f docker-compose.yml -f compose.workers.yml up --build -d
