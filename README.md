@@ -68,8 +68,11 @@ preserve historical model benchmarks.
 | [Security review](docs/SECURITY-REVIEW.md) | Assess fixes, regression checks and remaining limits |
 | [Comprehensive audit](docs/SECURITY-AUDIT.md) | Trace the threat model, 15 findings, attack chains and remediation roadmap |
 | [Validation](docs/VALIDATION.md) | Inspect test results and repeat the checks |
+| [Product readiness review](docs/PRODUCT-READINESS-REVIEW.md) | Inspect feature evidence, complete journeys and the proposed backlog |
 | [Image security](docs/IMAGE-SECURITY.md) | Scan exact runtime images and review full vulnerability/SBOM evidence |
 | [Signed releases](docs/SIGNED-RELEASES.md) | Verify source identity and signed artifacts before external installation |
+| [Release-tag protection](docs/RELEASE-TAG-PROTECTION.md) | Inspect active owner-only creation and immutable version-tag rules |
+| [PostgreSQL, logs and backups](docs/POSTGRES-BACKUP.md) | Set physical database bounds, activate log rotation and verify encrypted restores |
 | [Evidence storage](docs/EVIDENCE-STORAGE.md) | Configure quotas, raw retention and whole-bucket legal holds |
 | [Upload guide](UPLOAD.md) | Publish a reviewed source copy to the personal repository |
 
@@ -114,6 +117,8 @@ image. Image gates and release signatures cover all four components.
 cp .env.example .env
 # Set a unique POSTGRES_PASSWORD and ARTEX_ADMIN_PASSWORD in .env.
 ./scripts/setup-workers.sh --secret-only
+docker compose build postgres
+sh scripts/setup-postgres.sh
 docker compose up --build -d
 # Open http://localhost:8787.
 ```
@@ -122,11 +127,16 @@ Agent tools require the separate broker and per-task containers described in
 [Isolated task execution](docs/WORKER-ISOLATION.md). Operator-owned CIDR rules
 control scanning destinations; database/signing credentials stay in the API.
 Host execution is prohibited, including when the legacy execution flag is set.
-See [Secure local deployment](docs/SECURE-DEPLOYMENT.md) for setup and limitations.
+The PostgreSQL preflight must follow the image build and precede Compose startup;
+it primes normal confinement on a fresh daemon without touching database volumes.
+The new bounded database volume deliberately does not adopt an existing legacy
+volume. Follow [PostgreSQL capacity and migration](docs/POSTGRES-BACKUP.md) before
+using existing data. See [Secure local deployment](docs/SECURE-DEPLOYMENT.md) for
+remaining setup and limitations.
 
 ### Other installation methods
 
-Source builds require Go and Node 22. Native API binaries also require the remote
+Source builds require Go 1.27.4 and Node 22. Native API binaries also require the remote
 broker for tool execution; there is no local fallback. Use a reviewed source build or externally verify signed release artifacts before
 installation. Production in-process update and rollback are permanently refused,
 including with the legacy enabling flag; version checks remain read-only.
@@ -135,29 +145,55 @@ Use a dedicated assessment VM and retain the AGPL license and upstream attributi
 
 ### Release and evidence controls
 
-[Runtime image security](docs/IMAGE-SECURITY.md) inventories exact image IDs and
-platforms, records fresh Trivy DB identity, and produces complete JSON and
-CycloneDX reports. Active or unverified High/Critical/Unknown findings block the
-gate, including unfixed issues. A primary-source-confirmed withdrawal is recorded
-separately with its raw finding and proof; it is not a blanket package exception.
+[Runtime image security](docs/IMAGE-SECURITY.md) records exact image/platform,
+fresh advisory DB identity, full JSON and CycloneDX inventories. Standard CI blocks
+all active/unverified High/Critical/Unknown findings and every fixable Medium/Low
+finding. Vendor-unfixed Medium/Low remain visible. The signed-publication path
+uses `--require-reviewed-findings`: every active finding must be fixed or covered
+by an exact, expiring review of a vendor-unfixed Medium/Low **worker Ubuntu 26.04
+OS** record. High/Critical/Unknown and fixable findings cannot be waived. Reviews
+bind CVE, package/version, severity, platform, vendor reference and concrete
+containment for at most 30 days. This is explicit residual-risk acceptance, not a
+fix or a zero-active result. Local assessment/scanning remains available. No production
+version-tag release has been published.
 
-[Signed releases](docs/SIGNED-RELEASES.md) bind artifacts to this repository,
-workflow, tag, source commit and run. Publication is restricted to protected
-version tags with explicit release opt-in. A separate main-only dry run rehearses
-real OIDC signing without publishing a production release. Fresh local integration
-and all four ARM64 image gates passed, with the worker's one withdrawn advisory
-retained in raw counts. Final Compose acceptance passed 11/11. The prepared source credential scan has no unresolved matches. Hosted CI, all eight
-amd64/arm64 image gates and the real OIDC signing rehearsal passed. No production
-version-tag release was published; the validation record links the exact tested commit/runs.
-See [validation](docs/VALIDATION.md) for exact counts, identities and limits.
+[Signed releases](docs/SIGNED-RELEASES.md) bind artifacts to the exact repository,
+workflow, protected tag, commit and run. Two active
+[release-tag rulesets](docs/RELEASE-TAG-PROTECTION.md) restrict creation to the
+personal owner and forbid updates/deletions without bypass. Publication also
+requires explicit opt-in and all gates. A main-only rehearsal uses real OIDC
+without publishing. Earlier hosted passes apply to their recorded November 18
+commit. November 19 local ARM64 standard scans passed, retaining 85 Medium and
+9 Low active worker records with no listed fix; the other three images had zero
+reported findings. Full [residual evidence](security/image-followup-evidence.json)
+remains visible. The lifecycle-fixed source subsequently passed **53 worker
+checks**, six actual worker/browser checks and a fresh isolation race run; the
+22-check backup integration also passed again. The earlier 17-check Compose
+acceptance remains a separate checkpoint.
+The earlier independent strict diagnostic refused all 94 records with zero
+scanner errors. The newly authorized reviewed-findings policy requires its own
+exact-image proof. A later cleanup-failure fix passed its isolation race check;
+its final rebuilt-image live run, fresh scans and new hosted checks remain
+pending in [validation](docs/VALIDATION.md). A local worker pass
+does not approve a production release.
 
 [Evidence storage](docs/EVIDENCE-STORAGE.md) defines independent admission budgets
-for evidence, traffic and workspace files, 30-day raw capture retention and
-whole-bucket legal holds. Raw SDK debug transcripts default off for ordinary
-binaries; Compose explicitly enables bounded ephemeral tmpfs. These live debug
-files are not durable held evidence. PostgreSQL conversation and
-activity history is separate and is not removed by disabling raw SDK dumps.
-These are scoped controls, not a total VM/database/log disk cap.
+for evidence, traffic and workspace files, 30-day raw retention and whole-bucket
+holds. Raw SDK transcripts default off for ordinary binaries; Compose explicitly
+uses bounded ephemeral tmpfs, excluded from durable holds. PostgreSQL UI history
+is separate. [Database/log/backup controls](docs/POSTGRES-BACKUP.md) now add a
+preallocated bounded ext4 database, per-container log rotation and encrypted,
+authenticated backups verified by a disposable restore. The 22-check exact-source
+backup integration passed. On the reviewed dedicated VM, Docker/journal policy
+was activated through service restarts and an actual stdout-rotation test; new
+containers inherit finite local logging. These controls do not cap all VM, image
+or backup storage; retain separate capacity and audit policies.
+
+The worker uses Ubuntu 26.04, copied official Python 3.14.10 and Node 24.22.3,
+with explicit [npm](tools/npm/README.md) and [pip](tools/python/README.md) security
+forks. Their actual dependency/code changes, honest versions, integrity and offline
+CLI checks are documented separately. Source-runtime fixture passes do not replace
+the final worker integration or current advisory scan.
 
 
 ---

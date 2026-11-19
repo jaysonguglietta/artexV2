@@ -13,6 +13,12 @@ jobs:
       - run: python3 -I scripts/test-image-security.py
       - run: python3 -I scripts/test-signed-release.py
       - run: python3 -I scripts/test-release-publication.py
+      - run: python3 -I scripts/test-release-tag-policy.py
+      - run: python3 -I scripts/test-npm-fork.py
+      - run: python3 -I scripts/test-pip-fork.py
+      - run: python3 -I scripts/test-backup-crypto.py
+      - run: python3 -I scripts/test-backup.py
+      - run: python3 -I scripts/test-log-policy.py
   unit:
     runs-on: ubuntu-latest
     steps:
@@ -80,5 +86,9 @@ jobs:
       - run: docker build --target broker -f Dockerfile.source -t artex-local:broker .
       - run: docker build --target application -f Dockerfile.source -t artex-local:hardened .
       - run: docker build --target postgres -f Dockerfile.source -t artex-local:postgres .
+      - run: python3 scripts/test-worker-tools.py
       - run: python3 scripts/test-workers.py
       - run: python3 scripts/test-compose.py
+      - run: python3 scripts/test-pgdisk.py
+      - run: python3 scripts/test-pgdisk-migration.py
+      - run: python3 scripts/test-backup-integration.py

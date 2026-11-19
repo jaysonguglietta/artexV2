@@ -8,6 +8,8 @@ import io
 import json
 import os
 from pathlib import Path
+import subprocess
+import sys
 import tarfile
 import tempfile
 import unittest
@@ -30,7 +32,9 @@ IMAGE = {'image_id': 'sha256:' + '1' * 64, 'platform': 'linux/arm64', 'reference
 
 
 def policy():
-    return json.loads((ROOT / 'security/image-policy.json').read_text())
+    result = json.loads((ROOT / 'security/image-policy.json').read_text())
+    result['exceptions'] = []  # Unit fixtures must not depend on live review dates.
+    return result
 
 
 def report():
@@ -54,14 +58,16 @@ def vulnerability(severity='HIGH'):
 def exception():
     return {'vulnerability_id': 'CVE-2026-12345', 'package': 'fixture-package', 'installed_version': '1.0',
             'component': 'worker', 'target': 'os:ubuntu:26.04', 'platform': 'linux/arm64',
+            'severity': 'MEDIUM', 'fixed_version': None,
             'reviewed_at': NOW.isoformat(), 'expires': (NOW + timedelta(days=7)).isoformat(),
             'reason': 'Synthetic test for an explicitly reviewed bounded exception.',
-            'reference': 'https://github.com/advisories/GHSA-aaaa-bbbb-cccc'}
+            'reference': 'https://ubuntu.com/security/CVE-2026-12345'}
 
 
 class GateTests(unittest.TestCase):
-    def evaluate(self, value, component='worker', exceptions=None):
-        return scan.evaluate_report(value, component, IMAGE, policy(), exceptions or [], '0.76.2')
+    def evaluate(self, value, component='worker', exceptions=None, reviewed=False):
+        return scan.evaluate_report(value, component, IMAGE, policy(), exceptions or [], '0.76.2',
+                                    require_reviewed_findings=reviewed)
 
     def test_all_severities_and_unfixed_findings_remain_visible(self):
         value = report()
@@ -70,6 +76,103 @@ class GateTests(unittest.TestCase):
         self.assertEqual(sum(result['counts'].values()), 5)
         self.assertEqual({x['severity'] for x in result['blocking']}, {'HIGH', 'CRITICAL', 'UNKNOWN'})
         self.assertTrue(all(x['fixed_version'] is None for x in result['blocking']))
+        self.assertEqual({x['severity'] for x in result['unfixed_lower_severity']}, {'MEDIUM', 'LOW'})
+
+    def test_published_medium_and_low_fixes_block_without_hiding_unfixed_findings(self):
+        value = report()
+        value['Results'][0]['Vulnerabilities'] = [
+            {**vulnerability(s), 'FixedVersion': '1.1', 'Status': 'fixed'} for s in ['MEDIUM', 'LOW']
+        ] + [vulnerability('MEDIUM')]
+        result, _ = self.evaluate(value)
+        self.assertEqual(len(result['blocking']), 2)
+        self.assertTrue(all(x['fixed_version'] == '1.1' for x in result['blocking']))
+        self.assertEqual(len(result['unfixed_lower_severity']), 1)
+        self.assertEqual(result['counts']['MEDIUM'], 2)
+        self.assertEqual(result['counts']['LOW'], 1)
+
+    def test_lower_severity_policy_cannot_be_disabled_and_fix_evidence_is_strict(self):
+        for setting in [None, False, 'true', 1]:
+            settings = policy(); settings['block_fixable_lower_severity'] = setting
+            with self.subTest(setting=setting), self.assertRaises(ValueError):
+                scan.validate_policy(settings, NOW)
+        for fixed in [[], 2, ' 1.1', '1.1 ']:
+            value = report()
+            value['Results'][0]['Vulnerabilities'] = [{**vulnerability('LOW'), 'FixedVersion': fixed}]
+            with self.subTest(fixed=fixed), self.assertRaises(ValueError): self.evaluate(value)
+        value = report()
+        value['Results'][0]['Vulnerabilities'] = [{**vulnerability('MEDIUM'), 'Status': 'fixed'}]
+        with self.assertRaises(ValueError): self.evaluate(value)
+
+    def test_zero_findings_diagnostic_blocks_even_reviewed_lower_findings(self):
+        value = report()
+        value['Results'][0]['Vulnerabilities'] = [vulnerability('MEDIUM'), vulnerability('LOW')]
+        result, _ = scan.evaluate_report(value, 'worker', IMAGE, policy(), [exception()], '0.76.2',
+                                        require_no_active_findings=True)
+        self.assertEqual(result['gate_mode'], 'no-active-findings')
+        self.assertEqual(len(result['blocking']), 2)
+        self.assertEqual(result['reviewed_exceptions'], [])
+
+    def test_signed_release_requires_exact_reviewed_vendor_unfixed_lower_findings(self):
+        value = report()
+        value['Results'][0]['Vulnerabilities'] = [vulnerability('MEDIUM'), vulnerability('LOW')]
+        result, _ = self.evaluate(value, exceptions=[exception()], reviewed=True)
+        self.assertEqual(result['gate_mode'], 'reviewed-findings')
+        self.assertEqual([x['severity'] for x in result['blocking']], ['LOW'])
+        self.assertEqual(len(result['reviewed_exceptions']), 1)
+        for change in [lambda x: x.update(Severity='HIGH'), lambda x: x.update(Severity='CRITICAL'),
+                       lambda x: x.update(Severity='UNKNOWN'), lambda x: x.update(Severity='LOW'),
+                       lambda x: x.update(FixedVersion='1.1'), lambda x: x.update(FixedVersion=''),
+                       lambda x: x.update(InstalledVersion='1.0-new'), lambda x: x.update(PkgName='new-package'),
+                       lambda x: x.update(VulnerabilityID='CVE-2026-54321')]:
+            changed = report(); finding = vulnerability('MEDIUM'); change(finding)
+            changed['Results'][0]['Vulnerabilities'] = [finding]
+            result, _ = self.evaluate(changed, exceptions=[exception()], reviewed=True)
+            self.assertEqual(len(result['blocking']), 1)
+            self.assertFalse(result['reviewed_exceptions'])
+        value['Results'][0]['Vulnerabilities'] = [vulnerability('MEDIUM')]
+        result, matched = self.evaluate(value, exceptions=[exception()], reviewed=True)
+        self.assertFalse(result['blocking'])
+        scan.check_unused_exceptions([exception()], matched, {('worker', 'linux/arm64')})
+
+    def test_high_fixable_other_component_or_language_findings_are_never_waivable(self):
+        for severity in ('HIGH', 'CRITICAL', 'UNKNOWN'):
+            item = exception(); item['severity'] = severity
+            settings = policy(); settings['exceptions'] = [item]
+            with self.assertRaises(ValueError): scan.validate_policy(settings, NOW)
+            value = report(); value['Results'][0]['Vulnerabilities'] = [vulnerability(severity)]
+            for reviewed in (False, True):
+                result, _ = self.evaluate(value, exceptions=[item], reviewed=reviewed)
+                self.assertEqual(len(result['blocking']), 1)
+        for change in [('component', 'broker'), ('target', 'Node.js'), ('target', 'os:ubuntu:24.04'),
+                       ('severity', 'medium'), ('fixed_version', '1.1')]:
+            item = exception(); item[change[0]] = change[1]
+            settings = policy(); settings['exceptions'] = [item]
+            with self.subTest(change=change), self.assertRaises(ValueError): scan.validate_policy(settings, NOW)
+        value = report(); value['Results'][2]['Vulnerabilities'] = [vulnerability('MEDIUM')]
+        item = exception(); item['target'] = 'Node.js'
+        result, _ = self.evaluate(value, exceptions=[item], reviewed=True)
+        self.assertEqual(len(result['blocking']), 1)
+        self.assertFalse(result['reviewed_exceptions'])
+        value = report(); value['Results'][0]['Vulnerabilities'] = [{**vulnerability('MEDIUM'), 'FixedVersion': '1.1'}]
+        item = exception(); item['fixed_version'] = '1.1'
+        for reviewed in (False, True):
+            result, _ = self.evaluate(value, exceptions=[item], reviewed=reviewed)
+            self.assertEqual(len(result['blocking']), 1)
+            self.assertFalse(result['reviewed_exceptions'])
+
+    def test_zero_findings_diagnostic_ignores_expired_policy_reviews_and_modes_are_exclusive(self):
+        settings = policy(); item = exception(); item['expires'] = (NOW - timedelta(seconds=1)).isoformat()
+        settings['exceptions'] = [item]
+        with self.assertRaises(ValueError): scan.validate_policy(settings, NOW)
+        self.assertEqual(scan.validate_policy(settings, NOW, ignore_exceptions=True), [])
+        with tempfile.TemporaryDirectory() as directory:
+            result = subprocess.run([sys.executable, '-I', str(ROOT / 'scripts/scan-images.py'),
+                                     '--output', directory, '--image', 'worker=fixture',
+                                     '--require-no-active-findings', '--require-reviewed-findings'],
+                                    capture_output=True, text=True, timeout=10)
+        self.assertEqual(result.returncode, 2)
+        self.assertIn('not allowed with argument', result.stderr)
+        with self.assertRaises(ValueError): scan.gate_mode(True, True)
 
     def test_image_and_platform_identity_must_match(self):
         for field, value in [('ImageID', 'sha256:' + '2' * 64), ('ImageConfig', {'os': 'linux', 'architecture': 'amd64'}), ('ImageConfig', []), ('DiffIDs', ['sha256:' + '4' * 64])]:
@@ -131,14 +234,14 @@ class GateTests(unittest.TestCase):
             with self.assertRaises(ValueError): self.evaluate(changed, 'broker')
 
     def test_exception_exactness_and_stale_selection(self):
-        value = report(); value['Results'][0]['Vulnerabilities'] = [vulnerability()]
+        value = report(); value['Results'][0]['Vulnerabilities'] = [vulnerability('MEDIUM')]
         item = exception(); validated = policy(); validated['exceptions'] = [item]
         entries = scan.validate_policy(validated, NOW)
-        result, matched = self.evaluate(value, exceptions=entries)
+        result, matched = self.evaluate(value, exceptions=entries, reviewed=True)
         self.assertFalse(result['blocking']); self.assertEqual(len(result['reviewed_exceptions']), 1)
         for key in ('package', 'installed_version', 'target', 'platform'):
             changed = copy.deepcopy(item); changed[key] += '-different'
-            result, _ = self.evaluate(value, exceptions=[changed])
+            result, _ = self.evaluate(value, exceptions=[changed], reviewed=True)
             self.assertEqual(len(result['blocking']), 1)
         scan.check_unused_exceptions(entries, set(), {('broker', 'linux/arm64')})
         scan.check_unused_exceptions(entries, set(), {('worker', 'linux/amd64')})
@@ -232,6 +335,15 @@ class WithdrawalTests(unittest.TestCase):
         result = self.evaluate(verifier, os_only)
         self.assertEqual(len(result['blocking']), 1)
         self.assertFalse(result['verified_withdrawn'])
+
+    def test_official_withdrawal_remains_valid_in_both_publication_and_diagnostic_modes(self):
+        for mode in ('require_reviewed_findings', 'require_no_active_findings'):
+            result, _ = scan.evaluate_report(self.npm_report(), 'worker', IMAGE, policy(), [], '0.76.2',
+                                            scan.WithdrawalVerifier(lambda _: self.evidence(), NOW), **{mode: True})
+            self.assertFalse(result['blocking'])
+            self.assertEqual(result['counts']['HIGH'], 1)
+            self.assertEqual(len(result['verified_withdrawn']), 1)
+            self.assertFalse(result['reviewed_exceptions'])
 
     def test_active_ambiguous_wrong_package_and_identity_evidence_fail_closed(self):
         changes = [lambda x: x.update(withdrawn_at=None),

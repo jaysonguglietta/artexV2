@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "verified_at": "2026-11-19T03:11:41.084742+00:00",
+  "component": "isolated npm fork validation fixture; not a final application/worker scan",
+  "fork_version": "12.2.3+artex.1",
+  "upstream": "npm@12.2.3",
+  "upstream_archive_sha256": "fa0711dd513fa1386bbad3962a292cb813461cb57dedf07d6eb7efe76dffe897",
+  "node_version": "v24.22.3",
+  "platform": "linux/arm64",
+  "behavior_script_sha256": "e89e5381d218752db7fe7f823edd21a714216cbee4ce1a7a11b43e631d57e693",
+  "manifest_sha256": "d15a79e15fd958c83d6906c4a72e5e1a07e0b85d3922b7df991f4f203409bc62",
+  "lock_sha256": "74911ac819e9395163c8228398f5a78cff49b0ea959fb962cd872519e4d2e9f0",
+  "behavior": {
+    "status": "passed",
+    "checks": [
+      "honest fork version",
+      "entire installed dependency tree contains only patched glob/minimatch copies",
+      "pack files/glob inclusion and exclusions",
+      "install local tarball and generate lock",
+      "clean install from generated lock",
+      "exec local package binary",
+      "workspace glob discovery",
+      "glob/minimatch public APIs used by npm consumers",
+      "glob abort stops traversal",
+      "minimatch adversarial preprocessing completes within bounded process timeout"
+    ]
+  },
+  "behavior_boundary": {
+    "network": "none",
+    "user": "10001:10001",
+    "read_only_root": true,
+    "capabilities": "all dropped",
+    "temporary_fixture_filesystem": "private exec,nosuid,nodev tmpfs"
+  },
+  "live_npm_audit": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 0,
+      "critical": 0,
+      "total": 0
+    },
+    "dependencies": {
+      "prod": 146,
+      "dev": 0,
+      "optional": 2,
+      "peer": 0,
+      "peerOptional": 0,
+      "total": 147
+    }
+  },
+  "audit_scope": "full production dependency graph; npm audit --omit=dev --audit-level=low --json",
+  "mount_requirement": "npm exec and npx package binaries require an executable cache/workspace; noexec rejects direct execution independently of package versions"
+}

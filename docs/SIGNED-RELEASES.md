@@ -51,11 +51,16 @@ protected semantic version tag, such as `v1.2.3`, when the repository variable
 checkout SHA, tag commit, current remote tag and ancestry in `origin/main`. Branch
 or pull-request publication is refused. Ordinary source pushes do not publish.
 
-An operator must configure appropriate protected-tag rules before opting in; the
-workflow does not create repository settings or bypass a missing protection rule.
-Protect `main`, require successful review/checks, restrict release-tag creation and
-consider GitHub immutable releases. Those hosted settings remain operator policy,
-not properties inferred from a YAML file.
+The repository now has two active [release-tag rulesets](RELEASE-TAG-PROTECTION.md):
+updates/deletions have no bypass, while creation is restricted to the personal
+owner through a separate creation-only bypass. The release gate checks the active
+policy through the read-only GitHub REST API in addition to `ref_protected`;
+missing, disabled or mismatched rules fail publication. The workflow cannot create
+or weaken those settings. Full bypass-list verification uses the owner account
+because GitHub hides those lists from read-only tokens. Release publication still
+requires its separate explicit opt-in; configuring protection does not enable it.
+Main-branch review policy and optional GitHub immutable releases remain separate
+operator settings.
 
 Before a release build, reusable preflight workflows run the full Go/PostgreSQL,
 frontend and live worker/Compose tests plus the image-security gate. Candidate
@@ -66,8 +71,33 @@ any image. The PostgreSQL derivative retains the digest-pinned upstream engine
 and replaces its obsolete privilege helper with the native Alpine helper. Its
 exact derivative image is scanned, published and signed alongside the other
 three components. The scanner fails on active
-High/Critical/UNKNOWN issues, stale/incomplete evidence and unsupported/EOL OS;
-review [image security](IMAGE-SECURITY.md) for exact policy.
+High/Critical/UNKNOWN issues, stale/incomplete evidence and unsupported/EOL OS.
+Standard CI additionally blocks fixable Medium/Low. Production image publication
+uses `--require-reviewed-findings`, which blocks every **unreviewed** active
+finding. The only permitted reviews are exact worker Ubuntu 26.04 OS
+vendor-unfixed Medium/Low records, matching CVE/package/version/severity/platform
+and carrying a primary Ubuntu reference, concrete containment and expiry within
+30 days. High/Critical/Unknown and fixable findings cannot be waived. A successful
+standard or strict-diagnostic scan cannot authorize publication: the driver
+requires `reviewed-findings` in the summary and each image record. The independent
+`--require-no-active-findings` diagnostic still refuses all active findings,
+including reviewed ones; it is not the publication allowance. Complete
+raw counts and independently verified withdrawal proof remain in the signed
+summary; nothing is silently dropped. See [image security](IMAGE-SECURITY.md).
+
+No production version-tag release has been published. The November 19 follow-up
+has local 7 tag-policy, 15 signing and 15 publication tests passing; final image
+scans and new hosted image/OIDC runs remain pending in [validation](VALIDATION.md).
+Two actual tag rulesets are active, but that configuration does not bypass the
+reviewed-findings gate or enable release publication. The operator authorized
+this narrow residual-risk allowance, not a version tag, enabling variable or
+actual release. Fresh exact-image/architecture proof for the new policy remains
+pending; an ARM64 review cannot approve a different platform. Accepted residual
+findings remain visible and are not fixed or a zero-active result. The current
+94 reviews cover linux/arm64 only, reviewed `2026-11-19T13:04:35.549172Z`, expiring
+`2026-12-19T12:00:00Z`; amd64 requires its own real hosted inventory and review.
+The 26 image-policy tests passed, but fresh final-image policy scans are pending.
+Local scanning remains available.
 
 Image publication uses only version/architecture tags and signed immutable index
 digests. Before index creation, each uploaded architecture manifest is retrieved
@@ -139,7 +169,9 @@ verification machine; do not pass credentials in logged command arguments.
 Only after success, install the selected verified binary or redeploy the exact
 verified component digests from `images.json`. Back up needed state first and
 follow the [worker deployment guide](WORKER-ISOLATION.md). Rollback follows the
-same process for a separately verified prior release. An older valid signature is
+same process for a separately verified prior release. Use the
+[encrypted backup and verified-restore guide](POSTGRES-BACKUP.md) before changing
+a deployment or migrating its bounded PostgreSQL volume. An older valid signature is
 not automatic permission to downgrade: the operator chooses the expected tag and
 commit deliberately. Keep the signed manifests and verification/run evidence.
 
@@ -173,13 +205,16 @@ cross-architecture build/registry policies were exercised.
 The real main-only rehearsal [passed on 18 November 2026](https://github.com/jaysonguglietta/artexV2/actions/runs/44401256931)
 for commit `d06f7d8a28c9a562c885a85237811234018eb01c`, attempt 1. Actual
 checksum/provenance and image signatures verified, and all eight negative cases
-were refused. This proves that candidate run; no production release was published.
+were refused. This proves that historical candidate run, before the November 19 toolchain,
+storage and stricter image-policy changes. Their hosted follow-up is pending;
+no production release was published.
 
 ## Tests and operational checks
 
 ```sh
 python3 scripts/test-signed-release.py
 python3 scripts/test-release-publication.py
+python3 scripts/test-release-tag-policy.py
 # Run by release.yml only with its real OIDC bundles/local registry:
 python3 scripts/test-keyless-release.py dist/candidate
 ```

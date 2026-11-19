@@ -38,8 +38,9 @@ class ImagePublicationTests(unittest.TestCase):
         self.index_failure = False
 
     def scan_inventory(self, arch):
-        return {'status': 'passed', 'images': [{
+        return {'status': 'passed', 'gate_mode': 'reviewed-findings', 'images': [{
             'component': name, 'platform': 'linux/' + arch, 'blocking': [],
+            'gate_mode': 'reviewed-findings',
             'config_digest': 'sha256:' + hashlib.sha256((name + arch).encode()).hexdigest(),
             'image_id': 'sha256:' + 'f' * 64,  # Docker 29 may expose an OCI index ID.
             'rootfs_diff_ids': ['sha256:' + 'a' * 64],
@@ -81,6 +82,8 @@ class ImagePublicationTests(unittest.TestCase):
         self.assertLess(max(scans), min(pushes))
         for index in scans:
             command = self.calls[index]
+            self.assertIn('--require-reviewed-findings', command)
+            self.assertNotIn('--require-no-active-findings', command)
             for component in ('application', 'worker', 'broker', 'postgres'):
                 self.assertTrue(any(value.startswith(component + '=') for value in command))
         metadata = json.loads((self.output / 'images.json').read_text())
@@ -239,7 +242,10 @@ class RegistryIdentityTests(unittest.TestCase):
         good = fixture.scan_inventory('amd64')
         self.assertEqual(set(images.scanned_identities(good, 'amd64')), set(images.COMPONENTS))
         for bad in [{'status': 'passed', 'images': []}, good | {'status': 'blocked'},
+                    good | {'gate_mode': 'standard'}, good | {'gate_mode': 'no-active-findings'},
                     good | {'images': good['images'][:-1]},
+                    good | {'images': [record | {'gate_mode': 'standard'} for record in good['images']]},
+                    good | {'images': [record | {'blocking': [{'severity': 'LOW'}]} for record in good['images']]},
                     good | {'images': [record | {'config_digest': None} for record in good['images']]},
                     good | {'images': [record | {'rootfs_diff_ids': []} for record in good['images']]}]:
             with self.assertRaises(ValueError):

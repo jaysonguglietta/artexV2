@@ -36,9 +36,12 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
       - id: gate
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python3 scripts/signed-release.py gate
       - run: python3 scripts/test-signed-release.py
       - run: python3 scripts/test-release-publication.py
+      - run: python3 scripts/test-release-tag-policy.py
 
   dry-run:
     needs: policy
@@ -220,6 +223,8 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
       - run: python3 scripts/signed-release.py gate
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
           pattern: pkg-*
@@ -266,6 +271,8 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
       - run: python3 scripts/signed-release.py gate
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
           name: verified-signed-release-${{ github.run_id }}-${{ github.run_attempt }}

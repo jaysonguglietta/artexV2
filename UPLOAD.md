@@ -4,7 +4,8 @@ The intended personal repository is
 [jaysonguglietta/artexV2](https://github.com/jaysonguglietta/artexV2).
 Its HTTPS remote is `https://github.com/jaysonguglietta/artexV2.git`.
 These are reusable upload and recovery instructions, not a claim that a push has
-already completed.
+already completed. The [product readiness review](docs/PRODUCT-READINESS-REVIEW.md)
+separates verified feature slices from unverified journeys and proposed improvements.
 
 The prepared source copy excludes Git history, installed dependencies, compiled
 binaries, local configuration, private keys, database state and runtime captures.
@@ -100,6 +101,8 @@ For chat and records without autonomous scanning:
 cp .env.example .env
 # Set unique POSTGRES_PASSWORD and ARTEX_ADMIN_PASSWORD in .env.
 ./scripts/setup-workers.sh --secret-only
+docker compose build postgres
+sh scripts/setup-postgres.sh
 docker compose up --build -d
 ```
 
@@ -107,6 +110,11 @@ Open http://localhost:8787. For scanning, follow
 [isolated task execution](docs/WORKER-ISOLATION.md): build the worker and broker,
 create private policy/credentials, and authorize the task's exact target CIDRs.
 The API has no local executable-tool fallback. Use a dedicated assessment VM.
+The PostgreSQL build and preflight must precede startup. For existing database
+volumes, follow the explicit offline migration in
+[PostgreSQL capacity and backup operations](docs/POSTGRES-BACKUP.md); automatic
+adoption is deliberately refused. That guide also covers host log activation and
+encrypted backups verified through a disposable restore.
 
 Stop services with the same Compose files and environment options used to start
 them, followed by `down`. Database, signing-key and broker-state volumes remain
@@ -114,5 +122,12 @@ unless deliberately removed. Avoid `down -v` when preserving data.
 
 See [the documentation index](docs/README.md) for architecture, operator workflows,
 security controls and reproducible checks. Source upload does not require image or
-release publishing. Passing checks does not certify safe unattended operation or
+release publishing. Before any later production release, verify the active
+[release-tag rules](docs/RELEASE-TAG-PROTECTION.md), [signing identity](docs/SIGNED-RELEASES.md)
+and [reviewed-findings image gate](docs/IMAGE-SECURITY.md). Any vendor-unfixed
+Medium/Low allowance must be an exact, expiring, platform-specific worker Ubuntu
+OS review with concrete containment; High/Critical/Unknown and fixable findings
+remain blocking. Source publication neither enables nor bypasses release gates. The [npm](tools/npm/README.md) and
+[pip](tools/python/README.md) forks must retain their honest identity and validation.
+Passing checks does not certify safe unattended operation or
 permission to test a target.

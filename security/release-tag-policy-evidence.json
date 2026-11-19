@@ -1,0 +1,124 @@
+{
+  "repository": "jaysonguglietta/artexV2",
+  "verified_at": "2026-11-18T22:03:07.857783+00:00",
+  "owner_verification": {
+    "repository": "jaysonguglietta/artexV2",
+    "ref": "refs/tags/v0.0.0-policy-check",
+    "status": "active",
+    "rulesets": [
+      {
+        "id": 27587325,
+        "name": "ARTEX release tags: immutable",
+        "bypass_policy": "verified"
+      },
+      {
+        "id": 27587326,
+        "name": "ARTEX release tags: owner creation",
+        "bypass_policy": "verified"
+      }
+    ],
+    "verification": "REST active tag targets and exact full-ref conditions; no tag was created or mutated"
+  },
+  "public_runtime_verification": {
+    "repository": "jaysonguglietta/artexV2",
+    "ref": "refs/tags/v0.0.0-policy-check",
+    "status": "active",
+    "rulesets": [
+      {
+        "id": 27587325,
+        "name": "ARTEX release tags: immutable",
+        "bypass_policy": "hidden_by_github"
+      },
+      {
+        "id": 27587326,
+        "name": "ARTEX release tags: owner creation",
+        "bypass_policy": "hidden_by_github"
+      }
+    ],
+    "verification": "REST active tag targets and exact full-ref conditions; no tag was created or mutated"
+  },
+  "rulesets": [
+    {
+      "id": 27587325,
+      "name": "ARTEX release tags: immutable",
+      "target": "tag",
+      "source_type": "Repository",
+      "source": "jaysonguglietta/artexV2",
+      "enforcement": "active",
+      "conditions": {
+        "ref_name": {
+          "exclude": [],
+          "include": [
+            "refs/tags/v*"
+          ]
+        }
+      },
+      "rules": [
+        {
+          "type": "update"
+        },
+        {
+          "type": "deletion"
+        }
+      ],
+      "node_id": "RRS_lACqUmVwb3NpdG9yec5XNfnPzgGk8v0",
+      "created_at": "2026-11-18T17:00:42.483-05:00",
+      "updated_at": "2026-11-18T17:00:42.513-05:00",
+      "bypass_actors": [],
+      "current_user_can_bypass": "never",
+      "_links": {
+        "self": {
+          "href": "https://api.github.com/repos/jaysonguglietta/artexV2/rulesets/27587325"
+        },
+        "html": {
+          "href": "https://github.com/jaysonguglietta/artexV2/rules/27587325"
+        }
+      }
+    },
+    {
+      "id": 27587326,
+      "name": "ARTEX release tags: owner creation",
+      "target": "tag",
+      "source_type": "Repository",
+      "source": "jaysonguglietta/artexV2",
+      "enforcement": "active",
+      "conditions": {
+        "ref_name": {
+          "exclude": [],
+          "include": [
+            "refs/tags/v*"
+          ]
+        }
+      },
+      "rules": [
+        {
+          "type": "creation"
+        }
+      ],
+      "node_id": "RRS_lACqUmVwb3NpdG9yec5XNfnPzgGk8v4",
+      "created_at": "2026-11-18T17:00:42.883-05:00",
+      "updated_at": "2026-11-18T17:00:42.915-05:00",
+      "bypass_actors": [
+        {
+          "actor_id": 15835881,
+          "actor_type": "User",
+          "bypass_mode": "always"
+        }
+      ],
+      "current_user_can_bypass": "always",
+      "_links": {
+        "self": {
+          "href": "https://api.github.com/repos/jaysonguglietta/artexV2/rulesets/27587326"
+        },
+        "html": {
+          "href": "https://github.com/jaysonguglietta/artexV2/rules/27587326"
+        }
+      }
+    }
+  ],
+  "idempotent_reapply": "verified with read-only wrapper rejecting every mutation",
+  "scope": "Only two additive tag rulesets; no tags/releases/variables/branch rules modified",
+  "tags_created": 0,
+  "tag_inventory": [],
+  "ARTEX_ENABLE_RELEASES": "absent; publication remains disabled"
+}

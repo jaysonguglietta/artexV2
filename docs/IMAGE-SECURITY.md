@@ -4,14 +4,65 @@ The image gate checks the application, worker, broker and customized PostgreSQL
 images that are actually built. An image digest pin makes an input immutable;
 it does not establish that its packages are free of vulnerabilities. This gate
 adds OS/language package inventory, current advisory matching and an explicit
-review process for temporary exceptions.
+review process for temporary exceptions. Standard CI also blocks every fixable
+Medium/Low issue. Signed publication additionally requires explicit, exact,
+expiring review for any active vendor-unfixed Medium/Low worker Ubuntu OS finding.
+The operator authorized this narrow residual-risk allowance; it does not authorize
+turning on publication, creating a version tag or publishing a release.
+
+## November 19 follow-up status
+
+The worker retains Ubuntu 26.04 and reviewed Node 24.22.3, uses official Python
+3.14.10, and installs explicit honest-version
+[npm `12.2.3+artex.1`](../tools/npm/README.md) and
+[pip `26.3+artex.1`](../tools/python/README.md) forks. npm replaces vulnerable
+actual nested dependencies; pip removes its complete unreachable legacy
+`pkg_resources` subset and then corrects the exact corresponding SBOM entry.
+The remaining inventory and licenses are retained. Unused Pebble and Xvfb are
+removed. API/worker/broker binaries are built with Go 1.27.4. See the fork guides
+for official source checksums, compatibility scope and actual CLI/security tests.
+No version-only fix or finding suppression is claimed.
+
+The **26 image-gate regressions**, 15 signing tests, 15 publication tests and both
+package-manager source-runtime suites passed. The release driver requires
+`reviewed-findings` on both the top-level summary and every component image;
+a standard or strict-diagnostic summary cannot authorize publication. Final local ARM64 standard scans passed for all four exact image IDs.
+The worker retains **85 Medium + 9 Low active package/advisory records**, all
+without `FixedVersion`; application/broker/PostgreSQL have zero reported findings
+at every severity. That standard-mode checkpoint used no risk exception or
+withdrawn classification. It predates the reviewed-publication policy.
+[Sanitized evidence](../security/image-followup-evidence.json) retains all 94
+records (49 unique IDs), exact installed versions and authenticated artifact
+hashes. The DB updated at `2026-11-19T07:06:49.809946527Z`, SHA256
+`ebba0a2f709d971b1b49f06569bb7cded629f9f87a5cf71bb5cb8dec015a07c0`.
+
+The lifecycle-fixed rebuilt worker subsequently passed **53/53** live checks,
+**6/6** actual worker/browser checks. An adjacent cleanup-failure fix then passed
+a fresh isolation race run in **8.176 seconds**; its final rebuilt-image 53-check
+run is pending. Concurrent close waits for acknowledged removal or confirmed absence. The independent
+strict scan of the earlier image checkpoint blocked all 94 active records with
+zero scanner errors. Fresh reviewed-policy scans of the rebuilt images, new
+hosted architecture/OIDC results and source credential scan remain pending in
+[validation](VALIDATION.md). Earlier scan IDs/counts and hosted runs remain
+scoped to their recorded checkpoints.
+The independent strict diagnostic remains available, but it is not the newly
+authorized release criterion. `--require-reviewed-findings` permits only exact
+reviewed vendor-unfixed Medium/Low worker Ubuntu OS records under the rules below.
+Fresh actual-image proof for that policy remains pending. Active findings remain
+risks even when reviewed; local assessment/scanning is preserved. A local worker
+pass does not establish the new image policy or native amd64 results. No release
+was enabled or published.
 
 ## Local use
 
 Build all four components from the reviewed source. The `postgres` target keeps
 the digest-pinned PostgreSQL 16.16 engine and replaces its obsolete Go-built
-startup helper with Alpine's native `su-exec`. The entrypoint still drops root
-before starting PostgreSQL. See [worker setup](WORKER-ISOLATION.md).
+startup helper with Alpine's native `su-exec`. The fixed PostgreSQL mount bootstrap
+verifies its preallocated ext4 image and drops all capabilities before its nonroot
+supervisor/server run. [PostgreSQL setup](POSTGRES-BACKUP.md) requires building
+this image and running `sh scripts/setup-postgres.sh` before Compose startup.
+The helper primes the normal confinement profile without touching database volumes.
+See [worker setup](WORKER-ISOLATION.md) for the other execution boundary.
 Scan locally available images; the scanner does not resolve
 a mutable registry tag behind the operator's back:
 
@@ -34,6 +85,15 @@ Use `linux/amd64` for an amd64 image set. The platform option is optional, but w
 provided every inspected image must match it. Components may be scanned
 individually with one or more `--image` arguments. A full release needs all four
 components on every published architecture. Use a new or empty output directory.
+
+For production eligibility, use the same images with `--require-reviewed-findings`.
+The [release image driver](../scripts/release-images.py) must use this mode before
+any image push, and requires that mode in the summary and each component record;
+a standard or strict-diagnostic summary cannot authorize publication. It fails
+for any active residual finding without an exact valid review. Use the independent
+`--require-no-active-findings` diagnostic when a zero-active policy is wanted; it
+blocks reviewed active findings too. Inspect the recorded `gate_mode` and review
+dispositions, not exit code alone, when comparing different modes.
 
 The default tool location is `~/.cache/artex-security-tools/trivy-0.76.2`; the DB
 cache is `~/.cache/artex-trivy`. Override them with `--trivy PATH` and
@@ -85,11 +145,33 @@ not pass merely because its `DownloadedAt` value is new.
 The full JSON report retains all severities, unfixed vulnerabilities, packages
 and scanner-suppressed records. CycloneDX SBOMs are converted from that same
 inventory. The policy blocks every active or unverified **High**, **Critical** or **Unknown**
-severity finding, including issues without a published fix. Exact temporary risk
-exceptions and independently verified withdrawn advisories are distinct dispositions;
+severity finding, including issues without a published fix. With the required
+`block_fixable_lower_severity: true` policy, it also blocks every active Medium/Low
+record with a fixed version. Vendor-unfixed Medium/Low remain explicitly counted
+and visible. A standard-mode pass alone is not risk acceptance or a clean-scan
+claim. Exact temporary residual-risk reviews and independently verified withdrawn
+advisories are distinct dispositions;
 raw severity counts always remain visible. Unknown or malformed
 vulnerability records are errors rather than a clean result. Trivy ignore/status
 filters cannot act as independent approvals.
+
+**Reviewed-publication mode** (`--require-reviewed-findings`) also blocks every
+**unreviewed** active Medium/Low record. Its only allowance is an exact policy
+review of a worker `os:ubuntu:26.04` finding with matching CVE, package, installed
+version, severity and platform, no listed fixed version, a primary Ubuntu CVE
+reference, concrete containment and a valid review/expiry window of at most
+30 days. It cannot waive High/Critical/Unknown, fixable findings, another
+component/OS target, changed severity/version or an unreviewed architecture.
+Expired/malformed/stale reviews and incomplete scans fail closed.
+
+**Independent strict diagnostic** (`--require-no-active-findings`) blocks all
+active records, including reviewed vendor-unfixed Medium/Low. It deliberately
+ignores reviews, including expired/stale entries, so they cannot mask inventory
+behind an exception-validation error. Its earlier actual
+94-record refusal is retained as historical negative-test evidence, not a claim
+that reviewed publication passed. Verified primary-source withdrawals retain
+their separate proof/status/raw counts; withdrawal is not acceptance of an active
+issue. Missing/ambiguous proof and scanner errors still fail closed in every mode.
 
 EOL operating systems, missing package inventories, unexpected platforms and
 scanner/report mismatches fail. The worker requires Ubuntu 26.04; broker and
@@ -117,7 +199,9 @@ For each component the output contains:
 Exit code zero means the selected images passed this policy. Nonzero includes
 blocked findings, scanner failures, stale DBs and invalid/stale exceptions. Inspect
 `status` and `errors`; an empty or partial report is never proof of a clean scan.
-Low/Medium findings remain visible and still need engineering review. This gate
+Vendor-unfixed Low/Medium remain visible and require exact valid reviews in
+reviewed-publication mode. The strict diagnostic blocks them even when reviewed;
+fixable Low/Medium block every mode. This gate
 is an advisory/inventory check, not exhaustive source analysis, exploitability
 proof, kernel escape testing, malware detection or a secret scan. The official
 Docker CLI report currently exposes Go stdlib inventory without its full vendored
@@ -125,36 +209,57 @@ module graph; this limitation is not represented as complete Docker-source revie
 PostgreSQL and the copied Node engine also need separate supported-version checks;
 OS/npm package inventories do not fully catalog those native engine binaries.
 
-## Temporary reviewed exceptions
+## Exact temporary residual-risk reviews
 
-[Image policy](../security/image-policy.json) starts with no vulnerability
-exceptions. Fix packages or remove unused software first. An exception must name
-one exact CVE, package, installed version, component, stable scan target and
-platform. It needs a concrete justification, a reviewed primary HTTPS reference,
-a review timestamp and an expiry no later than 30 days after review. Do not use a
-wildcard, package-wide ignore, indefinite suppression or `ignore-unfixed`.
+[Image policy](../security/image-policy.json) is reviewed source, not a scanner
+ignore file. Fix packages or remove unused software first. The operator has
+authorized narrowly reviewed vendor-unfixed Medium/Low **worker Ubuntu 26.04 OS**
+records; this accepts residual risk within documented containment rather than
+claiming those vulnerabilities are repaired. No other class is eligible.
 
-Example schema only; do not add this synthetic entry to the active policy:
+The current JSON contains **94 exact linux/arm64 reviews**: 85 Medium and 9 Low,
+reviewed at `2026-11-19T13:04:35.549172Z` and expiring at
+`2026-12-19T12:00:00Z` (less than 30 days). Every record explicitly has
+`fixed_version: null` and matching severity. **No amd64 review is present**; it
+requires actual native hosted-report evidence and its own exact entries. These
+reviews and saved-report re-evaluation are not a fresh final-image scan.
+Publication has not been enabled and no release/tag was created.
+
+Each review must include `fixed_version: null` and name one exact CVE, package,
+installed version, severity, worker
+component, `os:ubuntu:26.04` target and `linux/amd64` or `linux/arm64` platform.
+It must match a fresh report without a fixed version. Require a primary Ubuntu
+CVE reference, a concrete exposure/containment reason, review timestamp and expiry
+no later than 30 days after review. A valid ARM64 entry cannot approve amd64.
+Changes in package version, severity or advisory inventory require a new review;
+new findings fail reviewed publication until explicitly reviewed. No wildcard,
+package-wide ignore, indefinite renewal, fixable-risk waiver or `ignore-unfixed`
+is permitted.
+
+Example schema only; never insert this synthetic review into the active policy:
 
 ```json
 {
   "vulnerability_id": "CVE-2026-12345",
   "package": "exact-package-name",
   "installed_version": "exact-installed-version",
+  "severity": "MEDIUM",
+  "fixed_version": null,
   "component": "worker",
   "target": "os:ubuntu:26.04",
   "platform": "linux/arm64",
-  "reviewed_at": "2026-11-18T20:00:00Z",
-  "expires": "2026-11-25T20:00:00Z",
-  "reason": "State the precise exposure analysis, compensating control and upgrade plan.",
-  "reference": "https://github.com/advisories/GHSA-aaaa-bbbb-cccc"
+  "reviewed_at": "2026-11-19T13:04:35.549172Z",
+  "expires": "2026-12-19T12:00:00Z",
+  "reason": "The untrusted per-run worker has target-only egress, no control-plane credentials or host mounts, finite resources, a read-only root and bounded cancellation/watchdog cleanup. This is temporary containment, not a package fix; reassess the vendor patch and exact image before expiry.",
+  "reference": "https://ubuntu.com/security/CVE-2026-12345"
 }
 ```
 
 For OS packages the stable target is `os:FAMILY:VERSION`, using the exact detected
-version; temporary tar paths are never exception keys. Language package targets
-are the exact logical Trivy targets such as `app/artex` or `usr/local/bin/docker`.
-Use the target in the summary rather than guessing. The reference is reviewed by
+version; temporary tar paths are never exception keys. This policy allows reviews
+only for `worker` and `os:ubuntu:26.04`; logical language targets such as
+`app/artex` or `usr/local/bin/docker` are inventoried but ineligible for this
+allowance. Use the actual target rather than guessing. The reference is reviewed by
 the approver; a syntactically valid URL alone does not establish advisory status.
 A static risk exception is not used merely because an advisory was withdrawn.
 For blocking `node-pkg` findings only, the gate can check an exact CVE/GHSA against
@@ -168,7 +273,9 @@ The summary records `verified_withdrawn`, the request/time/response hash and off
 records alongside the unchanged raw finding. This is a point-in-time advisory
 status classification, not a package upgrade or acceptance of an active risk.
 
-Expired, malformed, duplicate and unknown-component exceptions fail. An exception
+In standard and reviewed-publication modes, expired, malformed, duplicate and
+unknown-component exceptions fail. The independent strict diagnostic ignores
+review entries and evaluates every active finding without applying them. An exception
 that no longer matches a finding on a selected component/platform is stale and
 fails too. Exceptions for an unselected component or another platform are not
 required to match that partial scan. Renewals require a fresh review; do not
@@ -181,7 +288,10 @@ all four components on native amd64 and ARM64 runners for pushes, pull requests
 and a weekly schedule. It needs only `contents: read`, publishes no images and
 uploads report/SBOM artifacts for 30 days. It has no signing token, OIDC permission
 or untrusted SARIF upload. Image/release publication must separately require the
-same gate for the exact architecture-specific image IDs it will publish.
+reviewed-findings gate for the exact architecture-specific image IDs it will
+publish. Both native image jobs also run actual browser/Python/npm tool behavior
+checks; configured workflow steps are not proof that a new hosted run passed.
+Current source proof and pending runs are separated in [validation](VALIDATION.md).
 
 Run the offline gate regressions before changing policy or tooling:
 
@@ -190,7 +300,8 @@ python3 -I scripts/test-image-security.py
 ```
 
 Tests cover missing/malformed inventory, DB freshness, EOL OS, exact image/platform
-identity, unfixed/unknown vulnerabilities, suppressed records, exception expiry
+identity, fixable/unfixed findings in standard versus strict mode, unknown
+vulnerabilities, suppressed records, exception expiry
 and scope, ambient filtering tampered/nonregular tool artifacts, and strict official-withdrawal identity/failure
 cases. Real image
 scans remain necessary after Dockerfile, dependency, base-image or DB changes.

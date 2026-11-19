@@ -8,6 +8,69 @@ vulnerability class. The [validation record](VALIDATION.md) records the checked
 snapshot and results; the [worker guide](WORKER-ISOLATION.md) defines deployment
 requirements.
 
+## November 19 operational follow-up
+
+The four authorized workstreams now have concrete implementation and scoped local
+proof: image remediation/stricter publication policy, actual hosted tag protection,
+bounded PostgreSQL/log controls and authenticated encrypted backup/restore. These
+do not implement the nine-item [product backlog](PRODUCT-READINESS-REVIEW.md).
+The original audit findings and November 18 checkpoints remain historical.
+
+- PostgreSQL/Go integration passed **869 cases**, with one optional provider skip
+  and 13 additional tested suites. Isolation race, vet and Windows build passed.
+- Physical capacity passed **16 disk-full + 7 migration + 3 reserve** checks. The
+  exact-source backup/Compose exercise passed **22/22**, plus **15 backup unit,
+  8 crypto and 4 log-policy** regressions. See [database/log/backup operations](POSTGRES-BACKUP.md).
+- Two actual [tag rulesets](RELEASE-TAG-PROTECTION.md) are active: personal-owner
+  creation, and update/deletion restrictions with no bypass. Seven policy tests,
+  15 signing tests and 15 publication tests passed. No production tag was created.
+- Image-policy regressions passed **26**. Standard CI
+  blocks fixable Medium/Low plus active/unverified High/Critical/Unknown. The
+  newly authorized `--require-reviewed-findings` publication mode additionally
+  blocks every unreviewed active record. Only exact, expiring contained worker
+  Ubuntu OS vendor-unfixed Medium/Low reviews are eligible. Mode-boundary tests
+  passed; fresh final-image proof remains pending.
+- Explicit [npm](../tools/npm/README.md) and [pip](../tools/python/README.md) forks
+  each passed 3 static and 10 installed source-runtime checks. They change actual
+  dependency/code bytes, retain honest local versions and preserve inventory.
+
+Final local ARM64 **standard** image gates passed. Worker inventory still has
+**85 Medium + 9 Low active package/advisory records**, all without a listed fixed
+version; the other three images report zero at every severity. No risk acceptance,
+exception or withdrawal was used at that earlier checkpoint. [Full residual evidence](../security/image-followup-evidence.json)
+preserves all 94 records and authenticated image/DB/report/SBOM identities.
+Six actual tools/browser checks passed on that exact worker after the final pip
+correction, and Compose passed **17/17**. Host Docker/journal settings were
+activated and tested with real log rotation on the dedicated VM. The embedded
+frontend rebuild passed without UI source changes.
+
+The independent strict diagnostic refused all 94 active records with zero scanner
+errors under the earlier policy. It remains available as a zero-active diagnostic;
+that result is not proof for the new reviewed publication allowance. The operator
+has authorized exact, expiring review of contained vendor-unfixed worker Ubuntu
+OS Medium/Low records, matching CVE/package/version/severity/platform and primary
+Ubuntu reference. High/Critical/Unknown and fixable findings cannot be waived.
+
+After the urgent-close fix, rebuilt images passed **53/53 live worker checks**
+and **6/6 actual tool/browser checks**. Concurrent callers wait for the same
+acknowledged removal/confirmed absence; a Docker removal conflict is not accepted
+as proof of cleanup. A subsequent adjacent cleanup-failure fix passed the latest
+isolation race run in **8.176 seconds**; final rebuilt-image live acceptance is
+pending. The 22-check exact-source backup integration passed again with unchanged
+source hashes. The prior 53 pass is retained as its exact checkpoint.
+
+The frozen policy contains 94 exact ARM64 reviews, with matching severity and
+`fixed_version: null`, reviewed `2026-11-19T13:04:35.549172Z` and expiring
+`2026-12-19T12:00:00Z`. No amd64 review is present; native hosted evidence must
+precede any exact amd64 entries. Publication requires reviewed mode in the
+summary and each image.
+
+**Pending:** final rebuilt-image live acceptance and fresh scans under the reviewed policy,
+a source credential scan and new hosted CI/image/OIDC runs. [Validation](VALIDATION.md) owns
+final statuses. Reviewed findings remain residual risk, not a package fix or
+zero-active result. No enabling variable, version tag or production release was
+authorized by this policy choice. Local authorized scanning is preserved.
+
 ## Architecture and threat model
 
 The Go API authenticates the operator, calls configured model providers, schedules
@@ -139,8 +202,14 @@ Findings, captures and exports can contain personal data, target credentials or
 sensitive business content. [Evidence storage](EVIDENCE-STORAGE.md) describes the
 new independent file-admission budgets: evidence 2 GiB, traffic 5 GiB and workspace
 5 GiB by default, with entry/body/exchange limits and fail-closed admission.
-These do not cap PostgreSQL/WAL, process logs, backups, Docker layers or total VM
-storage. Those need separate operational capacity controls.
+These do not themselves cap PostgreSQL/WAL, process logs, backups, Docker layers
+or total VM storage. Separate [PostgreSQL/log/backup controls](POSTGRES-BACKUP.md)
+now enforce a preallocated ext4 database boundary and finite per-container log
+rotation, with explicit migration and recovery reserve. Docker/journal policy
+was activated on the reviewed VM by restarting both services; a synthetic stdout
+fixture proved rotation and final-record retention. Other deployments must
+activate their own policy, and existing unrelated containers require recreation.
+Backup destination and total VM capacity remain separate responsibilities.
 
 Raw captures have a 30-day retention policy. Legal holds apply to a whole storage
 bucket and block destructive operations/retention until deliberately released;
@@ -154,7 +223,10 @@ PostgreSQL UI conversation/activity history remains separate. Model-context repl
 and output handling are covered by the fresh PostgreSQL/race runs; their behavior
 is not an independent evidence or deletion certification.
 Keep runtime data/backups private and limit external provider retention. Central
-append-only audit and verified backup/restore/deletion exercises remain work.
+append-only audit remains separate work. Encrypted/authenticated backups now
+receive an independent bounded restore with schema/table/file comparisons; the
+22-check exact-source integration passed. Full human-run VM recovery, measured
+RPO/RTO and deletion of every external/backup copy are not established by that test.
 
 ## Dependency and secret checks
 
@@ -193,13 +265,19 @@ scan of future Git history.
 [Image security](IMAGE-SECURITY.md) now supplies OS/language inventories, complete
 Trivy JSON and CycloneDX SBOMs for exact IDs/platforms, a fresh bounded DB policy,
 EOL/inventory checks and strict active/unverified High/Critical/Unknown gating.
-Unfixed findings remain visible. Exact short-lived risk exceptions and live
-primary-source-confirmed withdrawal classifications are distinct and auditable.
-All four final ARM64 component gates passed with zero blocking findings. Worker
-raw counts still include one High with a live official withdrawal proof; Medium/Low
-findings remain visible. [Validation](VALIDATION.md) records exact IDs, counts and
-DB/proof identity. The hosted amd64/arm64 gates also passed with a newer DB and
-raw High 0 on both platforms; Medium/Low remain. There is no all-CVE clean claim.
+Standard CI also blocks fixable Medium/Low. Signed publication uses
+`--require-reviewed-findings` and permits only exact contained vendor-unfixed
+worker Ubuntu OS Medium/Low reviews with severity/platform/version binding, a
+primary Ubuntu reference and expiry within 30 days. Every unreviewed active record
+blocks; High/Critical/Unknown and fixable findings cannot be waived. The independent
+strict diagnostic still blocks all active records. Withdrawn classifications
+require separate fresh primary proof and are not accepted active risks.
+Earlier November 18 local/hosted passes and raw counts remain in
+[validation](VALIDATION.md), bound to those exact source/image/DB identities.
+The current ARM64 standard results are recorded above, with all 94 active
+worker records visible. Their subsequent authorized narrow risk reviews need
+fresh actual-image/architecture proof. New hosted/amd64 follow-up remains pending;
+there is no all-CVE clean or zero-active claim.
 
 Production cannot enable the retained unsigned updater: apply/rollback routes
 always refuse, the legacy flag is rejected, and production bootstrap/staging does
@@ -207,37 +285,37 @@ not execute old unsigned files. Version checks remain read-only. The
 [signed-release workflow](SIGNED-RELEASES.md) is restricted to protected semantic
 tags and explicit opt-in, with exact repository/workflow/ref/commit/run identities
 and verification before installation. Main-only dry runs use real OIDC without
-publishing. The 14 signing and 15 publication tests passed locally. The real hosted
-OIDC rehearsal also passed its positive verification and eight negative cases;
+publishing. Current local signing/publication counts are recorded above. The
+November 18 real hosted OIDC rehearsal passed its positive verification and eight negative cases;
 [validation](VALIDATION.md) links its exact commit/run. Production-tag release
 publication remains a separate opt-in operation and is not claimed.
 
-## Validation checkpoints
+## November 18 validation checkpoints
 
 | Check | Recorded result |
 |---|---|
 | Earlier PostgreSQL integration checkpoint | 817 test cases passed, including subtests; 1 optional live-provider test skipped without external credentials |
 | Earlier live-worker checkpoint | 52 passed against local disposable Docker targets |
 | Earlier container API smoke checkpoint | 12 passed |
-| Current frontend tests | 26 passed across 8 files, including disabled/missing update capability and clipboard-failure regressions |
+| Frontend tests at checkpoint | 26 passed across 8 files, including disabled/missing update capability and clipboard-failure regressions |
 | Frontend TypeScript and English catalog | Passed, including a clean source-only TypeScript check |
 | Earlier frontend static build/export checkpoint | Passed; 30 HTML pages checked at that checkpoint. Fresh source-image builds also passed with the current static frontend |
 | Biome | 0 errors; 124 warnings and 659 informational diagnostics retained |
 | Earlier Go analysis/portability checkpoint | `go vet ./...` and Windows cross-build passed before the latest storage/release changes |
-| Current image-gate regressions | 19 passed, including primary withdrawal, runtime inventory and OCI/config/layer identity tests |
-| Current local signing/publication regressions | 14 signing + 15 publication tests passed; not hosted OIDC verification |
-| Fresh PostgreSQL/Go integration | 869 cases passed, 0 failed, 1 optional live-provider skipped; 13 additional tested suites passed |
-| Fresh races and analysis | storage/traffic/isolation/evidence/agent/server races, `go vet ./...` and windows/amd64 API cross-build passed |
-| Fresh builds and live boundary checks | All four current source-image builds, worker 52/52 and API 12/12 passed |
-| Fresh ARM64 image gates | All four passed, 0 blocking; raw withdrawn High and Medium/Low counts retained |
-| Fresh Compose acceptance | 11/11 passed, including PostgreSQL native UID drop/restart persistence, absent API interpreters, isolated tool execution and cleanup |
+| Image-gate regressions at checkpoint | 19 passed, including primary withdrawal, runtime inventory and OCI/config/layer identity tests |
+| Signing/publication regressions at checkpoint | 14 signing + 15 publication tests passed; not hosted OIDC verification |
+| PostgreSQL/Go integration at checkpoint | 869 cases passed, 0 failed, 1 optional live-provider skipped; 13 additional tested suites passed |
+| Races and analysis at checkpoint | storage/traffic/isolation/evidence/agent/server races, `go vet ./...` and windows/amd64 API cross-build passed |
+| Builds and live boundary checks at checkpoint | All four then-current source-image builds, worker 52/52 and API 12/12 passed |
+| ARM64 image gates at checkpoint | All four passed, 0 blocking; raw withdrawn High and Medium/Low counts retained |
+| Compose acceptance at checkpoint | 11/11 passed, including PostgreSQL native UID drop/restart persistence, absent API interpreters, isolated tool execution and cleanup |
 | Hosted checks | All six Go/worker jobs, frontend, docs and detections passed; all eight amd64/arm64 images passed; real keyless signing and eight negative cases passed. Exact runs in validation. |
 | Production-tag release | Not published; protected-tag settings and explicit release opt-in remain operator policy. |
 | Dependency and source-secret review | Results and limits described above and in the validation record |
 
-Rows explicitly labeled earlier remain historical. Fresh local results now cover
-the storage/image/release changes; hosted evidence and the prepared-source scan
-are recorded separately in [validation](VALIDATION.md). These results
+This entire table is the November 18 checkpoint, including rows then labeled
+current/fresh. The new November 19 source has separate results and pending checks
+above and in [validation](VALIDATION.md). These results
 demonstrate checked behaviors, not a security certification.
 The skipped live-provider test is not counted as a pass. Unit/integration tests
 and synthetic adversarial fixtures do not establish real-target assessment
@@ -259,6 +337,12 @@ python3 scripts/test-audit-npm.py
 python3 scripts/test-image-security.py
 python3 scripts/test-signed-release.py
 python3 scripts/test-release-publication.py
+python3 scripts/test-release-tag-policy.py
+python3 scripts/test-backup.py
+python3 scripts/test-backup-crypto.py
+python3 scripts/test-log-policy.py
+python3 scripts/test-npm-fork.py
+python3 scripts/test-pip-fork.py
 python3 scripts/audit-npm.py
 python3 scripts/check-english.py
 python3 scripts/check-doc-links.py
@@ -295,13 +379,16 @@ reproduction guidance, not a claim that every optional environment is available.
 
 1. Preserve the dedicated VM/daemon boundary. A compromised API, broker, kernel,
    Docker daemon or operator remains outside the worker isolation guarantee.
-2. Repeat ID-bound scans for each release/architecture and complete the real hosted
-   OIDC rehearsal; configure
-   repository/tag protections, and verify a release end to end. Implemented gates
-   do not establish every hosted setting or eliminate upstream compromise.
-3. Extend the new quota/retention/hold and Compose persistence evidence with
-   realistic backup/recovery exercises. Add centralized append-only audit and separate
-   database/log/backup capacity and privacy controls.
+2. Complete final ID-bound scans and new hosted native-architecture/OIDC checks
+   after the current changes. Enforce exact, expiring reviewed-findings publication
+   policy; never extend it to fixable or High/Critical/Unknown findings. Active
+   tag rules and prior OIDC evidence do not eliminate upstream compromise
+   or establish an actual version-tag publication.
+3. Repeat the now-verified host log activation/rotation on each actual deployment,
+   preserve explicit database migration/recovery procedures, and schedule verified
+   encrypted backups with separate retention/capacity. Extend disposable restore
+   proof to a measured human-run VM recovery. Central append-only audit remains
+   separate; no total-host quota or universal deletion guarantee is claimed.
 4. Design a bounded distributed traffic-capture/import pipeline if required.
    Workers cannot use the API recording proxy, privileged raw-packet scans are
    unsupported, and oversized unsynchronized files remain ephemeral.

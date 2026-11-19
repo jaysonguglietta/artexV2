@@ -25,7 +25,7 @@ ROOT = Path(__file__).resolve().parents[1]
 PLATFORMS = {'linux/amd64', 'linux/arm64'}
 SEVERITIES = {'UNKNOWN', 'LOW', 'MEDIUM', 'HIGH', 'CRITICAL'}
 EXCEPTION_FIELDS = {'vulnerability_id', 'package', 'installed_version', 'component',
-                    'target', 'platform', 'reviewed_at', 'expires', 'reason', 'reference'}
+                    'target', 'platform', 'severity', 'fixed_version', 'reviewed_at', 'expires', 'reason', 'reference'}
 
 
 def load_installer():
@@ -138,9 +138,11 @@ class WithdrawalVerifier:
                 "package": package, "ecosystem": "npm", "checked_at": cached["checked_at"], **evidence}
 
 
-def validate_policy(policy, now):
+def validate_policy(policy, now, *, ignore_exceptions=False):
     if policy.get('schema_version') != 1:
         raise ValueError('Unsupported image-policy schema')
+    if policy.get('block_fixable_lower_severity') is not True:
+        raise ValueError('Published fixes for Medium/Low findings must block the image gate')
     if any(type(policy.get(key)) is not int for key in ('max_database_age_hours', 'max_exception_days')):
         raise ValueError('Database/exception limits must be integer bounds')
     if not 0 < policy['max_database_age_hours'] <= 72 or not 0 < policy['max_exception_days'] <= 30:
@@ -180,14 +182,21 @@ def validate_policy(policy, now):
     exceptions = policy.get('exceptions')
     if not isinstance(exceptions, list):
         raise ValueError('Exceptions must be an explicit list')
+    # A zero-findings diagnostic never applies reviews or lets an expired review
+    # hide the underlying inventory behind a policy-configuration error.
+    if ignore_exceptions:
+        return []
     seen = set()
     for item in exceptions:
         if not isinstance(item, dict) or set(item) != EXCEPTION_FIELDS:
             raise ValueError('Exception fields must be exact and complete')
-        if not all(isinstance(value, str) and value.strip() and not any(c in value for c in '\0\r\n') for value in item.values()):
+        if not all(isinstance(value, str) and value.strip() and not any(c in value for c in '\0\r\n')
+                   for key, value in item.items() if key != 'fixed_version'):
             raise ValueError('Exception values must be nonempty single-line strings')
-        if item['component'] not in policy['components'] or item['platform'] not in PLATFORMS:
-            raise ValueError('Exception component/platform is unknown')
+        if item['component'] != 'worker' or item['target'] != 'os:ubuntu:26.04' or item['platform'] not in PLATFORMS:
+            raise ValueError('Reviews are restricted to exact worker Ubuntu26.04 OS findings/platforms')
+        if item['severity'] not in ('MEDIUM', 'LOW') or item['fixed_version'] is not None:
+            raise ValueError('Only vendor-unfixed Medium/Low findings can receive reviewed acceptance')
         if not re.fullmatch(r'CVE-[0-9]{4}-[0-9]{4,}', item['vulnerability_id']):
             raise ValueError('Exceptions must identify one exact CVE')
         if any(any(c in item[key] for c in '*?[]') for key in ('package', 'installed_version', 'component', 'target', 'platform')):
@@ -199,8 +208,9 @@ def validate_policy(policy, now):
         if expiry <= now:
             raise ValueError('Expired vulnerability exception: ' + item['vulnerability_id'])
         reference = urlsplit(item['reference'])
-        if reference.scheme != 'https' or not reference.hostname or reference.username or reference.password or reference.fragment:
-            raise ValueError('Exception requires a primary HTTPS advisory/reference without credentials')
+        if (reference.scheme != 'https' or reference.netloc != 'ubuntu.com' or reference.username or reference.password
+                or reference.query or reference.fragment or reference.path != '/security/' + item['vulnerability_id']):
+            raise ValueError('Worker OS review requires the exact primary Ubuntu CVE reference')
         if len(item['reason'].strip()) < 20:
             raise ValueError('Exception requires a concrete reviewed justification')
         key = exception_key(item)
@@ -211,7 +221,14 @@ def validate_policy(policy, now):
 
 
 def exception_key(item):
-    return tuple(item[key] for key in ('component', 'platform', 'target', 'vulnerability_id', 'package', 'installed_version'))
+    return tuple(item[key] for key in ('component', 'platform', 'target', 'vulnerability_id', 'package',
+                                      'installed_version', 'severity', 'fixed_version'))
+
+
+def gate_mode(require_no_active_findings=False, require_reviewed_findings=False):
+    if require_no_active_findings and require_reviewed_findings:
+        raise ValueError('Zero-findings and reviewed-findings modes are mutually exclusive')
+    return 'no-active-findings' if require_no_active_findings else 'reviewed-findings' if require_reviewed_findings else 'standard'
 
 
 def database_identity(cache, policy, now):
@@ -440,7 +457,9 @@ def archive_identity(archive, image, maximum_bytes):
                                  'verified_layers': len(expected_layers)}}
 
 
-def evaluate_report(report, component, image, policy, exceptions, scanner_version, withdrawal_verifier=None):
+def evaluate_report(report, component, image, policy, exceptions, scanner_version, withdrawal_verifier=None,
+                    require_no_active_findings=False, require_reviewed_findings=False):
+    mode = gate_mode(require_no_active_findings, require_reviewed_findings)
     if not isinstance(report, dict) or report.get('SchemaVersion') != 2:
         raise ValueError('Malformed/unsupported Trivy JSON report')
     if not isinstance(report.get('Trivy'), dict) or report['Trivy'].get('Version') != scanner_version or report.get('ArtifactType') != 'container_image':
@@ -514,6 +533,7 @@ def evaluate_report(report, component, image, policy, exceptions, scanner_versio
     coverage['required_go_inventory'] = go_coverage
     coverage['required_node_inventory'] = node_versions
     counts, blocking, accepted, withdrawn, matched = Counter(), [], [], [], set()
+    unfixed_lower = []
     lookup = {exception_key(item): item for item in exceptions}
     packages = 0
     for result in results:
@@ -547,17 +567,27 @@ def evaluate_report(report, component, image, policy, exceptions, scanner_versio
             identifier, package, installed = (vulnerability.get(k) for k in ('VulnerabilityID', 'PkgName', 'InstalledVersion'))
             if severity not in SEVERITIES or not all(isinstance(x, str) and x.strip() for x in (identifier, package, installed)):
                 raise ValueError('Unknown/missing vulnerability ID, severity, package or installed version')
+            fixed = vulnerability.get('FixedVersion')
+            if fixed is not None and (not isinstance(fixed, str) or fixed != fixed.strip()):
+                raise ValueError('Malformed fixed-version evidence')
+            if vulnerability.get('Status') == 'fixed' and not fixed:
+                raise ValueError('Fixed status requires a published fixed version')
             counts[severity] += 1
             finding = {'component': component, 'platform': image['platform'], 'target': target,
                        'vulnerability_id': identifier, 'package': package, 'installed_version': installed,
-                       'severity': severity, 'fixed_version': vulnerability.get('FixedVersion'),
+                       'severity': severity, 'fixed_version': fixed,
                        'status': vulnerability.get('Status'), 'reference': vulnerability.get('PrimaryURL')}
+            if severity in ('MEDIUM', 'LOW') and not fixed:
+                unfixed_lower.append(finding)
             key = exception_key(finding)
             exception = lookup.get(key)
-            if exception:
+            reviewable = (component == 'worker' and result['Class'] == 'os-pkgs' and result.get('Type') == 'ubuntu'
+                          and target == 'os:ubuntu:26.04' and severity in ('MEDIUM', 'LOW') and fixed is None)
+            if exception and reviewable and not require_no_active_findings:
                 matched.add(key)
                 accepted.append({'finding': finding, 'exception': exception})
-            elif severity in ('HIGH', 'CRITICAL', 'UNKNOWN'):
+            elif require_no_active_findings or require_reviewed_findings or severity in ('HIGH', 'CRITICAL', 'UNKNOWN') or (
+                    severity in ('MEDIUM', 'LOW') and fixed and policy['block_fixable_lower_severity']):
                 if result['Class'] == 'lang-pkgs' and result.get('Type') == 'node-pkg' and withdrawal_verifier and ADVISORY_ID.fullmatch(identifier):
                     try:
                         proof = withdrawal_verifier.verify(identifier, package)
@@ -568,7 +598,9 @@ def evaluate_report(report, component, image, policy, exceptions, scanner_versio
                         continue
                 blocking.append(finding)
     return {'component': component, **image, **coverage, 'package_entries': packages,
+            'gate_mode': mode,
             'counts': {s: counts[s] for s in sorted(SEVERITIES)}, 'blocking': blocking,
+            'unfixed_lower_severity': unfixed_lower,
             'reviewed_exceptions': accepted, 'verified_withdrawn': withdrawn}, matched
 
 
@@ -582,7 +614,8 @@ def check_unused_exceptions(exceptions, matched, selected):
 def scan_images(arguments):
     now = datetime.now(timezone.utc)
     policy = json.loads((ROOT / 'security/image-policy.json').read_text())
-    exceptions = validate_policy(policy, now)
+    mode = gate_mode(arguments.require_no_active_findings, arguments.require_reviewed_findings)
+    exceptions = validate_policy(policy, now, ignore_exceptions=arguments.require_no_active_findings)
     selected = {}
     for argument in arguments.image:
         component, separator, reference = argument.partition('=')
@@ -594,7 +627,8 @@ def scan_images(arguments):
         raise ValueError('Report output must be a new or empty directory')
     output.mkdir(parents=True, exist_ok=True, mode=0o700)
     summary = {'schema_version': 1, 'created_at': now.isoformat(), 'policy_sha256': load_installer().sha256_file(ROOT / 'security/image-policy.json'),
-               'status': 'error', 'images': [], 'errors': []}
+               'status': 'error', 'images': [], 'errors': [],
+               'gate_mode': mode}
     try:
         installer = load_installer()
         executable, provenance = installer.install(arguments.trivy)
@@ -631,7 +665,8 @@ def scan_images(arguments):
                 report_path = output / (component + '.trivy.json')
                 run(scan_arguments(executable, cache, archive, report_path), environment=environment, cwd=work, timeout=660)
                 report = json.loads(report_path.read_text())
-                component_summary, used = evaluate_report(report, component, image, policy, exceptions, provenance['version'], withdrawals)
+                component_summary, used = evaluate_report(report, component, image, policy, exceptions, provenance['version'], withdrawals,
+                                                         arguments.require_no_active_findings, arguments.require_reviewed_findings)
                 matched.update(used)
                 sbom_path = output / (component + '.cdx.json')
                 run(trivy_arguments(executable, cache) + ['convert', '--format', 'cyclonedx', '--output', str(sbom_path),
@@ -643,7 +678,8 @@ def scan_images(arguments):
                 component_summary['artifacts'] = {path.name: installer.sha256_file(path) for path in (report_path, sbom_path)}
                 summary['images'].append(component_summary)
                 archive.unlink()
-            check_unused_exceptions(exceptions, matched, {(c, i['platform']) for c, i in selected.items()})
+            if not arguments.require_no_active_findings:
+                check_unused_exceptions(exceptions, matched, {(c, i['platform']) for c, i in selected.items()})
             if database_identity(cache, policy, datetime.now(timezone.utc)) != database:
                 raise ValueError('Trivy vulnerability database changed during the scan')
             summary['status'] = 'blocked' if any(item['blocking'] for item in summary['images']) else 'passed'
@@ -660,6 +696,11 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--image', action='append', required=True)
     parser.add_argument('--platform', choices=sorted(PLATFORMS))
+    modes = parser.add_mutually_exclusive_group()
+    modes.add_argument('--require-no-active-findings', action='store_true',
+                       help='Diagnostic: block every active severity without applying vulnerability reviews')
+    modes.add_argument('--require-reviewed-findings', action='store_true',
+                       help='Signed publication: block every active finding except exact unexpired reviewed vendor-unfixed worker OS Medium/Low findings')
     parser.add_argument('--trivy', type=Path, default=Path.home() / '.cache/artex-security-tools/trivy-0.76.2')
     parser.add_argument('--cache-dir', type=Path, default=Path.home() / '.cache/artex-trivy')
     args = parser.parse_args()

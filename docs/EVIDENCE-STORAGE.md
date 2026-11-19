@@ -8,9 +8,12 @@ concurrent uploads, imports and worker snapshots cannot independently spend the
 same available capacity. Each admission recounts real files rather than trusting
 a cached counter, so restarts and failed transactions do not reset usage.
 
-These are independent application budgets, not a total VM disk limit. PostgreSQL,
-its WAL, database-backed activity/model records, application logs, Docker images,
-backups and filesystem allocation overhead need separate capacity controls.
+These are independent application budgets, not a total VM disk limit. The
+supported Compose deployment separately bounds PostgreSQL/WAL with a preallocated
+ext4 filesystem and rotates container logs; [PostgreSQL and backups](POSTGRES-BACKUP.md)
+describes those controls, offline migration and verified encrypted backups.
+External databases, VM logs, Docker images, backups and filesystem allocation
+overhead still need operational capacity controls.
 Operator-managed source/skill directories outside the data directory also require
 an explicit filesystem quota if made writable. The supported API image is
 read-only outside its named volumes and bounded temporary filesystems.

@@ -5,22 +5,53 @@ repo=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 cd "$repo"
 container="artex-tests-$(date +%s)-$$"
 log_dir=$(mktemp -d "${TMPDIR:-/tmp}/artex-tests.XXXXXX")
-cleanup() { docker rm -f "$container" >/dev/null 2>&1 || true; }
-trap cleanup EXIT HUP INT TERM
+volume="$container-pgdisk"
+volume_created=0
+cleanup() {
+  docker rm -f "$container" >/dev/null 2>&1 || true
+  if [ "$volume_created" = 1 ]; then docker volume rm "$volume" >/dev/null 2>&1 || true; fi
+}
+trap cleanup EXIT
+trap 'exit 129' HUP
+trap 'exit 130' INT
+trap 'exit 143' TERM
 # Exercise the same hardened database image deployed by Compose.
 docker build --target postgres -f Dockerfile.source -t artex-local:postgres . > "$log_dir/postgres-build.log" 2>&1 || {
   echo "PostgreSQL image build failed; see $log_dir/postgres-build.log" >&2
   exit 1
 }
-# Test-only credential: the container is disposable and bound exclusively to loopback.
+sh scripts/setup-postgres.sh
+# Test-only credential and backing volume; never mount an existing user volume.
+if docker volume inspect "$volume" >/dev/null 2>&1; then
+  echo "Refusing pre-existing test volume: $volume" >&2; exit 1
+fi
+docker volume create --label artex.purpose=isolated-tests "$volume" >/dev/null
+volume_created=1
 docker run -d --name "$container" --label artex.purpose=isolated-tests \
   --memory=1g --cpus=1 -e POSTGRES_USER=artex_test \
   -e POSTGRES_PASSWORD=local-test-only -e POSTGRES_DB=postgres \
-  -p 127.0.0.1::5432 --tmpfs /var/lib/postgresql/data:rw,size=768m \
+  -e ARTEX_PG_DISK_BYTES=1073741824 -p 127.0.0.1::5432 \
+  --read-only --cap-drop ALL --cap-add SYS_ADMIN --cap-add MKNOD \
+  --cap-add CHOWN --cap-add DAC_OVERRIDE --cap-add FOWNER \
+  --cap-add SETUID --cap-add SETGID --cap-add SETPCAP \
+  --security-opt no-new-privileges:true --security-opt apparmor=unconfined --device /dev/loop-control \
+  --device-cgroup-rule 'b 7:* rwm' --pids-limit 256 \
+  --log-driver local --log-opt max-size=10m --log-opt max-file=3 \
+  --tmpfs /tmp:rw,nosuid,nodev,noexec,size=128m \
+  --tmpfs /var/run/postgresql:rw,nosuid,nodev,noexec,size=16m,uid=70,gid=70 \
+  --tmpfs /var/lib/postgresql/data:rw,nosuid,nodev,noexec,size=1m,mode=000 \
+  --mount "type=volume,src=$volume,dst=/var/lib/artex-pgdisk" \
   artex-local:postgres >/dev/null
+startup_failed() {
+  docker logs "$container" > "$log_dir/postgres-startup.log" 2>&1 || true
+  echo "PostgreSQL failed to start; private synthetic-fixture diagnostics: $log_dir/postgres-startup.log" >&2
+  exit 1
+}
 attempt=0
-until docker exec "$container" pg_isready -U artex_test >/dev/null 2>&1; do
-  attempt=$((attempt+1)); [ "$attempt" -lt 30 ] || { echo "PostgreSQL failed to start" >&2; exit 1; }
+until docker exec "$container" pg_isready -h 127.0.0.1 -U artex_test >/dev/null 2>&1; do
+  attempt=$((attempt+1)); [ "$attempt" -lt 120 ] || startup_failed
+  running=$(docker inspect "$container" --format '{{.State.Running}}' 2>/dev/null || true)
+  [ "$running" != false ] || startup_failed
   sleep 1
 done
 port=$(docker port "$container" 5432/tcp | sed 's/.*://')

@@ -87,7 +87,7 @@ class Fixture:
         real_docker = shutil.which("docker")
         if not real_docker:
             raise RuntimeError("Docker CLI is required")
-        for relative in ["docker-compose.yml", "compose.workers.yml", "scripts/setup-workers.sh",
+        for relative in ["docker-compose.yml", "compose.workers.yml", "scripts/setup-workers.sh", "scripts/setup-postgres.sh",
                          "worker/policy.example.json"]:
             target = self.directory / relative
             target.parent.mkdir(parents=True, exist_ok=True)
@@ -96,7 +96,7 @@ class Fixture:
         compose.write_text(compose.read_text().replace("127.0.0.1:8787:8787", "127.0.0.1::8787"))
         environment = self.directory / ".env"
         environment.write_text("POSTGRES_PASSWORD=" + self.database_password +
-                               "\nARTEX_ADMIN_PASSWORD=" + self.password + "\n")
+                               "\nARTEX_ADMIN_PASSWORD=" + self.password + "\nARTEX_PG_DISK_BYTES=536870912\n")
         environment.chmod(0o600)
         (self.directory / "smoke.override.yml").write_text("services:\n  artex:\n    image: artex-local:hardened\n")
 
@@ -112,6 +112,8 @@ class Fixture:
         wrapper.chmod(0o700)
         setup_environment = dict(os.environ)
         setup_environment["PATH"] = str(binary_directory) + os.pathsep + os.environ.get("PATH", "")
+        self.run(["/bin/sh", "scripts/setup-postgres.sh"], env=setup_environment)
+        self.check("PostgreSQL bounded-filesystem preflight succeeds without touching database volumes", True)
         self.run(["/bin/sh", "scripts/setup-workers.sh"], env=setup_environment)
         self.check("Fresh setup creates or verifies the dedicated worker bridge", True)
         token = (self.directory / ".secrets/worker-token").read_bytes()
@@ -147,15 +149,24 @@ class Fixture:
             self.check("Fresh Compose API and PostgreSQL initialize and authenticate", response.status == 200)
         database = self.run(self.command + ["ps", "-q", "postgres"]).stdout.strip()
         expected_uid = self.run(["docker", "exec", database, "id", "-u", "postgres"]).stdout.strip()
-        process_status = self.run(["docker", "exec", database, "cat", "/proc/1/status"]).stdout
-        uid_fields = next(line.split()[1:] for line in process_status.splitlines() if line.startswith("Uid:"))
-        self.check("PostgreSQL native startup helper drops all server UIDs away from root",
-                   expected_uid != "0" and uid_fields == [expected_uid] * 4)
+        server_pid = self.run(["docker", "exec", database, "head", "-n", "1", "/var/lib/postgresql/bounded/data/postmaster.pid"]).stdout.strip()
+        process_statuses = [self.run(["docker", "exec", database, "cat", "/proc/" + pid + "/status"]).stdout for pid in ["1", server_pid]]
+        def unprivileged(status):
+            fields = {line.split(":", 1)[0]: line.split(":", 1)[1].split() for line in status.splitlines() if ":" in line}
+            return (fields.get("Uid") == [expected_uid] * 4 and fields.get("NoNewPrivs") == ["1"]
+                    and all(fields.get(cap) == ["0000000000000000"] for cap in ["CapEff", "CapPrm", "CapInh", "CapBnd", "CapAmb"]))
+        self.check("PostgreSQL supervisor and server have nonroot UIDs, zero capabilities and no-new-privileges",
+                   expected_uid != "0" and all(unprivileged(status) for status in process_statuses))
+        profiles = [self.run(["docker", "exec", database, "cat", "/proc/" + pid + "/attr/apparmor/current"]).stdout.strip() for pid in ["1", server_pid]]
+        self.check("PostgreSQL supervisor and server re-enter enforcing docker-default after bootstrap", profiles == ["docker-default (enforce)"] * 2)
+        filesystem = self.run(["docker", "exec", database, "findmnt", "-n", "-o", "FSTYPE", "--target", "/var/lib/postgresql/bounded"]).stdout.strip()
+        backing_bytes = self.run(["docker", "exec", database, "stat", "-c", "%s", "/var/lib/artex-pgdisk/postgres.ext4"]).stdout.strip()
+        self.check("PostgreSQL persists on a fixed 512 MiB ext4 backing filesystem", filesystem == "ext4" and backing_bytes == "536870912")
         self.run(["docker", "exec", database, "psql", "-U", "artex", "-d", "artex", "-v", "ON_ERROR_STOP=1",
                   "-c", "CREATE TABLE security_restart_probe(value integer); INSERT INTO security_restart_probe VALUES (42);"])
         self.run(["docker", "restart", "--time", "20", database])
         for _ in range(60):
-            ready = subprocess.run(["docker", "exec", database, "pg_isready", "-U", "artex"],
+            ready = subprocess.run(["docker", "exec", database, "pg_isready", "-h", "127.0.0.1", "-U", "artex"],
                                    capture_output=True, text=True, timeout=5)
             if ready.returncode == 0:
                 break
@@ -198,6 +209,10 @@ print('worker probe passed')
                   "--mount", "type=bind,src=" + str(self.directory / ".secrets/worker-token") + ",dst=/run/probe-token,readonly",
                   "--entrypoint", "python3", "artex-local:worker", "-c", probe])
         self.check("Compose API reaches broker and executes an isolated tool with cleanup", True)
+        for service in ["artex", "postgres", "worker-broker"]:
+            identity = self.run(self.command + ["ps", "-q", service]).stdout.strip()
+            logging = json.loads(self.run(["docker", "inspect", identity, "--format", "{{json .HostConfig.LogConfig}}"]).stdout)
+            self.check(service + " uses finite Docker local log rotation", logging.get("Type") == "local" and logging.get("Config", {}).get("max-size") == "10m" and logging.get("Config", {}).get("max-file") == "3")
         api_networks = json.loads(self.run(["docker", "inspect", app, "--format",
                                             "{{json .NetworkSettings.Networks}}"]).stdout)
         self.check("API is never attached to the worker bridge", NETWORK not in api_networks)

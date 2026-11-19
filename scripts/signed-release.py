@@ -6,6 +6,7 @@ Candidate mode is explicitly separate and cannot verify as a production release.
 """
 import argparse
 import hashlib
+import importlib.util
 import json
 import os
 from pathlib import Path, PurePosixPath
@@ -264,7 +265,7 @@ def candidate(directory, ctx):
     (directory / 'images.json').write_text(json.dumps({'candidate': {'name': CANDIDATE_IMAGE, 'digest': matches[0]}}, indent=2) + '\n')
 
 
-def gate(env=None, runner=run):
+def gate(env=None, runner=run, policy_verifier=None):
     env = os.environ if env is None else env
     require(env.get('GITHUB_REPOSITORY') == REPOSITORY, 'Release workflow is bound to ' + REPOSITORY)
     require(env.get('GITHUB_WORKFLOW_REF') == f'{REPOSITORY}/{WORKFLOW}@{env.get("GITHUB_REF")}',
@@ -282,6 +283,15 @@ def gate(env=None, runner=run):
     require(head == ctx['commit'], 'Checkout does not match the triggering commit')
     runner(['git', 'merge-base', '--is-ancestor', ctx['commit'], 'origin/main'])
     if mode == 'release':
+        # ref_protected alone proves some rule applies, not which protections.
+        # Independently require the reviewed active creation/immutability policy.
+        if policy_verifier is None:
+            spec = importlib.util.spec_from_file_location('release_tag_policy', Path(__file__).with_name('release-tag-policy.py'))
+            policy = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(policy)
+            policy.verify_runtime(ref, env.get('GH_TOKEN') or env.get('GITHUB_TOKEN'))
+        else:
+            policy_verifier(ref)
         tagged = runner(['git', 'rev-parse', ref + '^{commit}'], capture_output=True, text=True).stdout.strip()
         require(tagged == ctx['commit'], 'Version tag does not match the reviewed checkout')
         remote=runner(['git','ls-remote','--exit-code','origin',ref,ref+'^{}'],capture_output=True,text=True).stdout.splitlines()

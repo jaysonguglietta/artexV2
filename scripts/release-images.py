@@ -75,6 +75,7 @@ def manifest_digest(repository, tag, absent=False):
 
 def scanned_identities(summary, arch):
     release.require(isinstance(summary, dict) and summary.get('status') == 'passed'
+                    and summary.get('gate_mode') == 'reviewed-findings'
                     and isinstance(summary.get('images'), list), 'Missing successful image scan inventory')
     records = {}
     for image in summary['images']:
@@ -82,6 +83,7 @@ def scanned_identities(summary, arch):
                         'Unknown scanned image component')
         component = image['component']
         release.require(component not in records and image.get('platform') == 'linux/' + arch
+                        and image.get('gate_mode') == 'reviewed-findings'
                         and image.get('blocking') == [], 'Ambiguous or blocked scanned image identity')
         digest, layers = image.get('config_digest'), image.get('rootfs_diff_ids')
         release.require(isinstance(digest, str) and release.DIGEST.fullmatch(digest)
@@ -221,6 +223,7 @@ def build_scan_publish(output):
                      '-t', f'artex-release-{component}-{arch}', '.'])
         scan_dir = output.parent / ('image-scans-' + arch)
         command([sys.executable, 'scripts/scan-images.py', '--output', str(scan_dir),
+                 '--require-reviewed-findings',
                  '--platform', 'linux/' + arch,
                  *[argument for component in COMPONENTS
                    for argument in ('--image', f'{component}=artex-release-{component}-{arch}')]])

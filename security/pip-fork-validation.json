@@ -1,0 +1,40 @@
+{
+  "python": "3.14.10 (main, Nov  5 2026, 08:03:50) [GCC 14.2.0]",
+  "platform": "linux",
+  "pip_version": "26.3+artex.1",
+  "checks_passed": 10,
+  "checks": [
+    "honest identity, actual code/license/SBOM inventory consistency and installed RECORD hashes",
+    "installed CLI version/list/check without package-index access",
+    "metadata API uses importlib even when the legacy environment switch requests otherwise",
+    "ensurepip reports the replaced bundled wheel version",
+    "new venv bootstraps the actual patched wheel offline",
+    "explicit ensurepip installs the patched bundle into a pip-free venv",
+    "wrong wheel hash is rejected without partial package/command installation",
+    "hash-verified offline wheel install, import/metadata and direct console-script execution",
+    "inspect, download and wheel CLI workflows retain package metadata/content",
+    "uninstall removes the owned package and executable; dependency check remains clean"
+  ],
+  "retained_sbom_components": 18,
+  "retained_sbom_inventory_sha256": "395aedb208d4087f99953b11e3ef9327130415c34c17398261c55994a5191e2c",
+  "network": "All package operations explicitly offline; fixture container must also use network none",
+  "scope": "Installed CLI/metadata/venv/ensurepip/local-wheel behavior, not the full upstream test suite",
+  "fixture_image_id": "sha256:a9e09457c018e27f774e1c45ce083ba83d56c7a8391230bf0cd0055595548bf0",
+  "fixture_source": "python:3.14.10-slim-trixie@sha256:9aaa474097d094040649f2162a627c0049b408f52138d980916788d80f04802f",
+  "platform_tested": "linux/arm64",
+  "upstream_wheel_sha256": "f3b60b20ffaadd4415ed7957212a38ac63fa4c5fa375bd0f4a797777940fad13",
+  "patch_script_sha256": "91835eadfccb788302037922bb619bf7bfe04353c9ae4d0a169132d1ea4ae385",
+  "behavior_script_sha256": "bcefb80a0611bb05036827699b3b33bab295dc479b6b9d0ae91df9b7f67d1ed7",
+  "controls": {
+    "network": "none",
+    "rootfs": "read-only",
+    "uid_gid": "10001:10001",
+    "capabilities": "all dropped",
+    "no_new_privileges": true,
+    "docker_socket_mounted": false,
+    "scratch": "256MiB executable tmpfs",
+    "memory": "512MiB",
+    "pids": 128
+  },
+  "scope_limit": "Pinned official Python base fixture; the final copied Ubuntu worker and full runtime image scan must be verified separately"
+}

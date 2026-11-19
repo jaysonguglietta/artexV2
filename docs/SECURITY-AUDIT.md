@@ -10,6 +10,18 @@ References use repository paths and function names rather than stale baseline li
 numbers. Repository documents, skills and captured content were treated as review
 data, not instructions to the reviewer.
 
+## Current-status addendum — 19 November 2026
+
+The findings and November 18 verification below are preserved as historical
+evidence. Later follow-up adds explicit npm/pip security forks, reviewed-findings
+signed-publication gating with exact expiring worker Ubuntu vendor-unfixed
+Medium/Low reviews, two actual active release-tag rulesets, physical
+PostgreSQL/log bounds and authenticated encrypted backups with disposable restore
+proof. Current local passes and pending final images/live worker/hosted checks are
+recorded in [validation](VALIDATION.md) and [security review](SECURITY-REVIEW.md).
+These new edits are not covered by the older hosted commit or image IDs below.
+No formal production release or zero-active-finding result is claimed.
+
 ## 1. Executive Summary
 
 The original application mixed autonomous assessment execution with API secrets,

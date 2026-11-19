@@ -1,14 +1,108 @@
 # Validation record
 
-Date: 18 November 2026. Results below are point-in-time observations with explicit
-source scope. Fresh local integration, runtime image and targeted follow-up
-checks have passed, including final Compose acceptance and a fresh prepared-source
-credential scan. Hosted Go/frontend/Docker, amd64/arm64 image gates and real keyless
-signing also passed for the exact commit listed below. Earlier
-integration counts and image IDs must not be represented as results for later edits. No local
-pass implies that GitHub Actions, real OIDC signing or release publication passed.
+Last follow-up: **19 November 2026**. This is a point-in-time record, with
+completed observations separated from pending verification. November 18 image
+IDs and hosted runs below are historical checkpoints for their exact source;
+they do not establish results for the current storage/toolchain/release edits.
+No local pass implies hosted CI, real OIDC or production publication passed.
 
-## Current targeted follow-up checks
+## November 19 follow-up verification
+
+The four authorized workstreams now have implemented controls: runtime image
+remediation/gating, actual release-tag protection, bounded PostgreSQL/log storage,
+and encrypted backups verified by a disposable restore. Their scope and tests
+are below. The separate product review's nine-item backlog remains a proposal;
+these changes do not establish the full browser assessment journey.
+
+| Current follow-up check | Observed result / remaining scope |
+|---|---|
+| Disposable PostgreSQL and Go integration | **869 passed, 0 failed, 1 optional live-provider skipped**, plus **13 additional tested suites**. No live-provider pass is claimed. |
+| Analysis/portability | Isolation race check, `go vet ./...` and Windows amd64 cross-build passed. Earlier six-package race evidence is retained separately below. |
+| Physical PostgreSQL capacity | **16 disk-full**, **7 explicit migration** and **3 offline recovery-reserve** checks passed. Tests cover an actual fixed filesystem and preservation/refusal paths, not a named-volume `size` option. |
+| Backup/Compose exact-source integration | **22/22 passed**: fresh bounded initialization and confinement, restart persistence, isolated tool call, finite logs, authenticated encrypted snapshot, independent bounded restore/hash comparison, source preservation and cleanup. Source hashes were unchanged at verification. |
+| Backup/log regressions | **15 backup unit + 8 cryptographic + 4 log-policy** tests passed. |
+| Live release-tag policy | Two active rulesets verified: personal-owner creation only; updates/deletions have an empty bypass list. [Evidence](../security/release-tag-policy-evidence.json) records owner and read-only checks; no tag was created or mutated. **7 policy tests** passed. |
+| Signing/publication regressions | **15 signing + 15 publication** tests passed locally. This is not a new hosted OIDC or production-release result. |
+| Image policy regressions | **26 passed**, including exact review severity/`fixed_version: null`, mode boundaries and expired/stale behavior. Saved-report evaluation gives 94 reviewed/0 blocking in reviewed mode and 94 blocking/0 reviewed in the independent strict diagnostic. Fresh final-image scans remain pending. |
+| Explicit npm fork | **3 static + 10 installed behavior/security** checks passed; [fixture evidence](../security/npm-fork-validation.json) authenticates source/lock/test identity. This is a source-runtime fixture, not the final full worker image. |
+| Explicit pip fork | **3 static + 10 installed behavior/security** checks passed, including corrected actual-code/SBOM inventory and offline venv/ensurepip. [Fixture evidence](../security/pip-fork-validation.json) records the current patch/test hashes. |
+| Embedded frontend | Current embedded build passed; no UI source change in this follow-up. The earlier 26 tests/3,086-key/typecheck results below retain their recorded scope. |
+| Actual copied worker tools | **6/6 passed on the rebuilt lifecycle-fixed ARM64 worker** `sha256:4c77f3514bdcbe3b1aac5a63f3a1a18468831820560b1acd321eda3cd2427e02`: patched Python/native modules, patched venv pip, npm dependency fix, retained tools, unused software removal and real Chromium rendering/interaction/PNG capture. Its fresh reviewed-policy image scan is pending; earlier scanned IDs below remain historical. |
+| Final images and advisory counts | Four exact ARM64 images passed **standard** policy. Worker retains **85 Medium + 9 Low active package/advisory records**, all without a listed fixed version; application/broker/PostgreSQL have zero at every severity. No risk exception or withdrawal disposition was used. This is **not** production-publication approval; full inventory and identity proof are below. |
+| Live worker acceptance | **53/53 passed at the lifecycle-fixed checkpoint**, including urgent close, descendants, watchdog expiry and cleanup. A subsequent adjacent cleanup-failure patch needs its final rebuilt-image 53-check run; that final run is pending. Concurrent close waits for acknowledged Docker removal or confirmed absence. |
+| Concurrent-removal race validation | Latest `go test -race ./isolation` passed in **8.176 seconds**, including the adjacent cleanup-failure fix and concurrent-close/removal regressions. This does not substitute for the pending final rebuilt-image live run. |
+| Final Compose acceptance | **17/17 passed**, including bounded PostgreSQL startup/confinement/restart persistence, static API contents, isolated tool execution, log rotation, network separation and cleanup. This is separate from the 22-check backup integration. |
+| Independent strict diagnostic | **Earlier expected refusal verified**: the real `--require-no-active-findings` scan of the same worker checkpoint blocked **94 active records**, with zero scanner errors. This remains historical zero-active-policy negative proof; it does not test or approve the new reviewed-findings publication policy. |
+| Reviewed-findings publication policy | **94 exact ARM64 reviews configured**, 85 Medium/9 Low, with severity and `fixed_version: null`; reviewed `2026-11-19T13:04:35.549172Z`, expiry `2026-12-19T12:00:00Z`. No amd64 review is present; it requires actual hosted evidence and separate exact entries. Only worker Ubuntu 26.04 OS vendor-unfixed Medium/Low is eligible, with a primary Ubuntu CVE reference and concrete containment. No High/Critical/Unknown or fixable waiver. New final-image reviewed scans remain pending. |
+| Host daemon and journal policy | **Activated and tested** on the dedicated `colima-artex-test` VM: Docker and journald restarted/active; a new container inherited `local`, `10m × 3`, compression. A 41,779,200-byte stdout fixture rotated to 3,188,369 bytes while retaining its final marker. Journal configured at 256 MiB persistent/64 MiB runtime/7 days; measured usage 16.0 MiB. This does not retrofit unrelated existing containers or cap all host storage. |
+| Hosted follow-up and source credential scan | **Pending** new source push/CI/image/OIDC results and fresh prepared-source scan. Existing linked November 18 passes apply only to that commit. |
+| Production version-tag release | **Not enabled or published.** The operator authorized the narrow review allowance, not a release-enabling variable, tag or publication. Publication still requires protected-tag identity, explicit opt-in, complete tests and `--require-reviewed-findings` on every exact image/platform. Accepted residual risk is not a package fix or zero-active result. |
+
+The exact backup integration report SHA256 is
+`88020b6f4a9bd54a415947acf0b5f753ce88d0c764cd718e9502e0dff79b4bd5`.
+Its seven recorded source hashes still matched when this documentation update was
+made. The report is private local test evidence, not an uploaded database backup.
+See [database/log/backup operations](POSTGRES-BACKUP.md),
+[release-tag protection](RELEASE-TAG-PROTECTION.md),
+[image policy](IMAGE-SECURITY.md), [signed releases](SIGNED-RELEASES.md) and
+[product readiness](PRODUCT-READINESS-REVIEW.md) for controls and limits.
+
+## November 19 local ARM64 image checkpoint
+
+[Sanitized image evidence](../security/image-followup-evidence.json) retains all
+**94 active package/advisory records (49 unique vulnerability IDs)**, exact
+installed versions/targets/statuses, image/config/rootfs bindings, scanner/DB
+identity and hashes of all eight full reports/SBOMs. Every artifact hash was
+verified when producing this record. No image environment or credentials are
+included. These counts are observations from this DB, not claims that every
+native/runtime vulnerability is detected.
+
+| Component | Critical | High | Medium | Low | Unknown | Standard blocking | Risk exceptions |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| application | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| worker | 0 | 0 | 85 | 9 | 0 | 0 | 0 |
+| broker | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| postgres | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+
+All 94 residual records are active Ubuntu worker OS findings with no
+`FixedVersion` in this database. At this recorded standard-mode checkpoint no
+risk exception or withdrawal was applied. The independent strict diagnostic
+correctly blocked all 94 with zero scanner errors. The operator subsequently
+authorized exact, expiring contained vendor-unfixed worker Medium/Low reviews
+for `--require-reviewed-findings`; the earlier strict refusal does not test that
+new allowance. Fresh policy/architecture proof is pending. No formal release has
+been enabled or published. Local authorized assessment workflows are preserved,
+with the latest full worker acceptance recorded above.
+
+Trivy **0.76.2** used schema-2 DB
+`UpdatedAt=2026-11-19T07:06:49.809946527Z`, SHA256
+`ebba0a2f709d971b1b49f06569bb7cded629f9f87a5cf71bb5cb8dec015a07c0`.
+The scan completed at `2026-11-19T12:47:55.947825+00:00`. These are local ARM64
+exports, not published GHCR release digests or current amd64 scan results.
+
+| Component | Original Docker image ID | Authenticated config digest |
+|---|---|---|
+| application | `sha256:2c20953329d957475e244f41969978ab151fde9caa1f70360693143ad4685c21` | `sha256:8fa9252d9e03fe738b6155152ac90af10214a65e5d5adbe8e2bc77b2bcc36533` |
+| worker | `sha256:8e4ca64cb715d078a32be08debd2ae7327014bee6723bfb52c373f456d3816dc` | `sha256:7183871c33d677fe6b7d355560db8d36e3c84f4898243b364d7e235e8bd57cd0` |
+| broker | `sha256:8742cdd6129de92fc9a01e2e54a9c3aaa98544e4f69981b8fe325d0f3e044eaa` | `sha256:8e61713fd6964da9e2ee15f24d4a1a43fed0fec891e5dc3317078888dadba7af` |
+| postgres | `sha256:2f4821fbaa775953457ef2b557292d1ef006b8e4cc06018569d78d9467afe8db` | `sha256:b38b0fc77ade8e3d4d7a10601c72d7086472be0e6068c0affa80f7bd1c708fed` |
+
+These IDs are the checked pre-lifecycle-fix and pre-reviewed-policy checkpoint.
+The urgent-close fix has rebuilt source images and passed 53 live worker checks
+and a fresh isolation race run. A later adjacent cleanup-failure patch has passed
+its own race run but needs final rebuilt-image live acceptance. Reviewed-policy
+scans remain pending before
+these image IDs can be replaced by current-source scan evidence. No earlier scan
+is silently carried forward.
+
+The six actual worker/browser checks ran on the worker ID above after the final
+pip code/SBOM correction. This is stronger integration evidence than the separate
+source-runtime npm/pip fixtures, but it does not replace full lifecycle acceptance
+or a native amd64 run. The later lifecycle-fixed worker passed another six tool
+checks plus the full 53-check suite; its new scan identity remains pending. Later
+source/image/DB changes need fresh verification.
+
+## November 18 targeted follow-up checkpoint
 
 | Check | Observed result | Scope and limits |
 |---|---|---|
@@ -26,13 +120,13 @@ with reviewed Node/npm/browser tooling. Production in-process apply/rollback is
 permanently refused, including with the legacy enabling flag. Read-only version
 checks remain available; installation is an external signed-verification workflow.
 
-## Final local follow-up verification
+## November 18 local follow-up checkpoint
 
-These results cover the storage/image/release changes and current release UI.
-They are separate from the older checkpoint below. Image identities and database
-provenance are recorded below, alongside the separate hosted run evidence.
+These November 18 results cover the then-current storage/image/release source and
+release UI. They predate the November 19 toolchain, hard-cap, backup and stricter
+publication edits. Image identities and DB provenance are retained below.
 
-| Final-source check | Observed result / remaining scope |
+| November 18 source check | Observed result / remaining scope |
 |---|---|
 | Disposable PostgreSQL integration | **869 passed, 0 failed, 1 optional live-provider skipped**, including subtests; **13 additional tested Go suites passed**. The skip is not counted as a pass. |
 | Full focused races | Passed for `storage`, `traffic`, `isolation`, `evidence`, `agent` and `server`. |
@@ -50,12 +144,12 @@ provenance are recorded below, alongside the separate hosted run evidence.
 | Real main-only keyless rehearsal | Passed with real GitHub OIDC/Fulcio/Rekor, image signatures and all eight strict negative cases; exact commit/run below. |
 | Protected-tag production release | Not claimed. Requires exact tag/commit/run evidence, hosted protections, complete gates and verified publication. |
 
-## Hosted follow-up verification
+## November 18 hosted follow-up checkpoint
 
 These runs checked source commit `d06f7d8a28c9a562c885a85237811234018eb01c` on 18 November 2026.
-A later documentation/manifest-only commit does not change the tested application,
-worker, image policy or signing scripts. Consult the linked run for exact checkout
-and job identity; a production version-tag release is not claimed.
+Its documentation/manifest-only descendant `e30fe09` retained that implementation.
+The new November 19 implementation changes are outside these runs. Consult each
+run for exact checkout/job identity; a production version-tag release is not claimed.
 
 | Check | Hosted result |
 |---|---|
@@ -99,10 +193,10 @@ separate from the application raw-capture TTL.
 
 These are scanned local export identities, not published GHCR release digests.
 The signing rehearsal creates no version tag, GitHub release or GHCR package.
-Protected-tag publication and operator repository protections require separate
-release authorization and validation.
+Production publication still requires separate authorization and current release
+validation. The later active tag-policy verification is recorded above.
 
-## Local ARM64 image review status
+## November 18 local ARM64 image checkpoint
 
 All four final **linux/arm64** gates passed. These are raw database severity
 counts, not counts after hiding a withdrawn record:
@@ -133,7 +227,7 @@ metadata SHA256 was
 The DB predates the withdrawal, so a fresh primary API proof was required. Future
 runs must recheck DB freshness and advisory status rather than reuse this result.
 
-### Exact final local ARM64 identities
+### Exact November 18 local ARM64 identities
 
 These local export IDs can be OCI index IDs. Each is authenticated through its
 selected manifest/config/layers; Trivy must match the config digest and inspected
@@ -246,6 +340,12 @@ python3 scripts/test-audit-npm.py
 python3 scripts/test-image-security.py
 python3 scripts/test-signed-release.py
 python3 scripts/test-release-publication.py
+python3 scripts/test-release-tag-policy.py
+python3 scripts/test-backup.py
+python3 scripts/test-backup-crypto.py
+python3 scripts/test-log-policy.py
+python3 scripts/test-npm-fork.py
+python3 scripts/test-pip-fork.py
 python3 scripts/check-english.py
 python3 scripts/check-doc-links.py
 npm --prefix web ci --ignore-scripts
@@ -267,7 +367,9 @@ python3 scripts/test-compose.py
 Use [image security](IMAGE-SECURITY.md) for actual exact-image scans,
 [signed releases](SIGNED-RELEASES.md) for external verification and the real hosted
 OIDC rehearsal, and [evidence storage](EVIDENCE-STORAGE.md) for quota/retention/hold
-configuration and recovery checks. Those guides define the scope of their controls;
+configuration and recovery checks. See [database/log/backup operations](POSTGRES-BACKUP.md)
+for destructive fault-test prerequisites, actual encrypted disposable restore and
+host activation. Those guides define the scope of their controls;
 no all-CVE, forensic-atomic, certified SLSA or multi-tenant guarantee is implied.
 
 Worker and Compose fixture reports default to private temporary directories. Both

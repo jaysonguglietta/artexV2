@@ -23,21 +23,55 @@ RUN CGO_ENABLED=0 go build -trimpath -ldflags "-X main.version=${ARTEX_BUILD_VER
 
 # Assessment tools belong only in the untrusted worker, never the API image.
 FROM node:24-trixie-slim@sha256:af02d57b57719b9657a45199a79264a9437940cd55b3c7b3fc99615654f124a0 AS node-runtime
+FROM node-runtime AS npm-security
+WORKDIR /opt/artex-npm
+# Keep the upstream CLI code, with an explicit locked security dependency patch.
+ADD --checksum=sha256:fa0711dd513fa1386bbad3962a292cb813461cb57dedf07d6eb7efe76dffe897 https://registry.npmjs.org/npm/-/npm-12.2.3.tgz /tmp/npm.tgz
+RUN tar -xzf /tmp/npm.tgz --strip-components=1 -C /opt/artex-npm && rm /tmp/npm.tgz
+COPY tools/npm/package*.json ./
+RUN npm ci --omit=dev --ignore-scripts --no-audit --no-fund
+COPY tools/npm/test-behavior.mjs /tmp/test-npm-behavior.mjs
+RUN --network=none node /tmp/test-npm-behavior.mjs /opt/artex-npm
+
+FROM python:3.14.10-slim-trixie@sha256:9aaa474097d094040649f2162a627c0049b408f52138d980916788d80f04802f AS python-runtime
+ADD --checksum=sha256:f3b60b20ffaadd4415ed7957212a38ac63fa4c5fa375bd0f4a797777940fad13 https://files.pythonhosted.org/packages/07/25/ee8c38ae72d66b844ce8eb9711ba905dba21ca1a8a0c960057c41cd23337/pip-26.3-py3-none-any.whl /tmp/pip-26.3-py3-none-any.whl
+COPY tools/python/patch-pip.py /tmp/patch-pip.py
+RUN python3 /tmp/patch-pip.py /tmp/pip-26.3-py3-none-any.whl /tmp/pip-26.3+artex.1-py3-none-any.whl --ensurepip /usr/local/lib/python3.14/ensurepip \
+    && python3 -m pip install --no-index --no-deps --no-cache-dir /tmp/pip-26.3+artex.1-py3-none-any.whl
+COPY tools/python/test-behavior.py /tmp/test-pip-behavior.py
+RUN --network=none python3 /tmp/test-pip-behavior.py
 FROM ubuntu:26.04@sha256:d66b366dac61b575bee2aef07e9c26e8070096fbe84a3d4d3eb0da069b5d76db AS tools
+COPY --from=python-runtime /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+COPY worker/apt-security.conf /etc/apt/apt.conf.d/99-artex-security
+# The upstream container service is not part of a task worker.
+RUN rm -f /usr/bin/pebble \
+    && case "$(dpkg --print-architecture)" in \
+        arm64) artex_ubuntu_mirror=https://ports.ubuntu.com/ubuntu-ports ;; \
+        amd64) artex_ubuntu_mirror=https://azure.archive.ubuntu.com/ubuntu ;; \
+        *) exit 1 ;; \
+       esac \
+    && sed -i -e 's|http://|https://|g' \
+        -e "s|https://archive.ubuntu.com/ubuntu|$artex_ubuntu_mirror|g" \
+        -e "s|https://security.ubuntu.com/ubuntu|$artex_ubuntu_mirror|g" \
+        /etc/apt/sources.list.d/ubuntu.sources
 RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
     libstdc++6 libatomic1 \
-    ca-certificates python3 python3-pip python3-venv ripgrep curl wget git jq unzip \
+    libbz2-1.0 libdb5.3t64 libffi8 libgdbm6t64 liblzma5 libncursesw6 \
+    libreadline8t64 libsqlite3-0 libssl3t64 libzstd1 \
+    ca-certificates ripgrep curl wget git jq unzip \
     dnsutils iputils-ping netcat-openbsd whois nmap \
     && rm -rf /var/lib/apt/lists/*
+COPY --from=python-runtime /usr/local/ /usr/local/
 COPY --from=node-runtime /usr/local/bin/node /usr/local/bin/node
-COPY --from=node-runtime /usr/local/lib/node_modules/npm/ /usr/local/lib/node_modules/npm/
-# Pin the fixed npm archive independently of the base image's bundled version.
-ADD --checksum=sha256:fa0711dd513fa1386bbad3962a292cb813461cb57dedf07d6eb7efe76dffe897 https://registry.npmjs.org/npm/-/npm-12.2.3.tgz /tmp/npm.tgz
-RUN node /usr/local/lib/node_modules/npm/bin/npm-cli.js install --global /tmp/npm.tgz --ignore-scripts --no-audit --no-fund \
-    && rm /tmp/npm.tgz && npm cache clean --force
+COPY --from=npm-security /opt/artex-npm/ /usr/local/lib/node_modules/npm/
+RUN ln -s ../lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm \
+    && ln -s ../lib/node_modules/npm/bin/npx-cli.js /usr/local/bin/npx \
+    && python3 -c "import bz2, ctypes, dbm.gnu, lzma, readline, sqlite3, ssl, venv; assert ssl.OPENSSL_VERSION" \
+    && python3 -m pip --version && npm --version
 COPY tools/browser/package*.json /opt/artex-browser/
 RUN cd /opt/artex-browser && npm ci --ignore-scripts --omit=dev \
     && PLAYWRIGHT_BROWSERS_PATH=/ms-playwright ./node_modules/.bin/playwright install --with-deps chromium \
+    && apt-get purge -y xvfb xserver-common \
     && rm -rf /var/lib/apt/lists/* \
     && groupadd --gid 10001 artex && useradd --uid 10001 --gid 10001 --no-create-home artex \
     && mkdir -p /app/data/home /app/private /app/skills \
@@ -72,7 +106,8 @@ ARG ARTEX_BUILD_COMMIT=unknown
 LABEL org.opencontainers.image.source="https://github.com/jaysonguglietta/artexV2" \
     org.opencontainers.image.version="${ARTEX_BUILD_VERSION}" org.opencontainers.image.revision="${ARTEX_BUILD_COMMIT}"
 COPY --from=backend --chmod=0555 /out/worker-broker /usr/local/bin/worker-broker
-RUN rm -rf /usr/local/libexec/docker/cli-plugins \
+RUN apk upgrade --no-cache \
+    && rm -rf /usr/local/libexec/docker/cli-plugins \
     && mkdir -p /broker-state && chown 10001:10001 /broker-state && chmod 0700 /broker-state
 USER 10001:10001
 ENV HOME=/tmp
@@ -89,7 +124,15 @@ LABEL org.opencontainers.image.source="https://github.com/jaysonguglietta/artexV
 # Separate deletion records an explicit layer whiteout, so inventory tools do
 # not retain stale Go metadata when the pathname becomes a native-helper link.
 RUN rm /usr/local/bin/gosu
-RUN apk add --no-cache --upgrade su-exec && ln -s /sbin/su-exec /usr/local/bin/gosu
+RUN apk upgrade --no-cache \
+    && apk add --no-cache su-exec e2fsprogs setpriv losetup mount umount blkid findmnt flock \
+    && ln -s /sbin/su-exec /usr/local/bin/gosu \
+    && mkdir -p /var/lib/artex-pgdisk /var/lib/postgresql/bounded \
+    && chmod 0700 /var/lib/artex-pgdisk
+COPY --chmod=0555 postgres/bounded-entrypoint.sh /usr/local/bin/artex-postgres-entrypoint
+ENV PGDATA=/var/lib/postgresql/bounded/data
+ENTRYPOINT ["/usr/local/bin/artex-postgres-entrypoint"]
+CMD ["postgres"]
 
 # Static API: no shell, Node, npm, browser, Python or OS package manager.
 FROM scratch AS runtime

@@ -172,28 +172,36 @@ class GateTests(unittest.TestCase):
             output = SHA + '\n'
         return subprocess.CompletedProcess(command, 0, output, '')
 
+    def gate(self, env, runner=None):
+        return r.gate(env, runner or self.runner, policy_verifier=lambda ref: None)
+
     def test_release_requires_repository_protected_tag_optin_main_ancestry(self):
-        self.assertEqual(r.gate(self.env, self.runner)['mode'], 'release')
+        self.assertEqual(self.gate(self.env)['mode'], 'release')
         for key, value in [('GITHUB_REPOSITORY', 'attacker/fork'), ('ARTEX_REF_PROTECTED', 'false'),
                            ('ARTEX_ENABLE_RELEASES', 'false'), ('GITHUB_EVENT_NAME', 'pull_request'),
                            ('GITHUB_REF', 'refs/heads/main'), ('GITHUB_SHA', 'bad')]:
             changed = self.env | {key: value}
             with self.subTest(key=key), self.assertRaises(ValueError):
-                r.gate(changed, self.runner)
+                self.gate(changed)
         def unrelated(command, **kwargs):
             if command[1] == 'merge-base':
                 raise subprocess.CalledProcessError(1, command)
             return self.runner(command, **kwargs)
         with self.assertRaises(subprocess.CalledProcessError):
-            r.gate(self.env, unrelated)
+            self.gate(self.env, unrelated)
 
     def test_main_dispatch_can_only_dry_run_without_release_optin(self):
         env = self.env | {'GITHUB_EVENT_NAME': 'workflow_dispatch', 'GITHUB_REF': 'refs/heads/main',
             'GITHUB_WORKFLOW_REF': r.REPOSITORY + '/' + r.WORKFLOW + '@refs/heads/main',
             'ARTEX_ENABLE_RELEASES': 'false', 'ARTEX_DRY_RUN': 'true'}
-        self.assertEqual(r.gate(env, self.runner)['mode'], 'candidate')
+        self.assertEqual(self.gate(env)['mode'], 'candidate')
         with self.assertRaises(ValueError):
-            r.gate(env | {'ARTEX_DRY_RUN': 'false'}, self.runner)
+            self.gate(env | {'ARTEX_DRY_RUN': 'false'})
+
+    def test_release_fails_closed_when_active_tag_policy_is_not_verified(self):
+        with mock.patch.object(r, 'run'):
+            with self.assertRaisesRegex(ValueError, 'policy inactive'):
+                r.gate(self.env, self.runner, policy_verifier=mock.Mock(side_effect=ValueError('policy inactive')))
 
     def test_workflow_permissions_pins_and_publication_structure(self):
         workflow = (Path(__file__).resolve().parent.parent / '.github/workflows/release.yml').read_text()

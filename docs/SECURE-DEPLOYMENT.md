@@ -23,8 +23,17 @@ it into the API or worker, publish the broker port, or relax its network isolati
 cp .env.example .env
 # Set unique POSTGRES_PASSWORD and ARTEX_ADMIN_PASSWORD values in .env.
 ./scripts/setup-workers.sh --secret-only
+docker compose build postgres
+sh scripts/setup-postgres.sh
 docker compose up --build -d
 ```
+
+Build the PostgreSQL image before its preflight; the preflight primes normal
+confinement on a fresh daemon without creating or touching database volumes.
+The new bounded `pgdisk` volume never automatically adopts the former `pgdata`
+volume. Preserve existing data and follow the explicit offline migration in
+[PostgreSQL capacity and backup operations](POSTGRES-BACKUP.md); do not remove
+legacy volumes or use the old configuration with `down --volumes`.
 
 Open http://localhost:8787. The API publishes only on loopback; the database and
 recording proxy are not published. Chat, records and the UI are available without
@@ -56,8 +65,10 @@ Model review defaults to deny on failure or malformed output. Previously saved
 explicit allow-on-failure policies must be changed manually to deny. Human review
 is an additional control, not a sandbox. TLS validation is on; keep assessment-only
 insecure target exceptions out of credential/control-plane traffic. MCP workers
-always verify TLS. Self-update and rollback are off by default; rebuild reviewed
-source instead of trusting mutable upstream artifacts.
+always verify TLS. Production in-process update and rollback are permanently
+refused, including with the legacy enabling flag. Build reviewed source or
+externally verify [signed artifacts](SIGNED-RELEASES.md) before installation;
+read-only version checks remain available.
 
 ## Verification and publication
 
@@ -69,5 +80,9 @@ closed on active or unverifiable alerts. Keep test/build inputs trusted.
 Before publication, inspect the clean-copy manifest, retain AGPL and original
 attribution, and exclude .env, private keys, runtime data, logs, evidence, dependency
 directories and binaries. The worker design reduces tool compromise exposure;
-container/kernel hardening, OS-image CVE scanning, signed provenance, centralized
-append-only audit and retention remain operational responsibilities.
+container/kernel hardening and centralized append-only audit remain operational
+responsibilities. [Image gates](IMAGE-SECURITY.md), [signed releases](SIGNED-RELEASES.md),
+[raw retention](EVIDENCE-STORAGE.md) and [database/log/backup controls](POSTGRES-BACKUP.md)
+are implemented with scoped proof in [validation](VALIDATION.md). Follow their
+activation/recovery instructions; configured controls are not evidence of a
+completed final scan or active host policy.

@@ -16,8 +16,12 @@ assessment VM and test only authorized targets.
 | Review security changes and remaining risks | [Security review](SECURITY-REVIEW.md) |
 | Trace findings, attack paths and remediation | [Comprehensive adversarial audit](SECURITY-AUDIT.md) |
 | Inspect completed checks and reproduce them | [Validation record](VALIDATION.md) |
+| Review feature maturity, journeys and proposed work | [Product readiness review, sections 12–19](PRODUCT-READINESS-REVIEW.md) |
 | Review OS/language packages and SBOMs | [Runtime image security](IMAGE-SECURITY.md) |
 | Verify and install a signed release | [Signed releases](SIGNED-RELEASES.md) |
+| Review live owner-only, immutable release-tag policy | [Release-tag protection](RELEASE-TAG-PROTECTION.md) |
+| Bound PostgreSQL/log growth and verify restores | [Database/log/backup operations](POSTGRES-BACKUP.md) |
+| Review explicit worker package-manager changes | [npm security fork](../tools/npm/README.md) and [pip security fork](../tools/python/README.md) |
 | Manage quotas, retention and legal holds | [Evidence storage](EVIDENCE-STORAGE.md) |
 | Upload a reviewed source snapshot | [Personal GitHub upload guide](../UPLOAD.md) |
 
@@ -51,3 +55,10 @@ output remain untrusted data even after an isolated tool run succeeds. The stati
 API image has no assessment toolchain; those tools belong in isolated workers.
 Production in-process update/rollback is unavailable. Hosted signing/publication
 status and final integrated checks are reported separately in the validation record.
+The November 19 follow-up has local storage, restore, tag-policy and package-manager
+proof; final images/live worker checks and new hosted runs remain pending. Signed
+publication requires exact, expiring reviews for any remaining vendor-unfixed
+Medium/Low worker Ubuntu OS record. No High/Critical/Unknown or fixable finding
+can be waived; this is residual-risk acceptance, not a clean-scan claim. The new
+policy's exact-image and hosted proof is recorded separately in validation.
+This does not disable local authorized assessment workflows.

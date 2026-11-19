@@ -1,4 +1,11 @@
 # Local single-operator deployment. Do not publish the API or proxy publicly.
+x-bounded-logging: &bounded-logging
+  driver: local
+  options:
+    max-size: "10m"
+    max-file: "3"
+    compress: "true"
+
 services:
   postgres:
     image: artex-local:postgres
@@ -10,16 +17,37 @@ services:
       POSTGRES_USER: artex
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set a strong unique POSTGRES_PASSWORD in .env}
       POSTGRES_DB: artex
+      ARTEX_PG_DISK_BYTES: ${ARTEX_PG_DISK_BYTES-8589934592}
+      PGDATA: /var/lib/postgresql/bounded/data
+    entrypoint: ["/usr/local/bin/artex-postgres-entrypoint"]
+    command: ["postgres", "-c", "logging_collector=off", "-c", "log_statement=none", "-c", "log_min_error_statement=panic", "-c", "log_parameter_max_length_on_error=0"]
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdisk:/var/lib/artex-pgdisk
+    devices:
+      - /dev/loop-control:/dev/loop-control
+    device_cgroup_rules: ["b 7:* rwm"]
+    read_only: true
+    cap_drop: [ALL]
+    # Trusted bootstrap only; supervisor and PostgreSQL irreversibly drop all.
+    cap_add: [SYS_ADMIN, MKNOD, CHOWN, DAC_OVERRIDE, FOWNER, SETUID, SETGID, SETPCAP]
+    # Fixed bootstrap mounts ext4, then MUST re-enter docker-default before PG.
+    security_opt: ["no-new-privileges:true", "apparmor=unconfined"]
+    tmpfs:
+      - /tmp:rw,nosuid,nodev,noexec,size=128m
+      - /var/run/postgresql:rw,nosuid,nodev,noexec,size=16m,uid=70,gid=70
+      - /var/lib/postgresql/data:rw,nosuid,nodev,noexec,size=1m,mode=000
+    pids_limit: 256
+    stop_grace_period: 1m
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U artex -d artex"]
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U artex -d artex"]
       interval: 5s
       timeout: 3s
       retries: 10
+      start_period: 2m
     networks: [database]
     mem_limit: 1g
     cpus: 1
+    logging: *bounded-logging
     restart: unless-stopped
 
   artex:
@@ -66,6 +94,7 @@ services:
     mem_limit: 3g
     cpus: 2
     networks: [database, assessment, management]
+    logging: *bounded-logging
     restart: unless-stopped
 
 networks:
@@ -75,7 +104,9 @@ networks:
   management:
     internal: true
 volumes:
-  pgdata: {}
+  # New backing store only. The former <project>_pgdata volume is deliberately
+  # absent: no automatic migration, adoption or deletion of existing data.
+  pgdisk: {}
   artifacts: {}
   private: {}
 

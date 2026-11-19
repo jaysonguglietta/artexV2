@@ -325,6 +325,11 @@ while True:
                    'private-control-plane-canary' not in first and self.token not in first)
         self.check('Worker has no Docker socket or broker secret mount',
                    'NO_DOCKER' in first and 'NO_BROKER_SECRET' in first)
+        self.check('Private worker filesystems execute local CLI artifacts without added privilege',
+                   'PRIVATE_EXEC_OK' in self.output('task-1', a,
+                       'cp /bin/dash /workspace/artex-exec-fixture && '
+                       '/workspace/artex-exec-fixture -c "printf PRIVATE_EXEC_OK"; '
+                       'rm -f /workspace/artex-exec-fixture'))
         allowed = f'http://{self.allowed}:{self.port}/'
         denied = f'http://{self.denied}:{self.port}/'
         self.check('Explicit synthetic target is reachable', 'authorized synthetic target' in
@@ -385,8 +390,12 @@ print(json.dumps({'clients':out,'watchdog':pathlib.Path('/proc/1/status').read_t
                        unprivileged_status(states.get('watchdog', ''), 0))
             self.check('Lease works while foreground scan holds execution gate', self.lease('task-1', a)[0] == 200)
             start = time.monotonic()
-            self.check('Urgent close bypasses foreground execution gate', self.close('task-1', a)[0] == 200
-                       and time.monotonic() - start < 12)
+            close_status, close_result = self.close('task-1', a)
+            close_elapsed = time.monotonic() - start
+            self.check('Urgent close bypasses foreground execution gate', close_status == 200
+                       and close_elapsed < 12,
+                       {'status': close_status, 'elapsed_seconds': round(close_elapsed, 3),
+                        'response': close_result})
             status, _ = future.result(timeout=15)
             self.check('Urgent close cancels the active foreground request', status != 200)
         finally:

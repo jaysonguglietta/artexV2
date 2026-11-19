@@ -33,6 +33,7 @@ type brokerRun struct {
 	ctx               context.Context
 	cancel            context.CancelFunc
 	ready             chan struct{}
+	removeMu          sync.Mutex // foreground cancellation and explicit close share cleanup
 }
 type Broker struct {
 	gate                  chan struct{}
@@ -351,19 +352,47 @@ func (b *Broker) closeRun(session, id string) error {
 	case <-time.After(4 * time.Second):
 	}
 	finalErr := b.removeRun(run) // catch a Docker create acknowledged after cancellation
-	b.mu.Lock()
-	delete(b.runs, key)
-	b.mu.Unlock()
+	// Keep uncertain cleanup reachable: a later close must retry Docker rather
+	// than report success merely because the closed identity left the run map.
+	if finalErr == nil {
+		b.mu.Lock()
+		if b.runs[key] == run {
+			delete(b.runs, key)
+		}
+		b.mu.Unlock()
+	}
 	return errors.Join(ledgerErr, removeErr, finalErr)
 }
 func (b *Broker) removeRun(run *brokerRun) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 6*time.Second)
 	defer cancel()
-	_, err := b.dockerFn(ctx, nil, "rm", "-f", run.name)
-	if err != nil && strings.Contains(strings.ToLower(err.Error()), "no such container") {
-		return nil
+	// Cancellation and /v1/close may both retire this run. Serialize their Docker
+	// requests, with queueing included in the existing removal deadline.
+	run.removeMu.Lock()
+	defer run.removeMu.Unlock()
+	for {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
+		_, err := b.dockerFn(ctx, nil, "rm", "-f", run.name)
+		if err == nil || strings.Contains(strings.ToLower(err.Error()), "no such container") {
+			return nil
+		}
+		message := strings.ToLower(err.Error())
+		if !strings.Contains(message, "removal of container ") || !strings.Contains(message, "is already in progress") {
+			return err
+		}
+		// Docker may still be completing a previous removal after its CLI exited.
+		// A conflict is not proof of termination: require rm acknowledgement or an
+		// absent-container response, and report persistent conflicts as failures.
+		timer := time.NewTimer(50 * time.Millisecond)
+		select {
+		case <-ctx.Done():
+			timer.Stop()
+			return errors.Join(err, ctx.Err())
+		case <-timer.C:
+		}
 	}
-	return err
 }
 func (b *Broker) exec(ctx context.Context, run *brokerRun, req Request) (Response, error) {
 	var result Response
@@ -507,8 +536,8 @@ func (b *Broker) ensure(ctx context.Context, run *brokerRun) (string, error) {
 		}
 	}
 	name := run.name
-	_, _ = b.dockerFn(ctx, nil, "rm", "-f", name)
-	args = []string{"create", "--name", name, "--label", "artex.purpose=isolated-worker", "--label", "artex.worker.owner=" + b.owner(), "--network", b.Network, "--no-healthcheck", "--entrypoint", "/usr/local/bin/worker-entrypoint", "--read-only", "--cap-drop", "ALL", "--cap-add", "NET_ADMIN", "--cap-add", "SETUID", "--cap-add", "SETGID", "--cap-add", "SETPCAP", "--security-opt", "no-new-privileges:true", "--pids-limit", "128", "--memory", "1g", "--memory-swap", "1g", "--cpus", "1", "--user", "0:0", "--tmpfs", "/workspace:rw,nosuid,nodev,size=512m,uid=10001,gid=10001", "--tmpfs", "/tmp:rw,nosuid,nodev,size=128m,uid=10001,gid=10001", "-e", "HOME=/workspace", "-e", "WORKER_RUN_ID=" + run.id, "-e", "WORKER_SESSION=" + run.session, "-e", "WORKER_ALLOW=" + strings.Join(b.Policy.Sessions[run.session], ","), "-e", "WORKER_DENY=" + strings.Join(deny, ","), "-e", "WORKER_DNS=" + strings.Join(b.Policy.DNS, ","), b.Image}
+	_ = b.removeRun(run)
+	args = []string{"create", "--name", name, "--label", "artex.purpose=isolated-worker", "--label", "artex.worker.owner=" + b.owner(), "--network", b.Network, "--no-healthcheck", "--log-driver", "local", "--log-opt", "max-size=2m", "--log-opt", "max-file=2", "--log-opt", "compress=true", "--entrypoint", "/usr/local/bin/worker-entrypoint", "--read-only", "--cap-drop", "ALL", "--cap-add", "NET_ADMIN", "--cap-add", "SETUID", "--cap-add", "SETGID", "--cap-add", "SETPCAP", "--security-opt", "no-new-privileges:true", "--pids-limit", "128", "--memory", "1g", "--memory-swap", "1g", "--cpus", "1", "--user", "0:0", "--tmpfs", "/workspace:rw,exec,nosuid,nodev,size=512m,uid=10001,gid=10001", "--tmpfs", "/tmp:rw,exec,nosuid,nodev,size=128m,uid=10001,gid=10001", "-e", "HOME=/workspace", "-e", "WORKER_RUN_ID=" + run.id, "-e", "WORKER_SESSION=" + run.session, "-e", "WORKER_ALLOW=" + strings.Join(b.Policy.Sessions[run.session], ","), "-e", "WORKER_DENY=" + strings.Join(deny, ","), "-e", "WORKER_DNS=" + strings.Join(b.Policy.DNS, ","), b.Image}
 	args = args[:len(args)-1]
 	for _, resolver := range b.Policy.DNS {
 		args = append(args, "--dns", resolver)

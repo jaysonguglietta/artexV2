@@ -35,6 +35,8 @@ jobs:
           docker build --platform '${{ matrix.platform }}' -f Dockerfile.source --target worker -t artex-security:worker .
           docker build --platform '${{ matrix.platform }}' -f Dockerfile.source --target broker -t artex-security:broker .
           docker build --platform '${{ matrix.platform }}' -f Dockerfile.source --target postgres -t artex-security:postgres .
+      - name: Verify native patched tools and real Chromium on this architecture
+        run: python3 scripts/test-worker-tools.py --image artex-security:worker
       - name: Scan the exact runtime image IDs and create SBOMs
         run: |
           python3 scripts/scan-images.py --output '${{ runner.temp }}/image-security-reports' \
