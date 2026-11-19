@@ -42,6 +42,26 @@ secrets are private files excluded from Git and build contexts. Keep backups of
 PostgreSQL and the private signing-key volume; protect and rotate them after any
 compromise. Do not upload runtime evidence or configuration to GitHub.
 
+## PostgreSQL startup and automatic clients
+
+The bounded database requires a trusted root mount bootstrap. The revised source
+adds temporary `MAC_OVERRIDE` only to enter the single enforcing `docker-default`
+profile at first exec into `setpriv`; the database supervisor/server must then be
+UID 70 with all five capability sets empty and no-new-privileges set. This is an
+explicit bootstrap privilege tradeoff, not ongoing database authority. No
+`MAC_ADMIN`, `CAP_KILL` or global AppArmor/sysctl relaxation is used.
+
+Docker healthchecks and `docker exec` start with container-configured credentials;
+they do not inherit PID1's later privilege drop. The source now routes automatic readiness/SQL/dump/restore clients through the
+same fixed entrypoint `--healthcheck`/`--client` launcher and common guard, with
+only known absolute clients or `/bin/sh` executed after the drop.
+Do not replace that boundary with a direct root `pg_isready`, `psql`, `pg_dump` or
+`pg_restore` invocation. Docker/VM administrators remain trusted and can bypass
+in-container wrappers manually. The new client/bootstrap changes require fresh
+local and hosted proof; [validation](VALIDATION.md) lists the current PostgreSQL
+startup failures and pending reruns. Follow [PostgreSQL operations](POSTGRES-BACKUP.md)
+for the single-profile requirement and backup limits.
+
 ## Sessions and remote access
 
 For remote UI access, use a private authenticated tunnel or HTTPS reverse proxy

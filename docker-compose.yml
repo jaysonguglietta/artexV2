@@ -29,7 +29,7 @@ services:
     read_only: true
     cap_drop: [ALL]
     # Trusted bootstrap only; supervisor and PostgreSQL irreversibly drop all.
-    cap_add: [SYS_ADMIN, MKNOD, CHOWN, DAC_OVERRIDE, FOWNER, SETUID, SETGID, SETPCAP]
+    cap_add: [SYS_ADMIN, MKNOD, CHOWN, DAC_OVERRIDE, FOWNER, SETUID, SETGID, SETPCAP, MAC_OVERRIDE]
     # Fixed bootstrap mounts ext4, then MUST re-enter docker-default before PG.
     security_opt: ["no-new-privileges:true", "apparmor=unconfined"]
     tmpfs:
@@ -39,7 +39,7 @@ services:
     pids_limit: 256
     stop_grace_period: 1m
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U artex -d artex"]
+      test: ["CMD", "/usr/local/bin/artex-postgres-entrypoint", "--healthcheck"]
       interval: 5s
       timeout: 3s
       retries: 10

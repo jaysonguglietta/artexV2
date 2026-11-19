@@ -28,7 +28,6 @@ NETWORK = "artex-isolated-workers"
 
 POSTGRES_APPARMOR_LABELS = (
     "docker-default (enforce)",
-    "docker-default//&unconfined (enforce)",
 )
 
 

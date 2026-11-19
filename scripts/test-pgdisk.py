@@ -12,7 +12,6 @@ from pgdisk import runtime_arguments
 
 POSTGRES_APPARMOR_LABELS = (
     "docker-default (enforce)",
-    "docker-default//&unconfined (enforce)",
 )
 
 

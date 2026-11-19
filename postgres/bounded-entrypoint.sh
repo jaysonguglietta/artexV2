@@ -4,13 +4,29 @@ set -eu
 umask 077
 if [ "$#" -eq 0 ]; then set -- postgres; fi
 fail() { echo "[pgdisk] $*" >&2; exit 1; }
-# Stacks enforce the intersection of permissions; unconfined cannot widen
-# docker-default: https://www.apparmor.net/advanced/AppArmorStacking/
+# Require a single profile: Moby's default signal peer rule names docker-default
+# exactly. Bootstrap MAC_OVERRIDE avoids a forced unconfined stack and is dropped
+# with every other capability before initdb/PostgreSQL runs.
+# https://github.com/moby/profiles/blob/main/apparmor/template.go
 postgres_profile_is_enforcing() {
   case "$1" in
-    'docker-default (enforce)'|'docker-default//&unconfined (enforce)') return 0;;
+    'docker-default (enforce)') return 0;;
     *) return 1;;
   esac
+}
+# Root performs only this fixed transition/credential drop. Client argv and SQL
+# are interpreted solely after the common unprivileged guard below succeeds.
+exec_confined() {
+  [ "$(id -u)" = 0 ] || fail 'trusted privilege-drop launcher requires root'
+  setpriv_path=$(command -v setpriv)
+  if [ -r /sys/module/apparmor/parameters/enabled ] && [ "$(cat /sys/module/apparmor/parameters/enabled)" = Y ]; then
+    attribute=/proc/self/attr/apparmor/exec
+    [ -e "$attribute" ] || attribute=/proc/self/attr/exec
+    printf 'exec docker-default' > "$attribute" || fail 'cannot re-enter docker-default; run scripts/setup-postgres.sh first'
+  fi
+  exec "$setpriv_path" --reuid=postgres --regid=postgres --clear-groups \
+    --bounding-set=-all --inh-caps=-all --ambient-caps=-all --no-new-privs \
+    /usr/local/bin/artex-postgres-entrypoint "$@"
 }
 image_dir=/var/lib/artex-pgdisk
 image=$image_dir/postgres.ext4
@@ -18,7 +34,8 @@ metadata=$image_dir/format-v1
 mountpoint=/var/lib/postgresql/bounded
 export PGDATA=$mountpoint/data
 
-if [ "${1:-}" = --run-postgres ]; then
+if [ "${1:-}" = --run-postgres ] || [ "${1:-}" = --run-client ]; then
+  role=$1
   shift
   [ "$(id -u)" = "$(id -u postgres)" ] || fail 'PostgreSQL must run as its dedicated user'
   for field in CapEff CapPrm CapInh CapBnd CapAmb; do
@@ -42,6 +59,12 @@ if [ "${1:-}" = --run-postgres ]; then
       fail "PostgreSQL must inherit enforcing docker-default AppArmor: actual=$bounded_label path=$profile_path pid=$$"
     fi
   fi
+  if [ "$role" = --run-client ]; then
+    case "${1:-}" in
+      /usr/local/bin/pg_isready|/usr/local/bin/psql|/usr/local/bin/pg_dump|/usr/local/bin/pg_restore|/bin/sh) exec "$@";;
+      *) fail 'unsupported confined PostgreSQL client';;
+    esac
+  fi
   # Keep the exclusive backing lock in PID1; PostgreSQL may close inherited
   # descriptors. Both supervisor and server have the same unprivileged UID.
   /usr/local/bin/docker-entrypoint.sh "$@" &
@@ -55,6 +78,14 @@ if [ "${1:-}" = --run-postgres ]; then
   done
 fi
 
+if [ "${1:-}" = --healthcheck ]; then
+  exec_confined --run-client /usr/local/bin/pg_isready -h 127.0.0.1 \
+    -U "${POSTGRES_USER:-artex}" -d "${POSTGRES_DB:-artex}" -t 3
+fi
+if [ "${1:-}" = --client ]; then
+  shift
+  exec_confined --run-client "$@"
+fi
 [ "$(id -u)" = 0 ] || fail 'bounded filesystem bootstrap requires root'
 # The upstream image declares a legacy VOLUME. Never expose that unbounded
 # writable directory to PostgreSQL or silently adopt an old mounted database.
@@ -198,12 +229,4 @@ mkdir -p "$PGDATA"
 chown postgres:postgres "$PGDATA" /var/run/postgresql
 chmod 0700 "$PGDATA"
 # FD9 deliberately survives exec: a second container cannot mount the same image.
-setpriv_path=$(command -v setpriv)
-if [ -r /sys/module/apparmor/parameters/enabled ] && [ "$(cat /sys/module/apparmor/parameters/enabled)" = Y ]; then
-  attribute=/proc/self/attr/apparmor/exec
-  [ -e "$attribute" ] || attribute=/proc/self/attr/exec
-  printf 'exec docker-default' > "$attribute" || fail 'cannot re-enter docker-default; run scripts/setup-postgres.sh first'
-fi
-exec "$setpriv_path" --reuid=postgres --regid=postgres --clear-groups \
-  --bounding-set=-all --inh-caps=-all --ambient-caps=-all --no-new-privs \
-  /usr/local/bin/artex-postgres-entrypoint --run-postgres "$@"
+exec_confined --run-postgres "$@"

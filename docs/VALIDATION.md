@@ -6,6 +6,28 @@ IDs and hosted runs below are historical checkpoints for their exact source;
 they do not establish results for the current storage/toolchain/release edits.
 No local pass implies hosted CI, real OIDC or production publication passed.
 
+## PostgreSQL profile/client hardening — verification pending
+
+A later native reviewed-image [run44532828731](https://github.com/jaysonguglietta/artexV2/actions/runs/44532828731)
+passed all eight component/architecture gates at source `1ea9d66`. It predates
+the final PostgreSQL entrypoint/client changes and is not their verification.
+The hosted kernel initially forced an enforcing stacked label; accepting that
+exact label got farther, but [run44534830102](https://github.com/jaysonguglietta/artexV2/actions/runs/44534830102)
+then failed PostgreSQL `pg_ctl` signal permissions. Full hosted PostgreSQL
+startup, integration and Compose are **pending**, not green.
+
+The revised source uses trusted-bootstrap-only `MAC_OVERRIDE` to enter the single
+`docker-default` profile on first exec into `setpriv`, followed by irreversible
+UID 70/all-five-capability-set removal and `NoNewPrivs=1`. Source now routes
+automatic Compose healthchecks, backup SQL/dump/restore/readiness and container
+password recovery through the fixed entrypoint launcher and common client guard.
+PID1's drop alone does not establish Docker exec/healthcheck credentials. New source-image scans,
+initialization/shutdown/restart, client identity/capability/profile probes,
+bounded restore and native hosted reruns are required. Older source, image IDs,
+53/6/22 counts and watched hashes below remain **their exact checkpoints**; they
+must not be represented as results for these later changes. See
+[PostgreSQL operations](POSTGRES-BACKUP.md) for the tradeoff and process invariants.
+
 ## November 19 follow-up verification
 
 The four authorized workstreams now have implemented controls: runtime image
@@ -50,8 +72,8 @@ source credential snapshot even when implementation remains identical.
 
 The exact backup integration report SHA256 is
 `88020b6f4a9bd54a415947acf0b5f753ce88d0c764cd718e9502e0dff79b4bd5`.
-Its seven recorded source hashes still matched when this documentation update was
-made. The report is private local test evidence, not an uploaded database backup.
+Its seven recorded source hashes matched at that checkpoint. Subsequent
+PostgreSQL/client edits change watched sources and require fresh restore evidence. The report is private local test evidence, not an uploaded database backup.
 See [database/log/backup operations](POSTGRES-BACKUP.md),
 [release-tag protection](RELEASE-TAG-PROTECTION.md),
 [image policy](IMAGE-SECURITY.md), [signed releases](SIGNED-RELEASES.md) and
@@ -99,7 +121,8 @@ These are local ARM64 export identities, not published GHCR release digests.
 The final implementation passed **53 live worker checks**, **six actual worker/
 browser checks** on the worker above and the **22-check encrypted backup/restore
 integration**. The backup report remains byte-identical at the hash above and all
-seven watched source hashes match. The evidence JSON binds these local report
+seven watched source hashes matched at that checkpoint. Later PostgreSQL/client
+edits need fresh restore evidence. The evidence JSON binds these local report
 hashes without publishing private backup data. Initial native architecture standard scans subsequently passed; new reviewed-mode
 hosted verification, PostgreSQL startup diagnosis and a fresh source credential
 scan after documentation changes remain separate pending work. No production-release variable, version tag or publication was enabled.

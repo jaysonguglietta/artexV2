@@ -212,14 +212,14 @@ else
   declare -a EXEC_CMD
   if [[ "$EXEC_KIND" == "compose" ]]; then
     EXEC_CMD=(docker compose exec -T -e ARTEX_RESET_NEWPASS -e PGPASSWORD "$CONTAINER"
-              psql -U "$DUSER" -d "$DNAME" -v ON_ERROR_STOP=1 -q)
+              /usr/local/bin/artex-postgres-entrypoint --client /usr/local/bin/psql -U "$DUSER" -d "$DNAME" -v ON_ERROR_STOP=1 -q)
   else
     EXEC_CMD=(docker exec -i -e ARTEX_RESET_NEWPASS -e PGPASSWORD "$CONTAINER"
-              psql -U "$DUSER" -d "$DNAME" -v ON_ERROR_STOP=1 -q)
+              /usr/local/bin/artex-postgres-entrypoint --client /usr/local/bin/psql -U "$DUSER" -d "$DNAME" -v ON_ERROR_STOP=1 -q)
   fi
 
   if ! printf '%s\n' "$SQL" | "${EXEC_CMD[@]}" >/dev/null; then
-    die "Write failed. Check container name, database credentials and pgcrypto privileges."
+    die "Write failed. Use the hardened PostgreSQL image/client wrapper and check container name, credentials and pgcrypto privileges."
   fi
 fi
 

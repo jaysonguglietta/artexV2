@@ -314,7 +314,7 @@ def authenticated_extract(backup, encryption_key, trusted_signer, directory, max
 
 
 def pg_command(container, command):
-    return ['docker', 'exec', '--user', 'postgres', container, 'sh', '-ec', command]
+    return ['docker', 'exec', '-i', '--user', '0:0', container, '/usr/local/bin/artex-postgres-entrypoint', '--client', '/bin/sh', '-ec', command]
 
 
 class RowDigest:
@@ -339,7 +339,7 @@ def fingerprint(container, maximum=DEFAULT_MAX_BYTES):
         quote = lambda value: '"' + value.replace('"', '""') + '"'
         identity = quote(table['schema']) + '.' + quote(table['table'])
         query = 'SET statement_timeout=600000; SET lock_timeout=30000; SET timezone=\'UTC\'; COPY (SELECT to_jsonb(t)::text FROM ' + identity + ' AS t ORDER BY to_jsonb(t)::text COLLATE "C") TO STDOUT'
-        command = ['docker', 'exec', '-i', '--user', 'postgres', container, 'sh', '-ec',
+        command = ['docker', 'exec', '-i', '--user', '0:0', container, '/usr/local/bin/artex-postgres-entrypoint', '--client', '/bin/sh', '-ec',
                    'exec psql -XqAt -U "$POSTGRES_USER" -d "$POSTGRES_DB" -v ON_ERROR_STOP=1']
         sink = RowDigest()
         stream_command(command, sink, maximum, timeout=600, input_bytes=query.encode() + b';\n')
@@ -364,12 +364,12 @@ def verify_database(directory, manifest, image, maximum=DEFAULT_MAX_BYTES):
             raise ValueError('Invalid bounded restore capacity')
         docker(['run', '-d', '--name', name, *runtime_arguments(volume, size, log_driver='none'), '--env-file', str(environment), image, 'postgres'])
         for _ in range(120):
-            ready = subprocess.run(['docker', 'exec', name, 'pg_isready', '-h', '127.0.0.1', '-U', 'artex_verify'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            ready = subprocess.run(['docker', 'exec', '--user', '0:0', name, '/usr/local/bin/artex-postgres-entrypoint', '--healthcheck'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             if ready.returncode == 0: break
             time.sleep(.5)
         else: raise RuntimeError('Disposable PostgreSQL restore did not become ready')
         with (directory / 'postgres.dump').open('rb') as incoming:
-            result = subprocess.run(['docker', 'exec', '-i', '--user', 'postgres', name, 'pg_restore',
+            result = subprocess.run(['docker', 'exec', '-i', '--user', '0:0', name, '/usr/local/bin/artex-postgres-entrypoint', '--client', '/usr/local/bin/pg_restore',
                                      '-U', 'artex_verify', '-d', 'artex_verify', '--no-owner', '--no-acl', '--exit-on-error'],
                                     stdin=incoming, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=1800)
         if result.returncode: raise RuntimeError('Disposable database restore failed')

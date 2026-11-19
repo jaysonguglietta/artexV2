@@ -8,6 +8,66 @@ vulnerability class. The [validation record](VALIDATION.md) records the checked
 snapshot and results; the [worker guide](WORKER-ISOLATION.md) defines deployment
 requirements.
 
+## Later PostgreSQL bootstrap/client boundary — verification pending
+
+The current PostgreSQL hardening changes are **not covered** by the earlier
+local backup/Compose/image checkpoints below. Native reviewed-image
+[run44532828731](https://github.com/jaysonguglietta/artexV2/actions/runs/44532828731)
+passed all eight images at `1ea9d66`, before the final entrypoint/client changes.
+A later attempt [failed `pg_ctl` signal permission](https://github.com/jaysonguglietta/artexV2/actions/runs/44534830102)
+after accepting an enforcing stacked label. This is an operational failure of
+that process boundary, not proof that every enforcing stack is unconfined.
+The revised bootstrap requires one exact `docker-default (enforce)` profile.
+Temporary bootstrap-only `MAC_OVERRIDE` lets the profile transition happen on
+first exec into `setpriv`, which then removes all five capability sets, drops to
+UID 70, clears groups and retains no-new-privileges before database code. It does
+not add `MAC_ADMIN`, `CAP_KILL` or global signal/AppArmor/sysctl exceptions.
+[PostgreSQL operations](POSTGRES-BACKUP.md) explains the primary-source basis and
+tradeoff. New client/bootstrap local and native-hosted proof remains pending.
+
+### PG-01: Automatic database clients could retain bootstrap authority
+
+**Severity: Medium. Confidence: High.** CWE-250/CWE-269; OWASP security
+misconfiguration. This is a confirmed excess-privilege deployment gap, not a
+demonstrated client RCE or authentication bypass.
+
+**Evidence and affected paths:** the PostgreSQL service in
+[docker-compose.yml](../docker-compose.yml) needs root and mount/identity
+capabilities for its fixed filesystem bootstrap. Its earlier `CMD-SHELL`
+`pg_isready` healthcheck inherited container-configured root/capability/AppArmor
+settings. PID1 dropping privileges changes only its descendants, not a later
+Docker-created healthcheck or exec process. Backup SQL/dump/restore/readiness
+invocations in [artex-backup.py](../scripts/artex-backup.py) also need explicit
+per-exec profile/capability handling; `--user postgres` alone does not prove the
+complete capability/profile invariant.
+
+**Attack path and impact:** if an automatic client encounters a native parsing
+or command-execution defect while processing hostile database/network content,
+retained bootstrap authority increases impact from a PostgreSQL-user failure to
+root/mount/device authority in that container. No such exploitable client defect
+was demonstrated. Docker/VM administrators are already trusted and can deliberately
+exec arbitrary privileged commands; the fix does not claim to restrict them.
+
+**Implemented fix; runtime verification pending:**
+[bounded-entrypoint.sh](../postgres/bounded-entrypoint.sh) now shares `exec_confined`
+and the guarded `--run-client` branch with the server boundary. The Compose
+healthcheck is fixed `CMD /usr/local/bin/artex-postgres-entrypoint --healthcheck`.
+Backup `pg_command`, table COPY, dump, readiness and restore use the fixed
+`--client`/`--healthcheck` launcher; [container password recovery](../reset-password.sh)
+does too. The launcher enters the single enforcing profile before `setpriv`,
+then the common guard requires UID 70, cleared groups, all five capability sets
+zero and `NoNewPrivs=1`. Only afterward may a known absolute client or `/bin/sh`
+run. SQL/client output is never interpreted by the privileged stage. This fixes
+the source routing gap; live process/integration proof remains pending.
+
+**Validation required:** inspect live server, supervisor, readiness/healthcheck
+and backup client processes independently; verify exact AppArmor label, UID,
+all capability sets and no-new-privileges. Exercise actual authenticated SQL,
+dump/restore, initialization `pg_ctl` signaling, graceful stop/restart and refusal
+of unconfined/stacked/complain/retained-capability paths. Run the bounded backup
+integration on new images and both native hosted architectures, preserving source
+volumes. A string/config unit test alone cannot close this deployment gap.
+
 ## November 19 operational follow-up
 
 The four authorized workstreams now have concrete implementation and scoped local
@@ -47,7 +107,8 @@ browser checks** and the **22-check encrypted backup/restore integration**. The
 latest isolation race run passed in **8.176 seconds**, including concurrent
 close/removal and adjacent cleanup-failure behavior. Callers wait for acknowledged
 removal or confirmed absence; a Docker removal conflict is not success. The
-backup report and all seven watched source hashes remain unchanged. The separate
+backup report and seven watched source hashes matched at that earlier checkpoint;
+new PostgreSQL/client edits require another restore validation. The separate
 17-check Compose checkpoint, host log activation/rotation and embedded frontend
 build also passed with their recorded scope.
 

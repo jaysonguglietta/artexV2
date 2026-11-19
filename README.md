@@ -163,7 +163,7 @@ workflow, protected tag, commit and run. Two active
 personal owner and forbid updates/deletions without bypass. Publication also
 requires explicit opt-in and all gates. A main-only rehearsal uses real OIDC
 without publishing. Earlier hosted passes apply to their recorded November 18
-commit. Final November 19 local ARM64 **reviewed-findings** scans passed with
+commit. An earlier November 19 local ARM64 **reviewed-findings** checkpoint passed with
 zero blocking and 94 exact expiring reviews applied: worker inventory still has
 85 Medium/9 Low active records; the other three images report zero. Full
 [residual evidence](security/image-followup-evidence.json) remains visible. The
@@ -183,11 +183,20 @@ holds. Raw SDK transcripts default off for ordinary binaries; Compose explicitly
 uses bounded ephemeral tmpfs, excluded from durable holds. PostgreSQL UI history
 is separate. [Database/log/backup controls](docs/POSTGRES-BACKUP.md) now add a
 preallocated bounded ext4 database, per-container log rotation and encrypted,
-authenticated backups verified by a disposable restore. The 22-check exact-source
-backup integration passed. On the reviewed dedicated VM, Docker/journal policy
+authenticated backups verified by a disposable restore. The earlier 22-check exact-source
+backup integration passed; later PostgreSQL/client changes need a fresh repeat. On the reviewed dedicated VM, Docker/journal policy
 was activated through service restarts and an actual stdout-rotation test; new
 containers inherit finite local logging. These controls do not cap all VM, image
 or backup storage; retain separate capacity and audit policies.
+
+The PostgreSQL profile/client boundary is receiving a further fix after hosted
+AppArmor startup and `pg_ctl` failures. The trusted mount bootstrap temporarily
+uses `MAC_OVERRIDE` to enter a single enforcing profile, then drops to UID 70 with
+no capabilities before database work. Automatic healthcheck/backup clients must
+now use the fixed entrypoint launcher to drop privileges explicitly; PID1's drop
+alone does not cover them. Earlier
+local/image passes are checkpoints, not proof of this new entrypoint. Final local
+and hosted PostgreSQL checks remain pending in [validation](docs/VALIDATION.md).
 
 The worker uses Ubuntu 26.04, copied official Python 3.14.10 and Node 24.22.3,
 with explicit [npm](tools/npm/README.md) and [pip](tools/python/README.md) security

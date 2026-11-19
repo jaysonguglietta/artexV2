@@ -10,7 +10,7 @@ import re
 import subprocess
 import sys
 
-CAPABILITIES = ['SYS_ADMIN', 'MKNOD', 'CHOWN', 'DAC_OVERRIDE', 'FOWNER', 'SETUID', 'SETGID', 'SETPCAP']
+CAPABILITIES = ['SYS_ADMIN', 'MKNOD', 'CHOWN', 'DAC_OVERRIDE', 'FOWNER', 'SETUID', 'SETGID', 'SETPCAP', 'MAC_OVERRIDE']
 
 
 def docker(arguments, **options):

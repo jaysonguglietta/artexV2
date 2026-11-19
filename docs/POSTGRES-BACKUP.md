@@ -36,26 +36,82 @@ sh scripts/setup-postgres.sh
 
 The preflight loads Docker's normal AppArmor profile on a fresh daemon and checks
 tools/loop-control without creating a database volume. The fixed root bootstrap
-briefly receives mount/device/identity capabilities and an AppArmor-unconfined
-startup context. It mounts only the validated image, marks its loop device for
-kernel autoclear, then **must** re-enter enforcing `docker-default` on an
-AppArmor-enabled host and irreversibly drop all effective, permitted, inheritable,
-ambient and bounding capabilities before PostgreSQL/initdb runs. Both the
-nonroot PID1 supervisor and PostgreSQL server verify UID/postgres, no-new-privileges
-and confinement. The supervisor retains an exclusive image lock through server
-exit and forwards shutdown signals. Container configuration inspection alone shows
-the bootstrap context; inspect the live supervisor and postmaster profiles to
-verify the final process boundary.
+mounts only the validated image and sets loop autoclear. It temporarily has the
+mount/device/identity capabilities in Compose, **including `CAP_MAC_OVERRIDE`**,
+and starts AppArmor-unconfined. This is trusted administrator-equivalent setup,
+not a privilege granted to PostgreSQL or untrusted assessment workers.
 
-On hosts with restricted unprivileged profile transitions, the kernel can retain
-the initial unconfined component while adding Docker confinement. AppArmor
-[stacking intersects permissions](https://www.apparmor.net/advanced/AppArmorStacking/),
-and the [kernel transition implementation](https://github.com/torvalds/linux/commit/08c2f7c8d4b1434cfae006f3daf4d1bce330b57b)
-explains this forced stack when the caller lacks `CAP_MAC_OVERRIDE`. The guard
-therefore accepts exactly `docker-default (enforce)` or
-`docker-default//&unconfined (enforce)`. Bare unconfined, complain/mixed modes,
-unknown stack members and namespace/prefix variations are refused. No additional
-capability or relaxation of no-new-privileges is introduced.
+On an AppArmor-enabled host the entrypoint requests `docker-default` for its next
+exec, then immediately execs `setpriv`. The profile transition therefore happens
+while the trusted bootstrap still has `MAC_OVERRIDE`; `setpriv` then irreversibly
+drops to PostgreSQL UID 70, clears supplementary groups and all five capability
+sets (effective, permitted, inheritable, bounding, ambient), and retains
+`NoNewPrivs=1` before initdb, the supervisor or server runs. The guard requires
+exactly **`docker-default (enforce)`**. Failure to enter it, retained capabilities,
+a wrong UID or missing no-new-privileges stops startup. The supervisor retains
+the exclusive image lock and forwards shutdown signals. Inspect the live process
+attributes, not only `HostConfig`, which describes the bootstrap envelope.
+
+### Why the exact single AppArmor profile matters
+
+The earlier hosted kernel forced a `docker-default//&unconfined (enforce)` stack
+when an unprivileged transition lacked `MAC_OVERRIDE`. A stack can intersect
+permissions rather than remove confinement, but accepting that label alone did
+not establish a working PostgreSQL boundary: the next hosted attempt reached
+`pg_ctl` and failed signal permissions. Moby's default profile binds same-container
+signal/ptrace permissions to its expected peer label; this deployment now requires
+the single profile instead of widening signal permissions or accepting arbitrary
+stack labels. Bare unconfined, complain/mixed modes, extra stack members and
+namespace/prefix variations remain refused. See the
+[kernel transition implementation](https://github.com/torvalds/linux/commit/08c2f7c8d4b1434cfae006f3daf4d1bce330b57b),
+[Moby profile peer rules](https://github.com/moby/profiles/blob/main/apparmor/template.go)
+and [AppArmor stacking semantics](https://www.apparmor.net/advanced/AppArmorStacking/).
+
+Temporary bootstrap `MAC_OVERRIDE` is an explicit tradeoff for that transition;
+it is dropped with every other capability before database work. The design does
+not add `MAC_ADMIN`, `CAP_KILL`, a permissive signal rule or a global kernel/sysctl
+relaxation. The new bootstrap/client changes still require their own complete
+local and hosted validation; older backup/image passes below do not prove this
+revised entrypoint.
+
+### Automatic readiness, SQL and backup clients
+
+Docker starts healthchecks and later exec processes from the container's configured
+credentials, not PID1's reduced credentials. The old root `CMD-SHELL pg_isready`
+path could therefore regain the bootstrap capability/profile envelope even while
+the server was nonroot. The revised [entrypoint](../postgres/bounded-entrypoint.sh)
+now shares `exec_confined` and its runtime guard between `--run-postgres` and
+`--run-client`. Compose invokes a fixed `CMD` healthcheck:
+
+```text
+/usr/local/bin/artex-postgres-entrypoint --healthcheck
+```
+
+`--healthcheck` selects the absolute `pg_isready` binary. `--client` accepts only
+known absolute PostgreSQL client paths or `/bin/sh`, and executes them **after**
+profile transition, UID/group/capability removal and the shared guard. The trusted
+root launcher does not evaluate SQL, parse database responses or run the client's
+shell before this drop. [Backup code](../scripts/artex-backup.py) routes schema/
+table fingerprints, COPY, dump, readiness and restore through this launcher;
+[password recovery](../reset-password.sh) uses it for container SQL too.
+
+For an operator SQL command on a reviewed container, preserve the fixed launcher:
+
+```sh
+docker exec -i --user 0:0 YOUR_POSTGRES_CONTAINER \
+  /usr/local/bin/artex-postgres-entrypoint --client /usr/local/bin/psql \
+  -U artex -d artex -v ON_ERROR_STOP=1
+```
+
+The `--user 0:0` here starts only the trusted drop launcher. It does **not** run
+`psql` as root. Replacing it with a direct root client or merely `--user postgres`
+bypasses the complete profile/capability transition. Docker/VM administrators
+remain trusted and can deliberately bypass wrappers; this controls automatic
+application/maintenance paths, not an administrator's Docker authority.
+
+The client fix is source-implemented, but live healthcheck/SQL-process identity,
+backup/restore, startup/shutdown and native hosted PostgreSQL reruns are pending.
+Do not carry an older backup hash or passed image scan forward to this revision.
 
 The container root filesystem is read-only; `/tmp` and the socket directory are
 bounded tmpfs mounts. PostgreSQL is never given the Docker socket, API artifacts,
@@ -162,7 +218,7 @@ authenticated sink before relying on local rotation; disk limits do not provide
 immutable audit retention. Application files written outside stdout/stderr,
 external databases, backups and host crash dumps need their own policies.
 
-## Verified local operational checkpoint — 19 November 2026
+## Earlier local operational checkpoint — 19 November 2026
 
 On the dedicated `colima-artex-test` VM, Docker and systemd-journald were restarted
 and active with the merged policy. A new container inherited compressed Docker
@@ -173,8 +229,9 @@ activation on that VM, not every install or retroactive changes to old container
 
 The exact-source encrypted backup/independent bounded-restore integration passed
 22/22, and the final rebuilt-image repeat passed all 22 again with the same
-report hash and all seven watched source hashes unchanged. The separate final
-Compose acceptance run passed 17/17. The physical capacity
+report hash and all seven watched source hashes matching at that checkpoint.
+The later bootstrap/client edits require a new run and fresh watched hashes.
+The separate final Compose acceptance run passed 17/17. The physical capacity
 suites passed 16 disk-full, seven migration and three recovery-reserve checks,
 plus 15 backup unit, eight cryptographic and four log-policy regressions.
 [Validation](VALIDATION.md) records source scope, hashes and remaining worker/image/

@@ -68,9 +68,9 @@
     },
     {
       "path": ".github/workflows/ci.yml",
-      "bytes": 3661,
+      "bytes": 4117,
       "mode": "0o644",
-      "sha256": "e1ce0fc35c647c8427c3dfd4ec5cdba40b9c4b1ce0ce4f2eff92c6fa2fd4ab86"
+      "sha256": "790d4b9140eeddae861cb7135198e951c84a0916762945ac9b0648c825dfc74c"
     },
     {
       "path": ".github/workflows/detections.yml",
@@ -212,9 +212,9 @@
     },
     {
       "path": "README.md",
-      "bytes": 33474,
+      "bytes": 34147,
       "mode": "0o644",
-      "sha256": "49e9591dceb0023bb338e68d3b90f738d999e57a9cd3294e8eafd4f97ad3fe9a"
+      "sha256": "79861aeff94e5ace8eaeab864b069c858bdc05d58547948a877e7c66955212ec"
     },
     {
       "path": "README.zh.md",
@@ -1724,9 +1724,9 @@
     },
     {
       "path": "docker-compose.yml",
-      "bytes": 4066,
+      "bytes": 4090,
       "mode": "0o644",
-      "sha256": "d85e056e6d148ea8a61a050e5016c755ec036b7cc3500926aab67a7f2b5710aa"
+      "sha256": "98433f7d21c5cf1107c7dacb8c379bed5eb178dc8849019ac446d6b898563ea9"
     },
     {
       "path": "docs/ENGLISH-CONVERSION.md",
@@ -1754,9 +1754,9 @@
     },
     {
       "path": "docs/POSTGRES-BACKUP.md",
-      "bytes": 19113,
+      "bytes": 22344,
       "mode": "0o644",
-      "sha256": "d0bd2a75937f0df7bdf9ec01624387f3e7cdb3af184ab5693fef52d45cbcc8e8"
+      "sha256": "e8ff6df854777f27bac6546a35f39c97284a4594bc2a78948d0deccd1caddd23"
     },
     {
       "path": "docs/PRODUCT-READINESS-REVIEW.md",
@@ -1778,9 +1778,9 @@
     },
     {
       "path": "docs/SECURE-DEPLOYMENT.md",
-      "bytes": 4839,
+      "bytes": 6179,
       "mode": "0o644",
-      "sha256": "523011c4cbe9cb7f2ec468d3cf3587e7048ba7f688c7dfbdbe727a5d0b8a8b96"
+      "sha256": "953cd96939bef26b3c6cb398482cc6261d97b5baf435a93a167f0f2e003e2f19"
     },
     {
       "path": "docs/SECURITY-AUDIT.md",
@@ -1790,9 +1790,9 @@
     },
     {
       "path": "docs/SECURITY-REVIEW.md",
-      "bytes": 27514,
+      "bytes": 31610,
       "mode": "0o644",
-      "sha256": "637eab0f674d2c3dcf42d99a37e5e1806cac8f1977dbd21b7dcce774ec0f5168"
+      "sha256": "67dab766bef2b9dc56d2c8dc15f53bcfac9b843d0933a8406a590974ee973101"
     },
     {
       "path": "docs/SIGNED-RELEASES.md",
@@ -1802,9 +1802,9 @@
     },
     {
       "path": "docs/VALIDATION.md",
-      "bytes": 34327,
+      "bytes": 36027,
       "mode": "0o644",
-      "sha256": "b9a93a3bf32a3d51bb9f1d0ecceed4f6b34284d52bafcb62200f9ea77b135454"
+      "sha256": "e34222bf164f48f339f5a173cb523c79178f894a6a47892ad9e666d757fa46bf"
     },
     {
       "path": "docs/WORKER-ISOLATION.md",
@@ -2378,9 +2378,9 @@
     },
     {
       "path": "postgres/bounded-entrypoint.sh",
-      "bytes": 11308,
+      "bytes": 12252,
       "mode": "0o755",
-      "sha256": "cdf221d8ec9477d85c3af05beae316f621a3b64731af3f5f71fa23127aed7c08"
+      "sha256": "2deb6cadb751da48bfc36fec25e41e9bc6b0b91d80c78bff831455d2ab29125c"
     },
     {
       "path": "report/findings.go",
@@ -2402,9 +2402,9 @@
     },
     {
       "path": "reset-password.sh",
-      "bytes": 8736,
+      "bytes": 8910,
       "mode": "0o755",
-      "sha256": "41fbf7112d4db77de4cb00820b45d474d38573f6e311fe49b2a5a92ce50afedf"
+      "sha256": "2f51b65ec8a8f2686659ec5fa4e38af3bb9dd5587eed1423406663bbbd364cd5"
     },
     {
       "path": "screenshots/.gitkeep",
@@ -2522,9 +2522,9 @@
     },
     {
       "path": "scripts/artex-backup.py",
-      "bytes": 33214,
+      "bytes": 33421,
       "mode": "0o755",
-      "sha256": "3630350e8517a88fd9e5c16a9b0121294c34952c70aee31b19f45c00b98601e6"
+      "sha256": "bf091b96f2b579761164508c9d961cb912f720e608a1c3cf8a89913ea6b0f208"
     },
     {
       "path": "scripts/audit-npm.py",
@@ -2588,9 +2588,9 @@
     },
     {
       "path": "scripts/pgdisk.py",
-      "bytes": 4971,
+      "bytes": 4987,
       "mode": "0o755",
-      "sha256": "a5df758eed7e07bd50862942c8fe00f5dad496c27fe28d9e4e7ca5dcad24c112"
+      "sha256": "43032dab09c001bd5d3f76b586269ef733222c5506f6ceb17cbb09a3065d9a27"
     },
     {
       "path": "scripts/prepare-upload.py",
@@ -2666,9 +2666,9 @@
     },
     {
       "path": "scripts/test-compose.py",
-      "bytes": 20482,
+      "bytes": 20437,
       "mode": "0o644",
-      "sha256": "3105a5107b8d9051537d156ddc329206c1a5703100cb8dfed83c9ca32243bcf5"
+      "sha256": "f024513248e3da463da87527b5babbb0ff5469f967bfaa048838e5ccd10a9fec"
     },
     {
       "path": "scripts/test-image-security.py",
@@ -2678,9 +2678,9 @@
     },
     {
       "path": "scripts/test-isolated.sh",
-      "bytes": 4083,
+      "bytes": 4261,
       "mode": "0o755",
-      "sha256": "e918c3cffaf31e29add7916a4d35d65fff939fa0a5c665eb08ecec5b98817417"
+      "sha256": "8a734368203e275b3eacb306f4c138e7954b43c4eca9f8ad8aeb560cc9e22efb"
     },
     {
       "path": "scripts/test-keyless-release.py",
@@ -2708,9 +2708,9 @@
     },
     {
       "path": "scripts/test-pgdisk.py",
-      "bytes": 7863,
+      "bytes": 7818,
       "mode": "0o755",
-      "sha256": "cf888615af28df8cb83eed153e79cc466a1a23c5e4591ba3721b714f643ebf9c"
+      "sha256": "a336dc5fe0cd14943bb42c58dc97ab5a9653443e369904bd514f9535a6951639"
     },
     {
       "path": "scripts/test-pip-fork.py",
@@ -2720,9 +2720,15 @@
     },
     {
       "path": "scripts/test-postgres-apparmor.py",
-      "bytes": 3098,
+      "bytes": 4175,
       "mode": "0o755",
-      "sha256": "1e852b0223aa2acc6878fe938dc69d7864e225097e8b00415c0683c66e3027b4"
+      "sha256": "2f6034b9bb61ffd3eae3bc20f7d7fd93716318bd617741cc3358aed3575430e5"
+    },
+    {
+      "path": "scripts/test-postgres-clients.py",
+      "bytes": 10072,
+      "mode": "0o644",
+      "sha256": "470edaebf36dd59e808f8c6ea88f3931f5f3a92d2d78222d1cd3e4e72ba3b3af"
     },
     {
       "path": "scripts/test-prepare-upload.py",

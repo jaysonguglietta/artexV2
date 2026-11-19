@@ -33,7 +33,7 @@ docker run -d --name "$container" --label artex.purpose=isolated-tests \
   -e ARTEX_PG_DISK_BYTES=1073741824 -p 127.0.0.1::5432 \
   --read-only --cap-drop ALL --cap-add SYS_ADMIN --cap-add MKNOD \
   --cap-add CHOWN --cap-add DAC_OVERRIDE --cap-add FOWNER \
-  --cap-add SETUID --cap-add SETGID --cap-add SETPCAP \
+  --cap-add SETUID --cap-add SETGID --cap-add SETPCAP --cap-add MAC_OVERRIDE \
   --security-opt no-new-privileges:true --security-opt apparmor=unconfined --device /dev/loop-control \
   --device-cgroup-rule 'b 7:* rwm' --pids-limit 256 \
   --log-driver local --log-opt max-size=10m --log-opt max-file=3 \
@@ -54,7 +54,7 @@ startup_failed() {
   exit 1
 }
 attempt=0
-until docker exec "$container" pg_isready -h 127.0.0.1 -U artex_test >/dev/null 2>&1; do
+until docker exec --user 0:0 "$container" /usr/local/bin/artex-postgres-entrypoint --healthcheck >/dev/null 2>&1; do
   attempt=$((attempt+1)); [ "$attempt" -lt 120 ] || startup_failed
   running=$(docker inspect "$container" --format '{{.State.Running}}' 2>/dev/null || true)
   [ "$running" != false ] || startup_failed
@@ -63,7 +63,8 @@ done
 port=$(docker port "$container" 5432/tcp | sed 's/.*://')
 failed=0
 for package in db agent config evidence llmrec server; do
-  docker exec "$container" createdb -U artex_test "artex_$package"
+  docker exec --user 0:0 "$container" /usr/local/bin/artex-postgres-entrypoint --client \
+    /bin/sh -ec 'exec /usr/local/bin/createdb -U "$POSTGRES_USER" "$1"' create-test-db "artex_$package"
   echo "Testing $package (isolated database); logs: $log_dir/$package.jsonl"
   if ! ARTEX_ISOLATED_TEST_DATABASE=1 ARTEX_ALLOW_HOST_EXECUTION=1 ARTEX_PG_DSN="postgres://artex_test:local-test-only@127.0.0.1:$port/artex_$package?sslmode=disable" \
     go test "./$package" -count=1 -timeout=6m -json > "$log_dir/$package.jsonl"; then
