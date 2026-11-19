@@ -19,7 +19,20 @@ if [ "${1:-}" = --run-postgres ]; then
   done
   [ "$(awk '$1=="NoNewPrivs:" {print $2}' /proc/self/status)" = 1 ] || fail 'no-new-privileges is required'
   if [ -r /sys/module/apparmor/parameters/enabled ] && [ "$(cat /sys/module/apparmor/parameters/enabled)" = Y ]; then
-    [ "$(cat /proc/self/attr/apparmor/current 2>/dev/null || cat /proc/self/attr/current)" = 'docker-default (enforce)' ] || fail 'PostgreSQL must inherit enforcing docker-default AppArmor'
+    # Measure this supervisor, not a newly executed cat process. proc attributes
+    # may omit a final newline: read still captures a valid label before EOF.
+    profile_path=/proc/$$/attr/apparmor/current
+    [ -r "$profile_path" ] || profile_path=/proc/$$/attr/current
+    current_label=''
+    if IFS= read -r current_label < "$profile_path"; then
+      :
+    elif [ -z "$current_label" ]; then
+      fail "cannot read PostgreSQL AppArmor label: path=$profile_path pid=$$"
+    fi
+    if [ "$current_label" != 'docker-default (enforce)' ]; then
+      bounded_label=$(printf '%.512s' "$current_label")
+      fail "PostgreSQL must inherit enforcing docker-default AppArmor: actual=$bounded_label path=$profile_path pid=$$"
+    fi
   fi
   # Keep the exclusive backing lock in PID1; PostgreSQL may close inherited
   # descriptors. Both supervisor and server have the same unprivileged UID.

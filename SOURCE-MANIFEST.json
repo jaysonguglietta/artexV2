@@ -2378,9 +2378,9 @@
     },
     {
       "path": "postgres/bounded-entrypoint.sh",
-      "bytes": 10467,
+      "bytes": 11007,
       "mode": "0o755",
-      "sha256": "3c232eafb3a65c02c5b2350e7663bff04b2aded61bb9c3f2985b41cbec0266f5"
+      "sha256": "2e31a0c21a26d90c05e13b358821a7bfcaa1d32e74e3e771204aa62ab3a9be32"
     },
     {
       "path": "report/findings.go",
