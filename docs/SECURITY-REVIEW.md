@@ -8,15 +8,22 @@ vulnerability class. The [validation record](VALIDATION.md) records the checked
 snapshot and results; the [worker guide](WORKER-ISOLATION.md) defines deployment
 requirements.
 
-## Current jq/util-linux follow-up — verification pending
+## Current jq/util-linux follow-up — native verification passed
 
-The operator authorized actual jq upgrading and a reviewed util-linux security upgrade
-against the `3062e9c…` publication baseline. New package builds, both native
-architecture scans and isolation/scanning regressions are **pending**. Earlier
-`375b2c3…` passes and 85 Medium/9 Low counts remain scoped historical evidence;
-they do not validate this change. A missing Ubuntu `FixedVersion` is not proof
-that no upstream fix exists. See [worker security packages](WORKER-SECURITY-PATCHES.md)
-for honest packaging and the required fresh evidence.
+The authorized upgrade now installs genuine jq **1.8.2** and util-linux **2.42.4**
+native packages. Both native amd64/arm64 workers passed **eight tool groups each**
+(including jq 17, util-linux 17 and real Chromium) and **54 worker boundary checks each**,
+including an approved synthetic-port Nmap scan, root-to-task credential drop,
+zero capabilities, egress, watchdog, cancellation and replay checks.
+Fresh native Trivy inventory on each architecture still reports **85 Medium/9 Low records (49 CVEs)**:
+eight source-fixed CVEs account for 34 Medium package/advisory records; the other
+60 records retain their individual reviewed dispositions. This is not a claim
+that all 94 scanner records are confirmed exploitable vulnerabilities.
+All eight native component gates passed in reviewed mode with zero blocking at
+`a99aee434daae69da284f5546b1d9a2a748f8899`; all six Go jobs and documentation
+also passed. Tool/isolation reports match the scanned images by ID and rootfs.
+Earlier `375b2c3…` results remain historical. See [worker security packages](WORKER-SECURITY-PATCHES.md)
+for package provenance and verified evidence.
 
 ## PostgreSQL bootstrap/client boundary — fixed and verified
 
@@ -175,7 +182,7 @@ verified. The separate Go run failed PostgreSQL startup in integration and Compo
 worker53/tool6 and frontend/unit/security/recon passed. Full hosted CI is not green.
 
 **At that earlier checkpoint, pending:** PostgreSQL diagnosis, reviewed-mode/OIDC
-and source scan. The current `375b2c3…` Go/images/docs/main OIDC checks above
+and source scan. The earlier `375b2c3…` Go/images/docs/main OIDC checks above
 supersede those implementation concerns; a fresh post-edit credential snapshot
 is still required. A prior 953-file source snapshot had
 six individually reviewed synthetic matches and zero unresolved; it is not the
@@ -387,10 +394,10 @@ strict diagnostic still blocks all active records. Withdrawn classifications
 require separate fresh primary proof and are not accepted active risks.
 Earlier November 18 local/hosted passes and raw counts remain in
 [validation](VALIDATION.md), bound to those exact source/image/DB identities.
-The actual current ARM64 reviewed-mode result is recorded above, with all 94
-active worker records and their reviews visible. Initial native amd64/arm64 standard scans passed, while the new reviewed-mode
-hosted reviewed-mode run passed at `375b2c3…`; there is no all-CVE clean or
-zero-active claim.
+The current native amd64/arm64 reviewed-mode result at `a99aee4…` is recorded
+above: all eight component gates passed, with all 94 raw worker records and their
+exact reviews visible per architecture. There is no all-CVE clean or zero-active
+claim. Earlier `375b2c3…` results remain historical.
 
 Production cannot enable the retained unsigned updater: apply/rollback routes
 always refuse, the legacy flag is rejected, and production bootstrap/staging does
@@ -427,8 +434,8 @@ publication remains a separate opt-in operation and is not claimed.
 | Dependency and source-secret review | Results and limits described above and in the validation record |
 
 This entire table is the November 18 checkpoint, including rows then labeled
-current/fresh. The new November 19 source has separate results and pending checks
-above and in [validation](VALIDATION.md). These results
+current/fresh. The new November 19 source has separate completed native results and archive
+follow-up requirements above and in [validation](VALIDATION.md). These results
 demonstrate checked behaviors, not a security certification.
 The skipped live-provider test is not counted as a pass. Unit/integration tests
 and synthetic adversarial fixtures do not establish real-target assessment
@@ -492,8 +499,10 @@ reproduction guidance, not a claim that every optional environment is available.
 
 1. Preserve the dedicated VM/daemon boundary. A compromised API, broker, kernel,
    Docker daemon or operator remains outside the worker isolation guarantee.
-2. Complete final ID-bound scans and new hosted native-architecture/OIDC checks
-   after the current changes. Enforce exact, expiring reviewed-findings publication
+2. Preserve the completed ID-bound native scans and runtime proof at `a99aee4…`.
+   Later source changes require new scans; documentation descendants need their
+   own CI and final archive receipt. A new OIDC rehearsal remains separate from
+   these build/test results. Enforce exact, expiring reviewed-findings publication
    policy; never extend it to fixable or High/Critical/Unknown findings. Active
    tag rules and prior OIDC evidence do not eliminate upstream compromise
    or establish an actual version-tag publication.

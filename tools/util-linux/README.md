@@ -45,8 +45,12 @@ BuildKit and the preparation helper enforce the reviewed SHA256 bytes before
 extraction. Builds do **not** redownload or independently verify OpenPGP keys on
 every run. Ubuntu's packaging-tar digest was cross-checked against its official
 HTTPS source descriptor; its developer signature was not independently verified.
-APT verifies signed Ubuntu metadata for build dependencies. These are distinct
-checks and should not be described interchangeably.
+The mandatory dependency stage also matches the packaging filename, exact source
+version, 125404-byte size and SHA256 against APT's authenticated `Sources` index,
+after signature-verified metadata refresh. It records this archive-origin check
+in `/out/source/ubuntu-source-authentication.json`. APT separately verifies the
+metadata for build dependencies. These checks do not claim verification of the
+descriptor's individual developer signature.
 
 ## Distribution patch accounting
 

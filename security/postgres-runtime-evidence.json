@@ -1,15 +1,15 @@
 {
-  "schema_version": 1,
-  "source_commit": "375b2c3f460d30cddfecd3437e47b543ec5b9b66",
-  "run_url": "https://github.com/jaysonguglietta/artexV2/actions/runs/44540981490",
+  "schema_version": 2,
+  "source_commit": "a99aee434daae69da284f5546b1d9a2a748f8899",
+  "run_url": "https://github.com/jaysonguglietta/artexV2/actions/runs/44568621094",
   "artifact": "runtime-security-evidence",
   "artifact_retention_days": 30,
   "passed": true,
-  "scope": "Six downloaded synthetic runtime-security reports, reduced to pass/check data, raw report SHA256 and repository source hashes. Source bindings verified against current files. No environment, credentials, private keys, SQL rows or customer evidence included. Runtime-job builds are separate from native image-scan builds; source identity is shared, image identity is not asserted equal.",
+  "scope": "Six successful exact-source synthetic runtime reports reduced to pass/check data, report hashes and verified Git source hashes. Runtime-job image identities are separate from the native image-scan job. No environment, credentials, SQL rows or customer evidence included.",
   "reports": [
     {
       "name": "postgres-client-security.json",
-      "sha256": "2fcc24a872fc0f0eb161b1e0194339ca135df95303ceb38814218a5da8be54c5",
+      "sha256": "ba54d52f90560fdecc1c14373de89e09f84e7eb16ae7741832a03dfda8cb6221",
       "passed": true,
       "check_count": 11,
       "checks": [
@@ -66,9 +66,9 @@
     },
     {
       "name": "worker-security.json",
-      "sha256": "1e84d7d8e5e29faf0be3f28e36edcb3d89bcc58300a73ce1ede93fd4690dfa11",
+      "sha256": "81326cb6c31d23459cea35b36f37cd2f283bdbbc1c641bbf88ffce210a9101c9",
       "passed": true,
-      "check_count": 53,
+      "check_count": 54,
       "checks": [
         {
           "check": "Unauthenticated broker access rejected",
@@ -108,6 +108,10 @@
         },
         {
           "check": "Explicit synthetic target is reachable",
+          "passed": true
+        },
+        {
+          "check": "Unprivileged Nmap scanning discovers the approved synthetic target port",
           "passed": true
         },
         {
@@ -282,11 +286,60 @@
           "check": "All fixture containers, aliases, network and state volume removed",
           "passed": true
         }
-      ]
+      ],
+      "images": {
+        "worker": {
+          "image_id": "sha256:17f0e6c2468ed5e00aaf63029dfbd1c01a70686604dff4a8d10817c4369a8cf6",
+          "platform": "linux/amd64",
+          "rootfs_diff_ids": [
+            "sha256:2a89eb4dbc78f8fe790775a4e807e1355ba2f6b145c8dd7a267a782df1605124",
+            "sha256:758b22fe15be2c330dcead0c1b50476c074e113ec507627c6430337ffc9daa5e",
+            "sha256:c4c5d97221f7db973e03e0d5f08ba4b6762149ee02d89470b347a1f474123a53",
+            "sha256:9b802d7f146637168a7322bcda78ada93993a09c274f66eff831fec308fd9f1f",
+            "sha256:19595d1e9d97531b28a340aa6fb268eb9266d86a977200fb6c9b3137e723feef",
+            "sha256:3613a52201e939cbc0c4b1a59548e739e40e1a8542b78a2cec58198e9a43327e",
+            "sha256:d3d249f584d4c286b270703e39638260625b99d5ba3b31b3ad2bc58e9e4646c2",
+            "sha256:0169b5e8879cf93e48d5e5e944e5f8f9c731f1cf0b91edb408410fbad7dd6567",
+            "sha256:04e2c0ac562ce1f2b63aae75017014b56a7ff141830f25b9077ec5c427c60955",
+            "sha256:82ca4e18aee016ec2d2753723459e4650180ee37be4198503abcfc4d068d8f50",
+            "sha256:5cda5be84464421ac03f8fb7b09bcc642c444e47f446f368395212636de444e7",
+            "sha256:ebd3ee9a237442dd3eddaa37253aae925194b63cd8b28e9e11b5c0bdc49d227a",
+            "sha256:86c52f02f4b1492ef040a5ee1b80d9bd156dd7a4be4aafc9f0c06ca751310bd7",
+            "sha256:42a7a5f5dcd43be26875759d4755990819b264f062a1fb6e8e1f1799ce589c43",
+            "sha256:5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef",
+            "sha256:c4923db5dae47c759428d615c0816f82465c9dff658f752d47e4ec93b8827f0a",
+            "sha256:f2c9d989b6d886a70576f13c70d8d8c62060c8f842bda96689662ce1057cc62f",
+            "sha256:04ee4d3fbceab525f501314ec9786edb5f2a9ce9946e0d9cde952881e205b948",
+            "sha256:080e504d227bb67558e4c3dc895185fb568436bda0b588ee0b5f3d4507f8e4f3",
+            "sha256:5a9adf321df794fefa28bf899bf9cb8a8cf56e5ff7a4c63cdcbb802d4790cf31",
+            "sha256:9d159b7532fc764423d368f78d5a3891fa3a52d4c60d1c25efbe2bbb23fcbee4",
+            "sha256:150719f479f48f0b4cb1930bdb6befaf4d8beb206588c2bb37239658d48ae28e",
+            "sha256:d7830c04dd0d208e110587e9a30f48194dd00a1f33eb7108e3f451db6c536eea"
+          ]
+        },
+        "broker": {
+          "image_id": "sha256:3008d6008e0f0f2ecf6972975493198856003b82b55466dc2c8b240fede51415",
+          "platform": "linux/amd64",
+          "rootfs_diff_ids": [
+            "sha256:75f1d9657d880da5f75298e8f40e9928bb6e260c50d26f97af196845307e3064",
+            "sha256:6a12a625a7e7cd13974606070c0807883ba2a792c937218e568b21e199736786",
+            "sha256:5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef",
+            "sha256:9d020298e31a4b5ff6a9df636fd4e7580979c5bbd82b0752d32cb3cfdaeef0c4",
+            "sha256:81c5f7d78f962e34738b71e07d54e3bc837f3a58a7f7363ec92bd8c0f1ee5405",
+            "sha256:61d2614b6f42d2c6ae3b1c43803571b15a03b37fd935c6c8f1416853c7c98375",
+            "sha256:721c4f60c954a6a1e1c9997c46d1595c977ad9285e3055aad8276b25b16cd17e",
+            "sha256:21d60c4795fce597570bc3a66269c0ea5630d8ef5cfbe53b538c1ec803af8411",
+            "sha256:daf62fdd5beb8dacf2125141a68ffe626d736ebe1049a14b5540ce542e4dfb9b",
+            "sha256:7cd7f5443b1f634ce5a4acb79149c65d27cd1523add082140aa03fc187613b20",
+            "sha256:f8e3ac105c521ef7f8c981eaa1312b7bdee478602dcd3b8dc5a963f564cef36a",
+            "sha256:a4cafc3ae2b7069546c6c7f245eee0b9a2a44d8dbae3c15eb998f0280f54cc90"
+          ]
+        }
+      }
     },
     {
       "name": "compose-security.json",
-      "sha256": "14fa7325c8cd9f4aedcb561bf0e6fe242c6e51f0028e16f6c73ab591479a3d98",
+      "sha256": "08ac72c21e45cb55b755c683c2ecfe5e49241747c48947fec3fc8e8eb982dc72",
       "passed": true,
       "check_count": 17,
       "checks": [
@@ -573,5 +626,9 @@
         "compose.workers.yml": "25ef234ca6a6e2e7a43f149d480ffad8704477b107ef782573fa6b4f02b3060e"
       }
     }
-  ]
+  ],
+  "previous_checkpoint": {
+    "source_commit": "375b2c3f460d30cddfecd3437e47b543ec5b9b66",
+    "immutable_evidence_url": "https://github.com/jaysonguglietta/artexV2/blob/3062e9cc416aa6d9cc9aae37c17dbbfbece01f52/security/postgres-runtime-evidence.json"
+  }
 }

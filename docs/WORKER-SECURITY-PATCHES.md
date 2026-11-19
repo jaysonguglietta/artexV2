@@ -2,18 +2,33 @@
 
 ## Status and evidence scope
 
-This follow-up is **in progress** against the source published at `3062e9c…`.
-The operator authorized upgrading jq and applying a maintainable util-linux security upgrade
-while preserving assessment tools, both native architectures and worker isolation.
-Final package integration, versions, runtime tests, image findings and publication
-checks remain pending. This guide does not claim that the new worker is already
-built, passes its gate or has any particular new severity count.
+The authorized follow-up is implemented on `security/worker-security-packages`;
+validation source is `a99aee434daae69da284f5546b1d9a2a748f8899`.
+Genuine native jq 1.8.2 and util-linux 2.42.4 packages are installed in the final
+native amd64/arm64 workers. Eight tool groups and all 54 worker boundary checks
+passed on each architecture. All eight native reviewed-image gates, all six Go
+jobs and documentation passed at that source. Tool/isolation reports match the
+same-job scanned image IDs and rootfs exactly.
+No production tag, release or publication was enabled.
 
-The earlier `375b2c3…` checkpoint recorded 85 Medium/9 Low worker records per
-architecture and 188 exact risk reviews. Those are historical observations, not
-results for the new package build. [Validation](VALIDATION.md) will record the
-fresh source/image/DB identities and measured results; [image policy](IMAGE-SECURITY.md)
-defines gate behavior.
+Fresh native Ubuntu Trivy inventory per worker still reports **85 Medium/9 Low**, comprising
+**94 package/advisory records and 49 CVEs**. Source fixes for eight CVEs map to
+34 Medium records; the remaining 60 records keep individual reviewed dispositions.
+Raw matching is unchanged because Ubuntu's advisory database does not publish
+these ARTEX fixed versions. This does not establish that every remaining record
+is an exploitable vulnerability. The 188 exact policy reviews now bind the real
+new package versions (72 updated entries; 68 source-remediation annotations),
+with unchanged expiry **2026-12-19T12:00:00Z**. No suppression, new VEX exception,
+false source identity or High/Critical waiver was added.
+
+Earlier `375b2c3…` image identities remain historical. [Validation](VALIDATION.md)
+records current versus earlier proof; [image policy](IMAGE-SECURITY.md) defines
+the unchanged gate behavior.
+
+The sanitized [package validation evidence](../security/worker-package-validation.json)
+binds both native reports and exact local image, package, source, ABI and test
+identities; the separately recorded local worker ID
+is `sha256:3bbf4fe6c9ead8360332893a72770cebdcf59c1f9e979ddcd844a329338ebb40`.
 
 ## A missing Ubuntu fix is not a missing upstream fix
 
@@ -43,37 +58,38 @@ scanner attribution.
 
 ## Native packages must describe the code that actually runs
 
-The visible jq work pins official upstream **1.8.2** and proposes actual native
+The worker pins official upstream **1.8.2** and installs actual native
 `jq` and `libjq1` packages at **`1.8.2-0artex1`**. See the
 [source manifest](../tools/jq/source.json) for the exact archive URL/SHA256 and the
 [package builder](../tools/jq/build-debs.sh). These are ARTEX package revisions,
-not official Ubuntu packages. Their final installation and validation are pending.
+not official Ubuntu packages. Final native amd64/arm64 installation and runtime validation passed.
 
 Both the executable and its loaded shared library must be replaced together;
 putting a new binary in `/usr/local/bin` while an old library/package record
 remains is incomplete. Dependencies, dynamic linkage, package ownership,
 architecture, licenses and installed file hashes must agree with the actual
-runtime. The staged jq builder uses the inventoried system regex library rather
+runtime. The jq builder uses the inventoried system regex library rather
 than hiding another bundled copy. Source/manifests and package provenance belong
 in source control; downloaded archives, installed dependencies and built `.deb`
 files do not belong in the publication copy.
 
-The proposed util-linux build now uses upstream **2.42.4** with the existing
+The util-linux build uses upstream **2.42.4** with the existing
 Ubuntu **2.41.3-3ubuntu2.2 packaging/configuration** as its integration basis.
-Its honest intended native package version is **`2.42.4-0artex1`**, preserving
+Its actual native source-package version is **`2.42.4-0artex1`**, preserving
 required binary-package epochs and login variants. This is a real upstream code
 upgrade in ARTEX-maintained Ubuntu-native packages, not an official Ubuntu
 security release and not relabeled 2.41.3 bytes.
 
 The original 2.41 backport plan would require a substantial set of active legacy
 mount-path fixes and prerequisites beyond the released stable branch. Rather than
-publish a partial cherry-pick, the revised plan uses the complete upstream source,
+publish a partial cherry-pick, the implementation uses the complete upstream source,
 retains applicable reviewed Ubuntu-specific patches/configuration, and requires
 strict `dh_makeshlibs -c4` symbol/SONAME checks against the existing ABI contract.
 Those checks are necessary build guards, not proof of identical runtime semantics.
 The review still targets CVE-2026-76642, CVE-2026-78408 and CVE-2026-78410, including
-descriptor-lifetime and legacy/new mount paths. Source/patch integration, complete
-native package builds, ABI results and live tool/isolation checks are **pending**.
+descriptor-lifetime and legacy/new mount paths. Native amd64/arm64 builds,
+strict ABI checks, final image gates and live tool/isolation checks passed. The ABI review permits 16 additive functions in three new symbol nodes
+and no removed existing symbols; strict `dh_makeshlibs -c4` remains enabled.
 
 All affected installed binaries/libraries and package records need coherent
 replacement. Any remaining scanner attribution must be reconciled with exact
@@ -100,8 +116,31 @@ util-linux version change will remove an alert. Final evidence must distinguish:
 Keep source manifests, tests and raw reports together. Do not use suppression,
 VEX filters, false package/source identities or a fabricated upstream version to
 make these categories collapse into a zero-finding result. Update exact reviews
-only from actual new reports, preserving their approved expiry. Final measured
-counts and source-fix classifications remain pending until verification completes.
+only from actual new reports, preserving their approved expiry. The measured raw counts and source-fix
+classification above remain distinct even after both native gates passed.
+
+## Completed source and native runtime checks
+
+- jq upstream tests: **9 passed**. The SONAME and checksum-pinned **181 exported
+  symbol** contract is enforced in each native build; it checks names rather
+  than all possible ABI semantics.
+- util-linux selected upstream log: **54 test groups passed**, with **93 OK and
+  46 SKIPPED result lines** from nested cases. These are different counters.
+  Separately compiled tests passed nine mount cases and one nsenter case with
+  kernel calls simulated; that is not proof of real privileged mount operations.
+- Native amd64/arm64 tool fixtures each: **8/8 groups**, including jq's 17 checks, util-linux's
+  17 checks and actual Chromium interaction/rendering.
+- Native amd64/arm64 worker fixtures each: **54/54 checks**, including real unprivileged
+  `nmap -sT -Pn -n` against an approved synthetic port, root-to-task drop with
+  zero capabilities, denied root regain, egress, replay and watchdog/cancel paths.
+
+The util-linux release signature was actually verified over the uncompressed
+archive with the full independently pinned maintainer fingerprint recorded in
+[source.json](../tools/util-linux/source.json). Ubuntu's packaging archive SHA256
+was authenticated through signed APT Sources metadata. These are separate trust
+checks; build-time hash pinning does not independently repeat OpenPGP verification.
+See the [jq build guide](../tools/jq/README.md) and
+[util-linux build guide](../tools/util-linux/README.md) for package and patch details.
 
 ## Completion criteria
 
@@ -113,7 +152,7 @@ counts and source-fix classifications remain pending until verification complete
   exercise util-linux tools used by worker startup and assessment workflows.
 - Repeat the expanded **54-check worker boundary** suite, including an actual
   unprivileged `nmap -sT -Pn -n` connection scan of the authorized synthetic port.
-  The **eight tool groups** include jq17, util-linux17 and real Chromium behavior;
+  The **eight tool groups** include jq 17, util-linux 17 and real Chromium behavior;
   these are required new integration results, not passes inferred from earlier
   53-check or six/seven-group checkpoints. Repeat privilege, egress and
   cancellation/watchdog checks. Do not relax capabilities, AppArmor, no-new-privileges or target rules
@@ -124,6 +163,8 @@ counts and source-fix classifications remain pending until verification complete
 - Refresh stale exact risk reviews from actual results, repeat source/credential
   and archive-manifest checks, and preserve the reviewed release identity policy.
 
-Recorded passes will be added only after the corresponding checks complete.
+Native results are recorded in [image evidence](../security/image-followup-evidence.json).
+Later documentation/evidence descendants require their own CI and final source/ZIP
+receipt; these implementation passes do not establish final-main publication.
 A successful build or a changed package version alone does not fulfill these
 criteria or authorize a formal release.

@@ -10,15 +10,29 @@ expiring review for any active vendor-unfixed Medium/Low worker Ubuntu OS findin
 The operator authorized this narrow residual-risk allowance; it does not authorize
 turning on publication, creating a version tag or publishing a release.
 
-## jq/util-linux follow-up — fresh verification pending
+## jq/util-linux follow-up — native verification passed
 
-The operator authorized actual jq upgrading and a reviewed util-linux security upgrade
-while preserving scanning, both native architectures and isolation. Package
-integration and fresh runtime/image results are still in progress. The earlier
-85 Medium/9 Low counts, 188 risk entries and `375b2c3…` image IDs below are
-historical baseline evidence, not results for this new build.
-[Worker security packages](WORKER-SECURITY-PATCHES.md) explains native packaging
-and the distinction between Ubuntu advisory status and upstream fixes.
+The worker now installs jq 1.8.2 and util-linux 2.42.4 as genuine native packages.
+Both native amd64/arm64 workers passed eight tool groups and 54 worker boundary
+checks each. All eight component gates passed reviewed mode with zero blocking.
+The fresh raw Ubuntu inventory per worker
+still reports **85 Medium/9 Low, 94 records across 49 CVEs**. Eight source-fixed
+CVEs map to **34 Medium package/advisory records**; the other **60 records** retain
+individual reviewed dispositions. Raw attribution is preserved, including for
+custom source-fixed versions not published in Ubuntu's fixed-version database.
+
+The **188 exact reviews** now bind the new package versions: 72 entries changed,
+including 68 source-remediation annotations across both architectures. Expiry is
+unchanged at **2026-12-19T12:00:00Z**. No suppression, new VEX exception, false
+source identity or High/Critical waiver was introduced. Hosted native results passed
+at source `a99aee434daae69da284f5546b1d9a2a748f8899` in
+[run44568621346](https://github.com/jaysonguglietta/artexV2/actions/runs/44568621346).
+[Image evidence](../security/image-followup-evidence.json) binds all eight image
+identities, 16 verified report/SBOM hashes and all 188 exact applied reviews.
+Tool/isolation reports match the same-job scanned worker/broker IDs and rootfs.
+Application, broker and PostgreSQL have zero findings on both architectures. Earlier image IDs below
+remain historical. [Worker security packages](WORKER-SECURITY-PATCHES.md) records
+source integrity, ABI and runtime evidence.
 
 In this guide, **vendor-unfixed means the scanned Ubuntu advisory feed has no
 fixed Ubuntu package version at that DB snapshot**. It does not mean upstream
@@ -31,7 +45,9 @@ attribution after a proven upstream fix. Record raw findings, source-remediation
 proof, actually unpatched residual exposure and exact gate reviews separately.
 Source/patch annotations do not suppress raw alerts or authorize a VEX bypass;
 new versions/architectures need fresh exact review entries if still reported.
-No post-upgrade count is claimed before actual scans.
+These results bind the tested implementation source; later documentation/evidence
+descendants require their own checks and final archive receipt. No final-main or
+production release publication is claimed.
 
 ## Earlier November 19 baseline at `375b2c3…`
 

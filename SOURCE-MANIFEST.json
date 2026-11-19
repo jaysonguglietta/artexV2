@@ -212,9 +212,9 @@
     },
     {
       "path": "README.md",
-      "bytes": 35213,
+      "bytes": 35840,
       "mode": "0o644",
-      "sha256": "4fb8281587e95517cba29c16b42406a9ff3ca6beb7e32a358c8a95152705eadb"
+      "sha256": "83c7c5c45a217f30774bef3bd59beace06f0c181d82db035d813b1415286fbf2"
     },
     {
       "path": "README.zh.md",
@@ -242,9 +242,9 @@
     },
     {
       "path": "UPLOAD.md",
-      "bytes": 6930,
+      "bytes": 7205,
       "mode": "0o644",
-      "sha256": "f41b2951ab8a2b50cad34985cc51177f07f4272e2fae12541a8af837acbb1445"
+      "sha256": "909ac73fbc57536a51fe16b65286916b63fd08aac11d7abfc748fae67ff135bb"
     },
     {
       "path": "agent/assembly.go",
@@ -1742,9 +1742,9 @@
     },
     {
       "path": "docs/IMAGE-SECURITY.md",
-      "bytes": 21549,
+      "bytes": 22711,
       "mode": "0o644",
-      "sha256": "95c04841f397836dbc2fc2426f05815472bb74c8f6699b28504e249c00b1e0dd"
+      "sha256": "9b59e7ec55d708eedf75c8525abb6fcd0ae2ecf5b54b8d0bef9cc172a5ad86bd"
     },
     {
       "path": "docs/OPERATIONS.md",
@@ -1760,9 +1760,9 @@
     },
     {
       "path": "docs/PRODUCT-READINESS-REVIEW.md",
-      "bytes": 57953,
+      "bytes": 58588,
       "mode": "0o644",
-      "sha256": "b391c56cbf41ea2265c4717d18893a7fa887e342f20d090e33cea1c3f314a3b4"
+      "sha256": "dc57295848a3609ca2ca52546159b277cb4ebf259ee69a7d10cef1abf602edfd"
     },
     {
       "path": "docs/README.md",
@@ -1790,9 +1790,9 @@
     },
     {
       "path": "docs/SECURITY-REVIEW.md",
-      "bytes": 35267,
+      "bytes": 36044,
       "mode": "0o644",
-      "sha256": "6d2d508dce6ea0b9d69d948879ad2c266e880bf749de0b27d632b94dbd5ff372"
+      "sha256": "35ec552af10611d8342de94580bbdfd25a7cfd419d2b8401b56d7a80b2c4f0df"
     },
     {
       "path": "docs/SIGNED-RELEASES.md",
@@ -1802,9 +1802,9 @@
     },
     {
       "path": "docs/VALIDATION.md",
-      "bytes": 45566,
+      "bytes": 48516,
       "mode": "0o644",
-      "sha256": "273cf4ee3888a2cb354729709797b8b8ea861b405b15031ada59cb8cc95eac01"
+      "sha256": "154cd168003561e95278116732a448769fec98d901663ec9c1eaee938c2141f0"
     },
     {
       "path": "docs/WORKER-ISOLATION.md",
@@ -1814,9 +1814,9 @@
     },
     {
       "path": "docs/WORKER-SECURITY-PATCHES.md",
-      "bytes": 8039,
+      "bytes": 10789,
       "mode": "0o644",
-      "sha256": "80043b8c91342c887565e2e0debe8a1e2e129eb5b5070a0ca2bf62454d3efcde"
+      "sha256": "4b44ee9ff3fb81a6ca555c0da2324f19e42e4b9bd1d2b1133037a2105cfbdd9e"
     },
     {
       "path": "docs/defense-en.md",
@@ -2792,9 +2792,9 @@
     },
     {
       "path": "security/image-followup-evidence.json",
-      "bytes": 832642,
+      "bytes": 380376,
       "mode": "0o644",
-      "sha256": "9cfe1ab2ff5e7b32713f9b7463c2f6fd06337fac299d1077bb8cb8792434ea19"
+      "sha256": "6c7602129b114ec4c5e65b280e0e49f25ea70d03d59cd0f7dcb5e4c9adec4086"
     },
     {
       "path": "security/image-policy.json",
@@ -2816,9 +2816,9 @@
     },
     {
       "path": "security/postgres-runtime-evidence.json",
-      "bytes": 19096,
+      "bytes": 22864,
       "mode": "0o644",
-      "sha256": "b0b1b8bc5094cec7051c7d2110f4fdf46b6b3d5d98134693492045ab72d6358f"
+      "sha256": "71838f89d3b9576d53bedf4b00d40e17106eca9414858dee151b36536d30a3eb"
     },
     {
       "path": "security/release-tag-policy-evidence.json",
@@ -2831,6 +2831,12 @@
       "bytes": 729,
       "mode": "0o644",
       "sha256": "a79bc7d0de0537a88be94dd360bcd55c4d39ed8a38c1095d3f9a00e0596374ac"
+    },
+    {
+      "path": "security/worker-package-validation.json",
+      "bytes": 66427,
+      "mode": "0o644",
+      "sha256": "dce484246293e690a855d1d0c78d5ab637a3decf8a9e084c70e57def0b85765b"
     },
     {
       "path": "selfupdate/bootstrap.go",
@@ -4292,9 +4298,9 @@
     },
     {
       "path": "tools/util-linux/README.md",
-      "bytes": 8387,
+      "bytes": 8703,
       "mode": "0o644",
-      "sha256": "29edba578f38317d2be6f3ab0fa67469b1b30f4ebf12cc82e7b736518d1de389"
+      "sha256": "9022b2c1534f9e27d09c8bdc39b980685bffd83d383857906c2cda4fc699f155"
     },
     {
       "path": "tools/util-linux/build-packages.sh",

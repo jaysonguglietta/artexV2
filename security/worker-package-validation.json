@@ -1,0 +1,1576 @@
+{
+  "schema_version": 1,
+  "source_implementation_commit": "a99aee434daae69da284f5546b1d9a2a748f8899",
+  "scope": "Native AMD64/ARM64 source-package, installed tools8 and live isolation54 validation at the exact implementation commit; local ARM64 checkpoint retained separately. Final documentation/publication descendants require their own CI and source snapshot receipt.",
+  "source_file_sha256": {
+    "Dockerfile.source": "6a20d85130b78f7542fe49ab1d4928627efb4561be41170b0046e4691f3c67ef",
+    "scripts/test-worker-tools-proof.py": "0e3013a9d146c6c37b44c46171f63422bea1d8da95c0564ab5c5de2c8aa6aa64",
+    "scripts/test-worker-tools.py": "5ab82e57f8654a92db9f56d090aa73fd6397026a9c392ace8c1dfe0934fc5aaf",
+    "scripts/test-workers.py": "873a4d9f699963930fdba00d1d265a4878d58be0d3b29294de5d61f6c6e9594e",
+    "tools/jq/README.md": "f6c29437ea8f3656fd24a3c0666141898feb340b681744675a267d544fa2bdaf",
+    "tools/jq/abi-symbols.txt": "281c4c47bd8445040bd4a7cc94f44b9b75c0f6a254d89ed12d6a5711c459d0db",
+    "tools/jq/build-debs.sh": "c4d4a85d67c2bd200f4474b90c5c290a475288fc67d174d18e9195e964f504d5",
+    "tools/jq/source.json": "ce7b699ad860a0d54121e0a801210568c41762ddce3d943cbb1a4485ea262d8e",
+    "tools/jq/test-behavior.py": "74765423941c66fd68951168b3d95b2a66f021c4b09ccbc65534a94edc8aa345",
+    "tools/util-linux/README.md": "29edba578f38317d2be6f3ab0fa67469b1b30f4ebf12cc82e7b736518d1de389",
+    "tools/util-linux/build-packages.sh": "32a46aa58ceb0da00d137005511329b55ca1d7aa18bce105b4b95377c9d1991c",
+    "tools/util-linux/install-build-deps.sh": "faf2e3145dca4224b4c5ee90f8e6d1724c7610f95276c1e5a739093ac6c193e4",
+    "tools/util-linux/install-packages.sh": "3aac331c07884c8abf847eb4a55bdfaf92f531f39a3e4c38960397e63f8fd6a9",
+    "tools/util-linux/lsfd-usrbin-2.42.patch": "a11637010ce75755ac63e889b9641ef3fb816a7f4dd5e182dd34b1adea098712",
+    "tools/util-linux/nsenter-interpose.c": "d228e93cb8004c06f28477742cd142551b5792d50d15416f0e93d7de5a7c3102",
+    "tools/util-linux/prepare-source.py": "cacedb9e60e6d1793bd2310fd61c7b237df38b9e98686168b2e3ae5f1d040dc6",
+    "tools/util-linux/security-regressions.c": "c2f5c34a56f2f26c97eb6f20095d09da9b26f79794c18d614822ed9c1f16e5a5",
+    "tools/util-linux/source.json": "d35ce405e23aaee649f7eed118afef7f5a30df28d8bd10b2fc177d13b68d9584",
+    "tools/util-linux/sulogin-static-sh-2.42.patch": "1e4f9614f9b11047e68d6ec43b88ad2d1c835d13ce54b866d4df80f4d91984c6",
+    "tools/util-linux/test-behavior.py": "30c15d5bb97cad62c6b4706ced2debc9ac1bddfa6b9e4f6b7bba389215c2f5ac",
+    "tools/util-linux/test-built-source.sh": "d0de7a3a6b5922f4a600bcc7841a435c86446a58ba2202179b7ac05491888e42",
+    "tools/util-linux/test-source-security.py": "bdc7a67c65ee0614a81220f526b9a2eeb8b839b8c8803cdbfb6afe403533e061",
+    "worker/entrypoint.sh": "723812b65110173c24505727a565e91e53ab834d0dc497e5d1944984960d4c59"
+  },
+  "source_inputs": {
+    "jq": {
+      "upstream_version": "1.8.2",
+      "package_version": "1.8.2-0artex1",
+      "source_url": "https://github.com/jqlang/jq/releases/download/jq-1.8.2/jq-1.8.2.tar.gz",
+      "source_sha256": "71b8d6e8f5fe81f6c6d0d110e3892251f6ce76ed095abd315e26e6e1193af3af",
+      "release_notes": "https://github.com/jqlang/jq/releases/tag/jq-1.8.2",
+      "license": "https://github.com/jqlang/jq/blob/jq-1.8.2/COPYING"
+    },
+    "util_linux_manifest_sha256": "d35ce405e23aaee649f7eed118afef7f5a30df28d8bd10b2fc177d13b68d9584"
+  },
+  "local_arm64": {
+    "tools": {
+      "schema_version": 1,
+      "image_id": "sha256:3bbf4fe6c9ead8360332893a72770cebdcf59c1f9e979ddcd844a329338ebb40",
+      "platform": "linux/arm64",
+      "rootfs_diff_ids": [
+        "sha256:82881da986b65e966fc8e5b188d6f77319708e9dd562cf737320bb977a0cf69c",
+        "sha256:60777d6993de0b528f7aeb99530a1e67283666bc5224b46a8df4bcb2f9703512",
+        "sha256:5698be5f62c2753bba7eae67561036e55335bfcfc2909f1fe1996c60ed0e5be2",
+        "sha256:3a898e95958dd13232e43eb9ebcbc04ae8cc2ea44fa23105da2e15c899a47772",
+        "sha256:11ffb8113e99383b6313825392bbacf7332735db4b2d3362c859db0073a3fe8c",
+        "sha256:993656b0a1392d6500e8d770707faf4118ceb4b7a67ffe66fac5207ade0daedd",
+        "sha256:06d4c830d1897cc2e0457b8ed67ac6b5085ef0d164096208818a4db481e0d8cb",
+        "sha256:8c66183c782a6769db18681932ca0bae14d93ceee038771216b74b78a2424b5e",
+        "sha256:80e3ab9d58a25bcf2a47b5e8ac52ba320b1f72db0d50500eedad377a52f09181",
+        "sha256:e7d628726409159cbe48cafa512afdf81c0e3f3a950c79037e5739bf36790da9",
+        "sha256:7d6ee3c5786dd922cbaa9cc2f416c3e781b74f42a68ff9a3e7c91148bc2facde",
+        "sha256:c7c3f61238d82749cfb4278e2fdc7f8e689dfcee8cfaae38fe2e8dd7a7dc91c3",
+        "sha256:65d5a69e08535743a0a47570f4115d9c8f1f6dfff7c9e286f4c8f2081b70c81e",
+        "sha256:44833338e959e0882d4f344da13db44fb9399740694204156360a1f63368e960",
+        "sha256:5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef",
+        "sha256:0a330072d537a78c1213899b0592673585508601f7833d740db5cc28662ee00b",
+        "sha256:9b95e4134bdb365597a0b140ba74a7a047c55c117ecbc4af37b714ba6bb913b0",
+        "sha256:def68c47b97f34fb219893f2e83ba8861ccf4c02e2fead45f391e48a4cff3006",
+        "sha256:4effaf1b77de95913ff5d320a12f46f8c2ed02215fee0d8bd2a20793c477dcc1",
+        "sha256:bfb68623d2bb3a1f3f3940c4fccd0552466e937e27609a37bd55b3bd850c9d02",
+        "sha256:78d99b6e366335a95242d71407902cdaa52b135647fd256c70957e113308d3df",
+        "sha256:295693fc24ea28a56db355d314718a2e8e53ccff6311cd013ee04c8f05c66da3",
+        "sha256:39cefe2348995723c9e2b4d30d30b3749ae67d89c6b46f6ddd254e911b681a27"
+      ],
+      "source_sha256": {
+        "scripts/test-worker-tools.py": "5ab82e57f8654a92db9f56d090aa73fd6397026a9c392ace8c1dfe0934fc5aaf",
+        "tools/jq/test-behavior.py": "74765423941c66fd68951168b3d95b2a66f021c4b09ccbc65534a94edc8aa345",
+        "tools/util-linux/test-behavior.py": "30c15d5bb97cad62c6b4706ced2debc9ac1bddfa6b9e4f6b7bba389215c2f5ac"
+      },
+      "passed": true,
+      "checks": [
+        "patched Python and native modules",
+        "ordinary Python venv includes patched pip",
+        "explicit npm dependency patch",
+        "assessment tools retained",
+        "jq upstream security and scanning compatibility regressions",
+        "util-linux package integrity and confined assessment behavior",
+        "unused service, virtual display and old Python removed",
+        "real bundled Chromium renders, interacts and captures a PNG"
+      ]
+    },
+    "isolation": {
+      "schema_version": 3,
+      "passed": true,
+      "images": {
+        "worker": {
+          "image_id": "sha256:3bbf4fe6c9ead8360332893a72770cebdcf59c1f9e979ddcd844a329338ebb40",
+          "platform": "linux/arm64",
+          "rootfs_diff_ids": [
+            "sha256:82881da986b65e966fc8e5b188d6f77319708e9dd562cf737320bb977a0cf69c",
+            "sha256:60777d6993de0b528f7aeb99530a1e67283666bc5224b46a8df4bcb2f9703512",
+            "sha256:5698be5f62c2753bba7eae67561036e55335bfcfc2909f1fe1996c60ed0e5be2",
+            "sha256:3a898e95958dd13232e43eb9ebcbc04ae8cc2ea44fa23105da2e15c899a47772",
+            "sha256:11ffb8113e99383b6313825392bbacf7332735db4b2d3362c859db0073a3fe8c",
+            "sha256:993656b0a1392d6500e8d770707faf4118ceb4b7a67ffe66fac5207ade0daedd",
+            "sha256:06d4c830d1897cc2e0457b8ed67ac6b5085ef0d164096208818a4db481e0d8cb",
+            "sha256:8c66183c782a6769db18681932ca0bae14d93ceee038771216b74b78a2424b5e",
+            "sha256:80e3ab9d58a25bcf2a47b5e8ac52ba320b1f72db0d50500eedad377a52f09181",
+            "sha256:e7d628726409159cbe48cafa512afdf81c0e3f3a950c79037e5739bf36790da9",
+            "sha256:7d6ee3c5786dd922cbaa9cc2f416c3e781b74f42a68ff9a3e7c91148bc2facde",
+            "sha256:c7c3f61238d82749cfb4278e2fdc7f8e689dfcee8cfaae38fe2e8dd7a7dc91c3",
+            "sha256:65d5a69e08535743a0a47570f4115d9c8f1f6dfff7c9e286f4c8f2081b70c81e",
+            "sha256:44833338e959e0882d4f344da13db44fb9399740694204156360a1f63368e960",
+            "sha256:5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef",
+            "sha256:0a330072d537a78c1213899b0592673585508601f7833d740db5cc28662ee00b",
+            "sha256:9b95e4134bdb365597a0b140ba74a7a047c55c117ecbc4af37b714ba6bb913b0",
+            "sha256:def68c47b97f34fb219893f2e83ba8861ccf4c02e2fead45f391e48a4cff3006",
+            "sha256:4effaf1b77de95913ff5d320a12f46f8c2ed02215fee0d8bd2a20793c477dcc1",
+            "sha256:bfb68623d2bb3a1f3f3940c4fccd0552466e937e27609a37bd55b3bd850c9d02",
+            "sha256:78d99b6e366335a95242d71407902cdaa52b135647fd256c70957e113308d3df",
+            "sha256:295693fc24ea28a56db355d314718a2e8e53ccff6311cd013ee04c8f05c66da3",
+            "sha256:39cefe2348995723c9e2b4d30d30b3749ae67d89c6b46f6ddd254e911b681a27"
+          ]
+        },
+        "broker": {
+          "image_id": "sha256:5abefcb7ca1c436f4cb0591688d62ddc723f812c3f0e962b39dbcc01c6122c9c",
+          "platform": "linux/arm64",
+          "rootfs_diff_ids": [
+            "sha256:3d971ddbca237031066ab6609a11ae2e9e5b109da24d5c5d94d2e584dd94bd54",
+            "sha256:b9a36a4083a9bb4263821f18c52013d0e7470d3e85d8a61f65b5f785120f8d53",
+            "sha256:5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef",
+            "sha256:754d66f37c9f8cc801dcdfeb6e7450dc159d7ca03f104d260a7055c060a1ab9b",
+            "sha256:ac2546db01c8d91ebf189e62d320fafc5b609354284649a0522d4c6926990c93",
+            "sha256:51dbebb0514ea73ef37773d8c644d5b655af5389991e8e4a7bb1aaccbb042f1a",
+            "sha256:a004df1183d5298371e75eaf4046e2e4b1816193bbd585be3613f58a4769e946",
+            "sha256:5d88c12f6c903396c6d28feeea1746093c80d9075b68753866d521048c759d3b",
+            "sha256:62bf9a9186f15dec46e89384ac5ca9720d669750de54c55db8c2c6b781f093ac",
+            "sha256:27ae3998e811feaff6a81006a4002b120b9ae5ea55ce4e88e80aaf45563f41ea",
+            "sha256:3fa724d21fe2764cf1d10e7760fc92c1ba87fb483fb17acea3320fd91c6aa712",
+            "sha256:f38c0b965f58ff3764d1f4104afe382c0457bae3671ce38400d02e2634445724"
+          ]
+        }
+      },
+      "elapsed_seconds": 105.99,
+      "checks": [
+        {
+          "check": "Unauthenticated broker access rejected",
+          "passed": true
+        },
+        {
+          "check": "Missing task target policy rejected",
+          "passed": true
+        },
+        {
+          "check": "Normal RPC requires trusted run identity",
+          "passed": true
+        },
+        {
+          "check": "Close control rejects executable request fields",
+          "passed": true
+        },
+        {
+          "check": "Lease cannot create a worker",
+          "passed": true
+        },
+        {
+          "check": "Tool subprocess has UID10001, all capabilities empty and no-new-privileges",
+          "passed": true
+        },
+        {
+          "check": "API/broker credentials and service environment are absent",
+          "passed": true
+        },
+        {
+          "check": "Worker has no Docker socket or broker secret mount",
+          "passed": true
+        },
+        {
+          "check": "Private worker filesystems execute local CLI artifacts without added privilege",
+          "passed": true
+        },
+        {
+          "check": "Explicit synthetic target is reachable",
+          "passed": true
+        },
+        {
+          "check": "Unprivileged Nmap scanning discovers the approved synthetic target port",
+          "passed": true
+        },
+        {
+          "check": "Denied-address positive control reaches the same target",
+          "passed": true
+        },
+        {
+          "check": "Adjacent unapproved synthetic address is denied",
+          "passed": true
+        },
+        {
+          "check": "Docker host gateway is denied",
+          "passed": true
+        },
+        {
+          "check": "Worker cannot weaken its firewall",
+          "passed": true
+        },
+        {
+          "check": "Worker cannot renew the privileged watchdog",
+          "passed": true
+        },
+        {
+          "check": "Worker cannot signal the root watchdog",
+          "passed": true
+        },
+        {
+          "check": "Same-task sibling has a different private filesystem",
+          "passed": true
+        },
+        {
+          "check": "Different task filesystem is isolated",
+          "passed": true
+        },
+        {
+          "check": "Same run retains its own workspace",
+          "passed": true
+        },
+        {
+          "check": "Other-task cleanup succeeds",
+          "passed": true
+        },
+        {
+          "check": "closed-run: detached double-fork positive control",
+          "passed": true
+        },
+        {
+          "check": "surviving-sibling: detached double-fork positive control",
+          "passed": true
+        },
+        {
+          "check": "Actual Docker exec RPC client has UID10001 and all capability sets empty",
+          "passed": true
+        },
+        {
+          "check": "PID1 watchdog is root with all capability sets empty",
+          "passed": true
+        },
+        {
+          "check": "Lease works while foreground scan holds execution gate",
+          "passed": true
+        },
+        {
+          "check": "Urgent close bypasses foreground execution gate",
+          "passed": true,
+          "detail": "{'status': 200, 'elapsed_seconds': 0.096, 'response': {'snapshot_complete': False, 'result': {'Content': None, 'IsError': False, 'Extra': None}}}"
+        },
+        {
+          "check": "Urgent close cancels the active foreground request",
+          "passed": true
+        },
+        {
+          "check": "Closed run cannot be replayed",
+          "passed": true
+        },
+        {
+          "check": "Lease cannot resurrect a closed run",
+          "passed": true
+        },
+        {
+          "check": "Close stops unmanaged setsid/double-fork network descendants",
+          "passed": true
+        },
+        {
+          "check": "Closing one run preserves the sibling scan",
+          "passed": true
+        },
+        {
+          "check": "orphan: detached double-fork positive control",
+          "passed": true
+        },
+        {
+          "check": "Unrenewed orphan container exits within the bounded watchdog lease",
+          "passed": true,
+          "detail": "observed 90.1s after initial RPC"
+        },
+        {
+          "check": "Watchdog exit stops orphan double-fork network descendants",
+          "passed": true
+        },
+        {
+          "check": "Renewed idle sibling survives the orphan timeout",
+          "passed": true
+        },
+        {
+          "check": "Expired orphan can be explicitly retired",
+          "passed": true
+        },
+        {
+          "check": "Surviving sibling cleanup succeeds",
+          "passed": true
+        },
+        {
+          "check": "Real tmpfs snapshots preserve and merge all sibling artifacts",
+          "passed": true
+        },
+        {
+          "check": "All snapshot siblings are paused",
+          "passed": true
+        },
+        {
+          "check": "Preservation failure can resume all paused siblings",
+          "passed": true
+        },
+        {
+          "check": "Task retirement removes every sibling container",
+          "passed": true
+        },
+        {
+          "check": "Conflicting sibling artifacts explicitly refuse preservation",
+          "passed": true
+        },
+        {
+          "check": "Failed sibling snapshot resumes both runtimes",
+          "passed": true
+        },
+        {
+          "check": "Conflicting task can be explicitly discarded",
+          "passed": true
+        },
+        {
+          "check": "Oversized tmpfs preservation fails explicitly",
+          "passed": true
+        },
+        {
+          "check": "Oversized task can be explicitly discarded",
+          "passed": true
+        },
+        {
+          "check": "Crash fixture leaves an orphan for startup cleanup",
+          "passed": true
+        },
+        {
+          "check": "Broker restart reaps its owner-labeled orphan",
+          "passed": true
+        },
+        {
+          "check": "Persistent ledger rejects a previously active identity after crash",
+          "passed": true
+        },
+        {
+          "check": "Persistent ledger retains already-closed tombstones after crash",
+          "passed": true
+        },
+        {
+          "check": "Fresh identity works without stale workspace after restart",
+          "passed": true
+        },
+        {
+          "check": "Fresh replacement cleanup succeeds",
+          "passed": true
+        },
+        {
+          "check": "All fixture containers, aliases, network and state volume removed",
+          "passed": true,
+          "detail": ""
+        }
+      ]
+    },
+    "reviewed_image_gate": {
+      "status": "passed",
+      "gate_mode": "reviewed-findings",
+      "summary_sha256": "556f2be596dbebec962e42a7cb2809a5a096b6e8bded108c5942b105335a8334",
+      "image": "sha256:3bbf4fe6c9ead8360332893a72770cebdcf59c1f9e979ddcd844a329338ebb40",
+      "raw_counts": {
+        "CRITICAL": 0,
+        "HIGH": 0,
+        "LOW": 9,
+        "MEDIUM": 85,
+        "UNKNOWN": 0
+      },
+      "blocking": 0,
+      "applied_reviews": 94,
+      "policy_sha256": "e05344a053d103be5da9c93c33b54adc57afc542cdccb2bb1eb27741e4f632f0",
+      "database": {
+        "repository": "ghcr.io/aquasecurity/trivy-db:2",
+        "metadata": {
+          "Version": 2,
+          "NextUpdate": "2026-11-20T13:02:29.533007307Z",
+          "UpdatedAt": "2026-11-19T13:02:29.533007734Z",
+          "DownloadedAt": "2026-11-19T15:52:41.088465Z"
+        },
+        "database_sha256": "923c9ac4d894e62da8020926c64e7bbff80f2562944708ac6804388eb1debec9",
+        "metadata_sha256": "3e65f2613e930f0d9c0e427d86ee3499b0b69c4ac817b7fac6667f83ac22df53"
+      }
+    },
+    "strict_diagnostic": {
+      "status": "blocked",
+      "gate_mode": "no-active-findings",
+      "blocking": 94,
+      "summary_sha256": "609f5f713cd4b3f74d692fe833e7420f8f11ae7420610e721f78c976714ab578"
+    },
+    "jq_abi_baseline": {
+      "passed": true,
+      "scope": "Exported jq_/jv_ symbol compatibility; not proof of every C ABI semantic",
+      "platform": "linux/arm64",
+      "old_image_id": "sha256:859d81ed57517566bfde55f03f02137c4c50b7c29a855c1c131d416922b3f9b2",
+      "new_builder_image_id": "sha256:d15957cdd3484ad952cd66eeb6f7461e80a82aa2bb2d968c30bf5e8d0bac5bab",
+      "old_package_version": "1.8.1-4ubuntu2",
+      "new_package_version": "1.8.2-0artex1",
+      "upstream_source_sha256": "71b8d6e8f5fe81f6c6d0d110e3892251f6ce76ed095abd315e26e6e1193af3af",
+      "completed_at": "2026-11-19T15:36:54.805749+00:00",
+      "old_library_sha256": "48831b8a6d6a2c4a80d5efa5c1bdaf76053af12e27d10439beabea8a625f797d",
+      "new_library_sha256": "280df9dce73e02c0599e9556297deecf4a8dced96c0a2194d53b4e30bded25e9",
+      "old_symbol_count": 181,
+      "new_symbol_count": 181,
+      "removed": [],
+      "added": [],
+      "old_symbols_sha256": "281c4c47bd8445040bd4a7cc94f44b9b75c0f6a254d89ed12d6a5711c459d0db",
+      "new_symbols_sha256": "281c4c47bd8445040bd4a7cc94f44b9b75c0f6a254d89ed12d6a5711c459d0db",
+      "uid": 10001
+    },
+    "util_linux_builder": {
+      "passed": true,
+      "compiled_mount_regressions": 9,
+      "compiled_nsenter_regressions": 1,
+      "upstream_log_sha256": "80ecd5e1c212a77d134f5dc559978315609c88d37adc4b4e2fabcbccb05a4935",
+      "ubuntu_source_authentication": {
+        "method": "APT InRelease and Sources verification",
+        "source": "util-linux",
+        "version": "2.41.3-3ubuntu2.2",
+        "filename": "util-linux_2.41.3-3ubuntu2.2.debian.tar.xz",
+        "sha256": "e8f366168a1483616c1baf06420e341789340dcd2a98b9d8423f076d6cffa043",
+        "size": 125404
+      },
+      "upstream_ok_result_lines": 93,
+      "upstream_skipped_result_lines": 46,
+      "upstream_reported_passed_tests": 54,
+      "count_scope": "Upstream summary and result-line counts are distinct; nested subcases contribute result lines. Permission/kernel-feature skips are retained, not executed-pass claims."
+    },
+    "setpriv_unprivileged_compatibility": {
+      "passed": true,
+      "scope": "Both old and new versions correctly require CAP_SETPCAP to change the bounding set; the live54-check broker suite separately proves actual privileged-to-unprivileged removal.",
+      "results": [
+        {
+          "label": "Ubuntu2.41.3",
+          "image_id": "sha256:859d81ed57517566bfde55f03f02137c4c50b7c29a855c1c131d416922b3f9b2",
+          "exit_code": 127,
+          "diagnostic": "setpriv: apply bounding set: Operation not permitted"
+        },
+        {
+          "label": "ARTEX2.42.4",
+          "image_id": "sha256:3bbf4fe6c9ead8360332893a72770cebdcf59c1f9e979ddcd844a329338ebb40",
+          "exit_code": 127,
+          "diagnostic": "setpriv: apply bounding set: Operation not permitted"
+        }
+      ]
+    }
+  },
+  "remediation_scope": {
+    "source_remediated_cves": [
+      "CVE-2026-41256",
+      "CVE-2026-41257",
+      "CVE-2026-43895",
+      "CVE-2026-43896",
+      "CVE-2026-44777",
+      "CVE-2026-76642",
+      "CVE-2026-78408",
+      "CVE-2026-78410"
+    ],
+    "source_remediated_package_records_per_architecture": 34,
+    "other_raw_records_per_architecture": 60,
+    "raw_ubuntu_findings_are_not_suppressed": true,
+    "source_remediated_raw_records": [
+      {
+        "component": "worker",
+        "platform": "linux/arm64",
+        "target": "os:ubuntu:26.04",
+        "vulnerability_id": "CVE-2026-76642",
+        "package": "bsdutils",
+        "installed_version": "1:2.42.4-0artex1",
+        "severity": "MEDIUM",
+        "fixed_version": null,
+        "status": "affected",
+        "reference": "https://avd.aquasec.com/nvd/cve-2026-76642"
+      },
+      {
+        "component": "worker",
+        "platform": "linux/arm64",
+        "target": "os:ubuntu:26.04",
+        "vulnerability_id": "CVE-2026-78408",
+        "package": "bsdutils",
+        "installed_version": "1:2.42.4-0artex1",
+        "severity": "MEDIUM",
+        "fixed_version": null,
+        "status": "affected",
+        "reference": "https://avd.aquasec.com/nvd/cve-2026-78408"
+      },
+      {
+        "component": "worker",
+        "platform": "linux/arm64",
+        "target": "os:ubuntu:26.04",
+        "vulnerability_id": "CVE-2026-78410",
+        "package": "bsdutils",
+        "installed_version": "1:2.42.4-0artex1",
+        "severity": "MEDIUM",
+        "fixed_version": null,
+        "status": "affected",
+        "reference": "https://avd.aquasec.com/nvd/cve-2026-78410"
+      },
+      {
+        "component": "worker",
+        "platform": "linux/arm64",
+        "target": "os:ubuntu:26.04",
+        "vulnerability_id": "CVE-2026-41256",
+        "package": "jq",
+        "installed_version": "1.8.2-0artex1",
+        "severity": "MEDIUM",
+        "fixed_version": null,
+        "status": "affected",
+        "reference": "https://avd.aquasec.com/nvd/cve-2026-41256"
+      },
+      {
+        "component": "worker",
+        "platform": "linux/arm64",
+        "target": "os:ubuntu:26.04",
+        "vulnerability_id": "CVE-2026-41257",
+        "package": "jq",
+        "installed_version": "1.8.2-0artex1",
+        "severity": "MEDIUM",
+        "fixed_version": null,
+        "status": "affected",
+        "reference": "https://avd.aquasec.com/nvd/cve-2026-41257"
+      },
+      {
+        "component": "worker",
+        "platform": "linux/arm64",
+        "target": "os:ubuntu:26.04",
+        "vulnerability_id": "CVE-2026-43895",
+        "package": "jq",
+        "installed_version": "1.8.2-0artex1",
+        "severity": "MEDIUM",
+        "fixed_version": null,
+        "status": "affected",
+        "reference": "https://avd.aquasec.com/nvd/cve-2026-43895"
+      },
+      {
+        "component": "worker",
+        "platform": "linux/arm64",
+        "target": "os:ubuntu:26.04",
+        "vulnerability_id": "CVE-2026-43896",
+        "package": "jq",
+        "installed_version": "1.8.2-0artex1",
+        "severity": "MEDIUM",
+        "fixed_version": null,
+        "status": "affected",
+        "reference": "https://avd.aquasec.com/nvd/cve-2026-43896"
+      },
+      {
+        "component": "worker",
+        "platform": "linux/arm64",
+        "target": "os:ubuntu:26.04",
+        "vulnerability_id": "CVE-2026-44777",
+        "package": "jq",
+        "installed_version": "1.8.2-0artex1",
+        "severity": "MEDIUM",
+        "fixed_version": null,
+        "status": "affected",
+        "reference": "https://avd.aquasec.com/nvd/cve-2026-44777"
+      },
+      {
+        "component": "worker",
+        "platform": "linux/arm64",
+        "target": "os:ubuntu:26.04",
+        "vulnerability_id": "CVE-2026-76642",
+        "package": "libblkid1",
+        "installed_version": "2.42.4-0artex1",
+        "severity": "MEDIUM",
+        "fixed_version": null,
+        "status": "affected",
+        "reference": "https://avd.aquasec.com/nvd/cve-2026-76642"
+      },
+      {
+        "component": "worker",
+        "platform": "linux/arm64",
+        "target": "os:ubuntu:26.04",
+        "vulnerability_id": "CVE-2026-78408",
+        "package": "libblkid1",
+        "installed_version": "2.42.4-0artex1",
+        "severity": "MEDIUM",
+        "fixed_version": null,
+        "status": "affected",
+        "reference": "https://avd.aquasec.com/nvd/cve-2026-78408"
+      },
+      {
+        "component": "worker",
+        "platform": "linux/arm64",
+        "target": "os:ubuntu:26.04",
+        "vulnerability_id": "CVE-2026-78410",
+        "package": "libblkid1",
+        "installed_version": "2.42.4-0artex1",
+        "severity": "MEDIUM",
+        "fixed_version": null,
+        "status": "affected",
+        "reference": "https://avd.aquasec.com/nvd/cve-2026-78410"
+      },
+      {
+        "component": "worker",
+        "platform": "linux/arm64",
+        "target": "os:ubuntu:26.04",
+        "vulnerability_id": "CVE-2026-41256",
+        "package": "libjq1",
+        "installed_version": "1.8.2-0artex1",
+        "severity": "MEDIUM",
+        "fixed_version": null,
+        "status": "affected",
+        "reference": "https://avd.aquasec.com/nvd/cve-2026-41256"
+      },
+      {
+        "component": "worker",
+        "platform": "linux/arm64",
+        "target": "os:ubuntu:26.04",
+        "vulnerability_id": "CVE-2026-41257",
+        "package": "libjq1",
+        "installed_version": "1.8.2-0artex1",
+        "severity": "MEDIUM",
+        "fixed_version": null,
+        "status": "affected",
+        "reference": "https://avd.aquasec.com/nvd/cve-2026-41257"
+      },
+      {
+        "component": "worker",
+        "platform": "linux/arm64",
+        "target": "os:ubuntu:26.04",
+        "vulnerability_id": "CVE-2026-43895",
+        "package": "libjq1",
+        "installed_version": "1.8.2-0artex1",
+        "severity": "MEDIUM",
+        "fixed_version": null,
+        "status": "affected",
+        "reference": "https://avd.aquasec.com/nvd/cve-2026-43895"
+      },
+      {
+        "component": "worker",
+        "platform": "linux/arm64",
+        "target": "os:ubuntu:26.04",
+        "vulnerability_id": "CVE-2026-43896",
+        "package": "libjq1",
+        "installed_version": "1.8.2-0artex1",
+        "severity": "MEDIUM",
+        "fixed_version": null,
+        "status": "affected",
+        "reference": "https://avd.aquasec.com/nvd/cve-2026-43896"
+      },
+      {
+        "component": "worker",
+        "platform": "linux/arm64",
+        "target": "os:ubuntu:26.04",
+        "vulnerability_id": "CVE-2026-44777",
+        "package": "libjq1",
+        "installed_version": "1.8.2-0artex1",
+        "severity": "MEDIUM",
+        "fixed_version": null,
+        "status": "affected",
+        "reference": "https://avd.aquasec.com/nvd/cve-2026-44777"
+      },
+      {
+        "component": "worker",
+        "platform": "linux/arm64",
+        "target": "os:ubuntu:26.04",
+        "vulnerability_id": "CVE-2026-76642",
+        "package": "libmount1",
+        "installed_version": "2.42.4-0artex1",
+        "severity": "MEDIUM",
+        "fixed_version": null,
+        "status": "affected",
+        "reference": "https://avd.aquasec.com/nvd/cve-2026-76642"
+      },
+      {
+        "component": "worker",
+        "platform": "linux/arm64",
+        "target": "os:ubuntu:26.04",
+        "vulnerability_id": "CVE-2026-78408",
+        "package": "libmount1",
+        "installed_version": "2.42.4-0artex1",
+        "severity": "MEDIUM",
+        "fixed_version": null,
+        "status": "affected",
+        "reference": "https://avd.aquasec.com/nvd/cve-2026-78408"
+      },
+      {
+        "component": "worker",
+        "platform": "linux/arm64",
+        "target": "os:ubuntu:26.04",
+        "vulnerability_id": "CVE-2026-78410",
+        "package": "libmount1",
+        "installed_version": "2.42.4-0artex1",
+        "severity": "MEDIUM",
+        "fixed_version": null,
+        "status": "affected",
+        "reference": "https://avd.aquasec.com/nvd/cve-2026-78410"
+      },
+      {
+        "component": "worker",
+        "platform": "linux/arm64",
+        "target": "os:ubuntu:26.04",
+        "vulnerability_id": "CVE-2026-76642",
+        "package": "libsmartcols1",
+        "installed_version": "2.42.4-0artex1",
+        "severity": "MEDIUM",
+        "fixed_version": null,
+        "status": "affected",
+        "reference": "https://avd.aquasec.com/nvd/cve-2026-76642"
+      },
+      {
+        "component": "worker",
+        "platform": "linux/arm64",
+        "target": "os:ubuntu:26.04",
+        "vulnerability_id": "CVE-2026-78408",
+        "package": "libsmartcols1",
+        "installed_version": "2.42.4-0artex1",
+        "severity": "MEDIUM",
+        "fixed_version": null,
+        "status": "affected",
+        "reference": "https://avd.aquasec.com/nvd/cve-2026-78408"
+      },
+      {
+        "component": "worker",
+        "platform": "linux/arm64",
+        "target": "os:ubuntu:26.04",
+        "vulnerability_id": "CVE-2026-78410",
+        "package": "libsmartcols1",
+        "installed_version": "2.42.4-0artex1",
+        "severity": "MEDIUM",
+        "fixed_version": null,
+        "status": "affected",
+        "reference": "https://avd.aquasec.com/nvd/cve-2026-78410"
+      },
+      {
+        "component": "worker",
+        "platform": "linux/arm64",
+        "target": "os:ubuntu:26.04",
+        "vulnerability_id": "CVE-2026-76642",
+        "package": "libuuid1",
+        "installed_version": "2.42.4-0artex1",
+        "severity": "MEDIUM",
+        "fixed_version": null,
+        "status": "affected",
+        "reference": "https://avd.aquasec.com/nvd/cve-2026-76642"
+      },
+      {
+        "component": "worker",
+        "platform": "linux/arm64",
+        "target": "os:ubuntu:26.04",
+        "vulnerability_id": "CVE-2026-78408",
+        "package": "libuuid1",
+        "installed_version": "2.42.4-0artex1",
+        "severity": "MEDIUM",
+        "fixed_version": null,
+        "status": "affected",
+        "reference": "https://avd.aquasec.com/nvd/cve-2026-78408"
+      },
+      {
+        "component": "worker",
+        "platform": "linux/arm64",
+        "target": "os:ubuntu:26.04",
+        "vulnerability_id": "CVE-2026-78410",
+        "package": "libuuid1",
+        "installed_version": "2.42.4-0artex1",
+        "severity": "MEDIUM",
+        "fixed_version": null,
+        "status": "affected",
+        "reference": "https://avd.aquasec.com/nvd/cve-2026-78410"
+      },
+      {
+        "component": "worker",
+        "platform": "linux/arm64",
+        "target": "os:ubuntu:26.04",
+        "vulnerability_id": "CVE-2026-76642",
+        "package": "login",
+        "installed_version": "1:4.16.0-2+really2.42.4-0artex1",
+        "severity": "MEDIUM",
+        "fixed_version": null,
+        "status": "affected",
+        "reference": "https://avd.aquasec.com/nvd/cve-2026-76642"
+      },
+      {
+        "component": "worker",
+        "platform": "linux/arm64",
+        "target": "os:ubuntu:26.04",
+        "vulnerability_id": "CVE-2026-78408",
+        "package": "login",
+        "installed_version": "1:4.16.0-2+really2.42.4-0artex1",
+        "severity": "MEDIUM",
+        "fixed_version": null,
+        "status": "affected",
+        "reference": "https://avd.aquasec.com/nvd/cve-2026-78408"
+      },
+      {
+        "component": "worker",
+        "platform": "linux/arm64",
+        "target": "os:ubuntu:26.04",
+        "vulnerability_id": "CVE-2026-78410",
+        "package": "login",
+        "installed_version": "1:4.16.0-2+really2.42.4-0artex1",
+        "severity": "MEDIUM",
+        "fixed_version": null,
+        "status": "affected",
+        "reference": "https://avd.aquasec.com/nvd/cve-2026-78410"
+      },
+      {
+        "component": "worker",
+        "platform": "linux/arm64",
+        "target": "os:ubuntu:26.04",
+        "vulnerability_id": "CVE-2026-76642",
+        "package": "mount",
+        "installed_version": "2.42.4-0artex1",
+        "severity": "MEDIUM",
+        "fixed_version": null,
+        "status": "affected",
+        "reference": "https://avd.aquasec.com/nvd/cve-2026-76642"
+      },
+      {
+        "component": "worker",
+        "platform": "linux/arm64",
+        "target": "os:ubuntu:26.04",
+        "vulnerability_id": "CVE-2026-78408",
+        "package": "mount",
+        "installed_version": "2.42.4-0artex1",
+        "severity": "MEDIUM",
+        "fixed_version": null,
+        "status": "affected",
+        "reference": "https://avd.aquasec.com/nvd/cve-2026-78408"
+      },
+      {
+        "component": "worker",
+        "platform": "linux/arm64",
+        "target": "os:ubuntu:26.04",
+        "vulnerability_id": "CVE-2026-78410",
+        "package": "mount",
+        "installed_version": "2.42.4-0artex1",
+        "severity": "MEDIUM",
+        "fixed_version": null,
+        "status": "affected",
+        "reference": "https://avd.aquasec.com/nvd/cve-2026-78410"
+      },
+      {
+        "component": "worker",
+        "platform": "linux/arm64",
+        "target": "os:ubuntu:26.04",
+        "vulnerability_id": "CVE-2026-76642",
+        "package": "util-linux",
+        "installed_version": "2.42.4-0artex1",
+        "severity": "MEDIUM",
+        "fixed_version": null,
+        "status": "affected",
+        "reference": "https://avd.aquasec.com/nvd/cve-2026-76642"
+      },
+      {
+        "component": "worker",
+        "platform": "linux/arm64",
+        "target": "os:ubuntu:26.04",
+        "vulnerability_id": "CVE-2026-78408",
+        "package": "util-linux",
+        "installed_version": "2.42.4-0artex1",
+        "severity": "MEDIUM",
+        "fixed_version": null,
+        "status": "affected",
+        "reference": "https://avd.aquasec.com/nvd/cve-2026-78408"
+      },
+      {
+        "component": "worker",
+        "platform": "linux/arm64",
+        "target": "os:ubuntu:26.04",
+        "vulnerability_id": "CVE-2026-78410",
+        "package": "util-linux",
+        "installed_version": "2.42.4-0artex1",
+        "severity": "MEDIUM",
+        "fixed_version": null,
+        "status": "affected",
+        "reference": "https://avd.aquasec.com/nvd/cve-2026-78410"
+      }
+    ],
+    "CVE-2025-9403_fix_claimed": false,
+    "review_expiry_unchanged": "2026-12-19T12:00:00Z",
+    "interpretation": "The Ubuntu feed still reports all94records against honest custom package versions. Source fixes for8CVEs cover34Medium source-package attributions. Other60records retain their separate reviewed risk status; not all scanner records are confirmed exploitable vulnerabilities."
+  },
+  "colima_logging_restart": {
+    "passed": true,
+    "observed_at": "2026-11-19T16:24:46.160294+00:00",
+    "scope": "Actual dedicated Colima VM stop/start after profile logging persistence; new unmodified-default container",
+    "docker_context": "colima-artex-test",
+    "log_config": {
+      "Type": "local",
+      "Config": {
+        "compress": "true",
+        "max-file": "3",
+        "max-size": "10m"
+      }
+    },
+    "services": {
+      "docker": "active",
+      "systemd-journald": "active"
+    },
+    "vm_disk_gib": 32,
+    "vm_memory_gib": 4,
+    "vm_cpus": 2,
+    "volume_deletion_performed": false,
+    "preexisting_volume_inventory_after_restart": {
+      "count": 4,
+      "all_created_before_restart": true,
+      "byte_integrity_audited": false
+    }
+  },
+  "hosted_native_validation": {
+    "status": "passed",
+    "source_commit": "a99aee434daae69da284f5546b1d9a2a748f8899",
+    "run_url": "https://github.com/jaysonguglietta/artexV2/actions/runs/44568621346",
+    "go_run_url": "https://github.com/jaysonguglietta/artexV2/actions/runs/44568621094",
+    "artifact_retention_days": 30,
+    "image_bindings": "Tools/isolation reports match the same-job scanned worker and broker image IDs and rootfs diffIDs exactly. Source hashes verified against the named Git commit.",
+    "platforms": [
+      {
+        "platform": "linux/amd64",
+        "tool_report_sha256": "a4e61cc520966670b6a1b53a7ee7b985e4454c863489c481e64b5422b4a44a8d",
+        "isolation_report_sha256": "3e298e2b55beb3f47f81977e3224c2d7bbe99aa0be205f9fd4a64a5b9a164326",
+        "tools": {
+          "schema_version": 1,
+          "image_id": "sha256:36fbf6afbbfc237e9f7a8411c23c1ed6d475c50c9e045e9369c3382acc4e3932",
+          "platform": "linux/amd64",
+          "rootfs_diff_ids": [
+            "sha256:2a89eb4dbc78f8fe790775a4e807e1355ba2f6b145c8dd7a267a782df1605124",
+            "sha256:758b22fe15be2c330dcead0c1b50476c074e113ec507627c6430337ffc9daa5e",
+            "sha256:e9aae5abb6f4477eb40c4f40b6c14ec6ef22f793e59e293282da5d60c54508c0",
+            "sha256:825cdd508a06c90fc3ac1caf82ee662e6b63c2a6b0c26dd6e10ac176b8ab240b",
+            "sha256:c295f043a4e7330bbf20f109fd86c1e6ae7ab2d4cf9dd30dfe4a9efb0f409570",
+            "sha256:818cc006a1eee2fc40d0d61d979714ed64dfd32cefa60d04747b3392943f52b8",
+            "sha256:9efda3b3209ed15d8f72b661eed5f3a45866786a590b16414291722500753f5a",
+            "sha256:3111f039d97f48e3918e53d764521a2da9c0de8cd1729039d2b70fa971504242",
+            "sha256:bc388f99a0fbebd993643506a5d859c5da6916414f66fc6a1f5795365260affd",
+            "sha256:1e7db79df11d855030b348fb41df1ffb3cf3c853013da123f02d2e11e86cc0b7",
+            "sha256:053dc9031583d6a9e217c165d8486de2e04c85bd7402b3d83fb27b807bcd2187",
+            "sha256:631faf73477ff38b3ca8a3a500c4dc169721f0b49f1a3b8525d6cd1d6cd13c46",
+            "sha256:b7e712643482f8de479aed18f94eaa8e2b5e2da62b320cc1a11486e9efd961e2",
+            "sha256:a599f6524d72ad70b356bfee397c4dbf98131794382c060f56594a3c391ef24f",
+            "sha256:5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef",
+            "sha256:4e2d8577ab2dd795d21ae2482c1d84078e2c12717dcce982c439f8563b8293a4",
+            "sha256:c1cf5fdb29db0fb0443e26a5cddc9e5631239b81cd469bbb51c998d58ed60aa2",
+            "sha256:57220eb0524747da74926c628b47e95982fa251c12e578810aadaab46516f349",
+            "sha256:b6b89a8935a78aebb7f3a36ee29b3e161a2d823b32ce2b317a779c55051c40f9",
+            "sha256:3598d1a97852ffc516035e29bb13cb95d56941c54e3de39bad7205a45818f83d",
+            "sha256:50e10cdf6aa04656ae3efe38321a9ce13947f6a377541fb63c21ad884c78042d",
+            "sha256:c806437859447f8d391bfc501e1d1686ac8b3b441bc37dee394ff36f4c54b369",
+            "sha256:b1b937bf40ca3667b92fe22dc346b1f2797ed444b3fcf0f3aae2ebf814ac0023"
+          ],
+          "source_sha256": {
+            "scripts/test-worker-tools.py": "5ab82e57f8654a92db9f56d090aa73fd6397026a9c392ace8c1dfe0934fc5aaf",
+            "tools/jq/test-behavior.py": "74765423941c66fd68951168b3d95b2a66f021c4b09ccbc65534a94edc8aa345",
+            "tools/util-linux/test-behavior.py": "30c15d5bb97cad62c6b4706ced2debc9ac1bddfa6b9e4f6b7bba389215c2f5ac"
+          },
+          "passed": true,
+          "checks": [
+            "patched Python and native modules",
+            "ordinary Python venv includes patched pip",
+            "explicit npm dependency patch",
+            "assessment tools retained",
+            "jq upstream security and scanning compatibility regressions",
+            "util-linux package integrity and confined assessment behavior",
+            "unused service, virtual display and old Python removed",
+            "real bundled Chromium renders, interacts and captures a PNG"
+          ]
+        },
+        "isolation": {
+          "schema_version": 3,
+          "passed": true,
+          "images": {
+            "worker": {
+              "image_id": "sha256:36fbf6afbbfc237e9f7a8411c23c1ed6d475c50c9e045e9369c3382acc4e3932",
+              "platform": "linux/amd64",
+              "rootfs_diff_ids": [
+                "sha256:2a89eb4dbc78f8fe790775a4e807e1355ba2f6b145c8dd7a267a782df1605124",
+                "sha256:758b22fe15be2c330dcead0c1b50476c074e113ec507627c6430337ffc9daa5e",
+                "sha256:e9aae5abb6f4477eb40c4f40b6c14ec6ef22f793e59e293282da5d60c54508c0",
+                "sha256:825cdd508a06c90fc3ac1caf82ee662e6b63c2a6b0c26dd6e10ac176b8ab240b",
+                "sha256:c295f043a4e7330bbf20f109fd86c1e6ae7ab2d4cf9dd30dfe4a9efb0f409570",
+                "sha256:818cc006a1eee2fc40d0d61d979714ed64dfd32cefa60d04747b3392943f52b8",
+                "sha256:9efda3b3209ed15d8f72b661eed5f3a45866786a590b16414291722500753f5a",
+                "sha256:3111f039d97f48e3918e53d764521a2da9c0de8cd1729039d2b70fa971504242",
+                "sha256:bc388f99a0fbebd993643506a5d859c5da6916414f66fc6a1f5795365260affd",
+                "sha256:1e7db79df11d855030b348fb41df1ffb3cf3c853013da123f02d2e11e86cc0b7",
+                "sha256:053dc9031583d6a9e217c165d8486de2e04c85bd7402b3d83fb27b807bcd2187",
+                "sha256:631faf73477ff38b3ca8a3a500c4dc169721f0b49f1a3b8525d6cd1d6cd13c46",
+                "sha256:b7e712643482f8de479aed18f94eaa8e2b5e2da62b320cc1a11486e9efd961e2",
+                "sha256:a599f6524d72ad70b356bfee397c4dbf98131794382c060f56594a3c391ef24f",
+                "sha256:5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef",
+                "sha256:4e2d8577ab2dd795d21ae2482c1d84078e2c12717dcce982c439f8563b8293a4",
+                "sha256:c1cf5fdb29db0fb0443e26a5cddc9e5631239b81cd469bbb51c998d58ed60aa2",
+                "sha256:57220eb0524747da74926c628b47e95982fa251c12e578810aadaab46516f349",
+                "sha256:b6b89a8935a78aebb7f3a36ee29b3e161a2d823b32ce2b317a779c55051c40f9",
+                "sha256:3598d1a97852ffc516035e29bb13cb95d56941c54e3de39bad7205a45818f83d",
+                "sha256:50e10cdf6aa04656ae3efe38321a9ce13947f6a377541fb63c21ad884c78042d",
+                "sha256:c806437859447f8d391bfc501e1d1686ac8b3b441bc37dee394ff36f4c54b369",
+                "sha256:b1b937bf40ca3667b92fe22dc346b1f2797ed444b3fcf0f3aae2ebf814ac0023"
+              ]
+            },
+            "broker": {
+              "image_id": "sha256:7658e8a12188b24f5218da59b5845a5150d313d6ff6a8ab8e4d127b888ce3610",
+              "platform": "linux/amd64",
+              "rootfs_diff_ids": [
+                "sha256:75f1d9657d880da5f75298e8f40e9928bb6e260c50d26f97af196845307e3064",
+                "sha256:6a12a625a7e7cd13974606070c0807883ba2a792c937218e568b21e199736786",
+                "sha256:5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef",
+                "sha256:9d020298e31a4b5ff6a9df636fd4e7580979c5bbd82b0752d32cb3cfdaeef0c4",
+                "sha256:81c5f7d78f962e34738b71e07d54e3bc837f3a58a7f7363ec92bd8c0f1ee5405",
+                "sha256:61d2614b6f42d2c6ae3b1c43803571b15a03b37fd935c6c8f1416853c7c98375",
+                "sha256:721c4f60c954a6a1e1c9997c46d1595c977ad9285e3055aad8276b25b16cd17e",
+                "sha256:21d60c4795fce597570bc3a66269c0ea5630d8ef5cfbe53b538c1ec803af8411",
+                "sha256:daf62fdd5beb8dacf2125141a68ffe626d736ebe1049a14b5540ce542e4dfb9b",
+                "sha256:7cd7f5443b1f634ce5a4acb79149c65d27cd1523add082140aa03fc187613b20",
+                "sha256:2f7df626e714a3572f4df5bcaeaf7b159b56d2d0a13e3c4a1ccf4057494fe990",
+                "sha256:9e5053805a56b66027e87803acd0de8e4026732ffa6bdd17a1b085cd24838a97"
+              ]
+            }
+          },
+          "elapsed_seconds": 111.99,
+          "checks": [
+            {
+              "check": "Unauthenticated broker access rejected",
+              "passed": true
+            },
+            {
+              "check": "Missing task target policy rejected",
+              "passed": true
+            },
+            {
+              "check": "Normal RPC requires trusted run identity",
+              "passed": true
+            },
+            {
+              "check": "Close control rejects executable request fields",
+              "passed": true
+            },
+            {
+              "check": "Lease cannot create a worker",
+              "passed": true
+            },
+            {
+              "check": "Tool subprocess has UID10001, all capabilities empty and no-new-privileges",
+              "passed": true
+            },
+            {
+              "check": "API/broker credentials and service environment are absent",
+              "passed": true
+            },
+            {
+              "check": "Worker has no Docker socket or broker secret mount",
+              "passed": true
+            },
+            {
+              "check": "Private worker filesystems execute local CLI artifacts without added privilege",
+              "passed": true
+            },
+            {
+              "check": "Explicit synthetic target is reachable",
+              "passed": true
+            },
+            {
+              "check": "Unprivileged Nmap scanning discovers the approved synthetic target port",
+              "passed": true
+            },
+            {
+              "check": "Denied-address positive control reaches the same target",
+              "passed": true
+            },
+            {
+              "check": "Adjacent unapproved synthetic address is denied",
+              "passed": true
+            },
+            {
+              "check": "Docker host gateway is denied",
+              "passed": true
+            },
+            {
+              "check": "Worker cannot weaken its firewall",
+              "passed": true
+            },
+            {
+              "check": "Worker cannot renew the privileged watchdog",
+              "passed": true
+            },
+            {
+              "check": "Worker cannot signal the root watchdog",
+              "passed": true
+            },
+            {
+              "check": "Same-task sibling has a different private filesystem",
+              "passed": true
+            },
+            {
+              "check": "Different task filesystem is isolated",
+              "passed": true
+            },
+            {
+              "check": "Same run retains its own workspace",
+              "passed": true
+            },
+            {
+              "check": "Other-task cleanup succeeds",
+              "passed": true
+            },
+            {
+              "check": "closed-run: detached double-fork positive control",
+              "passed": true
+            },
+            {
+              "check": "surviving-sibling: detached double-fork positive control",
+              "passed": true
+            },
+            {
+              "check": "Actual Docker exec RPC client has UID10001 and all capability sets empty",
+              "passed": true
+            },
+            {
+              "check": "PID1 watchdog is root with all capability sets empty",
+              "passed": true
+            },
+            {
+              "check": "Lease works while foreground scan holds execution gate",
+              "passed": true
+            },
+            {
+              "check": "Urgent close bypasses foreground execution gate",
+              "passed": true,
+              "detail": "{'status': 200, 'elapsed_seconds': 0.121, 'response': {'snapshot_complete': False, 'result': {'Content': None, 'IsError': False, 'Extra': None}}}"
+            },
+            {
+              "check": "Urgent close cancels the active foreground request",
+              "passed": true
+            },
+            {
+              "check": "Closed run cannot be replayed",
+              "passed": true
+            },
+            {
+              "check": "Lease cannot resurrect a closed run",
+              "passed": true
+            },
+            {
+              "check": "Close stops unmanaged setsid/double-fork network descendants",
+              "passed": true
+            },
+            {
+              "check": "Closing one run preserves the sibling scan",
+              "passed": true
+            },
+            {
+              "check": "orphan: detached double-fork positive control",
+              "passed": true
+            },
+            {
+              "check": "Unrenewed orphan container exits within the bounded watchdog lease",
+              "passed": true,
+              "detail": "observed 89.6s after initial RPC"
+            },
+            {
+              "check": "Watchdog exit stops orphan double-fork network descendants",
+              "passed": true
+            },
+            {
+              "check": "Renewed idle sibling survives the orphan timeout",
+              "passed": true
+            },
+            {
+              "check": "Expired orphan can be explicitly retired",
+              "passed": true
+            },
+            {
+              "check": "Surviving sibling cleanup succeeds",
+              "passed": true
+            },
+            {
+              "check": "Real tmpfs snapshots preserve and merge all sibling artifacts",
+              "passed": true
+            },
+            {
+              "check": "All snapshot siblings are paused",
+              "passed": true
+            },
+            {
+              "check": "Preservation failure can resume all paused siblings",
+              "passed": true
+            },
+            {
+              "check": "Task retirement removes every sibling container",
+              "passed": true
+            },
+            {
+              "check": "Conflicting sibling artifacts explicitly refuse preservation",
+              "passed": true
+            },
+            {
+              "check": "Failed sibling snapshot resumes both runtimes",
+              "passed": true
+            },
+            {
+              "check": "Conflicting task can be explicitly discarded",
+              "passed": true
+            },
+            {
+              "check": "Oversized tmpfs preservation fails explicitly",
+              "passed": true
+            },
+            {
+              "check": "Oversized task can be explicitly discarded",
+              "passed": true
+            },
+            {
+              "check": "Crash fixture leaves an orphan for startup cleanup",
+              "passed": true
+            },
+            {
+              "check": "Broker restart reaps its owner-labeled orphan",
+              "passed": true
+            },
+            {
+              "check": "Persistent ledger rejects a previously active identity after crash",
+              "passed": true
+            },
+            {
+              "check": "Persistent ledger retains already-closed tombstones after crash",
+              "passed": true
+            },
+            {
+              "check": "Fresh identity works without stale workspace after restart",
+              "passed": true
+            },
+            {
+              "check": "Fresh replacement cleanup succeeds",
+              "passed": true
+            },
+            {
+              "check": "All fixture containers, aliases, network and state volume removed",
+              "passed": true,
+              "detail": ""
+            }
+          ]
+        }
+      },
+      {
+        "platform": "linux/arm64",
+        "tool_report_sha256": "6bbc95ea056fa7a3d1c1f7967d35e114b69c88fb01e5d41e1946974c13963a75",
+        "isolation_report_sha256": "227f83fa7d6aea98a4910b7dfe6fdf6828573a067a1f546e39ae366b9088623f",
+        "tools": {
+          "schema_version": 1,
+          "image_id": "sha256:79b72bf8550cccf1f34b474ef13733f1230234a03c7f204b4031e663cee71f96",
+          "platform": "linux/arm64",
+          "rootfs_diff_ids": [
+            "sha256:82881da986b65e966fc8e5b188d6f77319708e9dd562cf737320bb977a0cf69c",
+            "sha256:60777d6993de0b528f7aeb99530a1e67283666bc5224b46a8df4bcb2f9703512",
+            "sha256:8377dae4d1fb0b76fb8ef9480df0089ca5454a2d430085a6b8b25c6834728a82",
+            "sha256:57102bdbc016032dcbc33c59f89e114203c948956e3981dc4999556128e7068c",
+            "sha256:3fc7c428b5d56af6aaf0a5cddd2e2fe01cb1251f5609ec72eef4418b1612f4da",
+            "sha256:b492ca996a6ed2661282bc224d99619105882861bf9c4f6618ce7e45cc7b045a",
+            "sha256:fff3ffc5bc9678df9109b4824f2fa62d5d8ab84cc07e9d837bb4221b2bc794b4",
+            "sha256:1ffb882bae0396e5de8347aa870c38dd90996529dfb7c9a8915420364edb7d10",
+            "sha256:31ec1d120be7c8d4da513b39325a68158bc6a31671b18e8c18c9cef08caa15d8",
+            "sha256:808e8d535c3bad6107fb07804a29470047196bc8a7172405ddf2c10e1274f5f6",
+            "sha256:6d0a13b316fd014220a1a22823f073eafaa27c9ae89add72e4b02f06c7312823",
+            "sha256:71e4554a5a1809d687c3ed09b979ceee64a8d949bd48b35ff8ee8003702f60e4",
+            "sha256:9afc9d59ce0c159c7eec78120e9963614c9c7210aec4f132ead3dca7117b0f6e",
+            "sha256:b1ca88608e208c58369648e66efe7dc62a717da7b04c731354a4ad4208cbd888",
+            "sha256:5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef",
+            "sha256:6c31e3b40279111fb7954bfae57e4468480c9a35f0d070087795bddee7839a71",
+            "sha256:c05dbb98ba1bdfaf25861fe9788bb53dd7279abf69a310a5c184c5a783ef124e",
+            "sha256:2584bef4bede3545bb44aaad21331344e211aa03834116e8a2805946ea5659ac",
+            "sha256:7e7e605c7bd5166eeb46e8f5198c526fa5caf5925644966bb72aec3efc04b35f",
+            "sha256:4465c3a51bf8ae3f4a3cd500e49fbd28b3efbe8a5dad61b59e6e15c0839dbfac",
+            "sha256:fd049cee148376b6ad88923f00b221c9cb93271ce443dc72195e1008027108f6",
+            "sha256:9d9ed594c6e9c6939cdfe8901464538c8add588528b7facb7559b8e11652c0e4",
+            "sha256:d212ad5fbf88739084971b9b916d2f35a27a843e910a7ca226d683676f5cb13b"
+          ],
+          "source_sha256": {
+            "scripts/test-worker-tools.py": "5ab82e57f8654a92db9f56d090aa73fd6397026a9c392ace8c1dfe0934fc5aaf",
+            "tools/jq/test-behavior.py": "74765423941c66fd68951168b3d95b2a66f021c4b09ccbc65534a94edc8aa345",
+            "tools/util-linux/test-behavior.py": "30c15d5bb97cad62c6b4706ced2debc9ac1bddfa6b9e4f6b7bba389215c2f5ac"
+          },
+          "passed": true,
+          "checks": [
+            "patched Python and native modules",
+            "ordinary Python venv includes patched pip",
+            "explicit npm dependency patch",
+            "assessment tools retained",
+            "jq upstream security and scanning compatibility regressions",
+            "util-linux package integrity and confined assessment behavior",
+            "unused service, virtual display and old Python removed",
+            "real bundled Chromium renders, interacts and captures a PNG"
+          ]
+        },
+        "isolation": {
+          "schema_version": 3,
+          "passed": true,
+          "images": {
+            "worker": {
+              "image_id": "sha256:79b72bf8550cccf1f34b474ef13733f1230234a03c7f204b4031e663cee71f96",
+              "platform": "linux/arm64",
+              "rootfs_diff_ids": [
+                "sha256:82881da986b65e966fc8e5b188d6f77319708e9dd562cf737320bb977a0cf69c",
+                "sha256:60777d6993de0b528f7aeb99530a1e67283666bc5224b46a8df4bcb2f9703512",
+                "sha256:8377dae4d1fb0b76fb8ef9480df0089ca5454a2d430085a6b8b25c6834728a82",
+                "sha256:57102bdbc016032dcbc33c59f89e114203c948956e3981dc4999556128e7068c",
+                "sha256:3fc7c428b5d56af6aaf0a5cddd2e2fe01cb1251f5609ec72eef4418b1612f4da",
+                "sha256:b492ca996a6ed2661282bc224d99619105882861bf9c4f6618ce7e45cc7b045a",
+                "sha256:fff3ffc5bc9678df9109b4824f2fa62d5d8ab84cc07e9d837bb4221b2bc794b4",
+                "sha256:1ffb882bae0396e5de8347aa870c38dd90996529dfb7c9a8915420364edb7d10",
+                "sha256:31ec1d120be7c8d4da513b39325a68158bc6a31671b18e8c18c9cef08caa15d8",
+                "sha256:808e8d535c3bad6107fb07804a29470047196bc8a7172405ddf2c10e1274f5f6",
+                "sha256:6d0a13b316fd014220a1a22823f073eafaa27c9ae89add72e4b02f06c7312823",
+                "sha256:71e4554a5a1809d687c3ed09b979ceee64a8d949bd48b35ff8ee8003702f60e4",
+                "sha256:9afc9d59ce0c159c7eec78120e9963614c9c7210aec4f132ead3dca7117b0f6e",
+                "sha256:b1ca88608e208c58369648e66efe7dc62a717da7b04c731354a4ad4208cbd888",
+                "sha256:5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef",
+                "sha256:6c31e3b40279111fb7954bfae57e4468480c9a35f0d070087795bddee7839a71",
+                "sha256:c05dbb98ba1bdfaf25861fe9788bb53dd7279abf69a310a5c184c5a783ef124e",
+                "sha256:2584bef4bede3545bb44aaad21331344e211aa03834116e8a2805946ea5659ac",
+                "sha256:7e7e605c7bd5166eeb46e8f5198c526fa5caf5925644966bb72aec3efc04b35f",
+                "sha256:4465c3a51bf8ae3f4a3cd500e49fbd28b3efbe8a5dad61b59e6e15c0839dbfac",
+                "sha256:fd049cee148376b6ad88923f00b221c9cb93271ce443dc72195e1008027108f6",
+                "sha256:9d9ed594c6e9c6939cdfe8901464538c8add588528b7facb7559b8e11652c0e4",
+                "sha256:d212ad5fbf88739084971b9b916d2f35a27a843e910a7ca226d683676f5cb13b"
+              ]
+            },
+            "broker": {
+              "image_id": "sha256:982e19f22652650b3538eea4ab919ccf04f3d7ccec730a0e7334ece067138e7a",
+              "platform": "linux/arm64",
+              "rootfs_diff_ids": [
+                "sha256:3d971ddbca237031066ab6609a11ae2e9e5b109da24d5c5d94d2e584dd94bd54",
+                "sha256:b9a36a4083a9bb4263821f18c52013d0e7470d3e85d8a61f65b5f785120f8d53",
+                "sha256:5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef",
+                "sha256:754d66f37c9f8cc801dcdfeb6e7450dc159d7ca03f104d260a7055c060a1ab9b",
+                "sha256:ac2546db01c8d91ebf189e62d320fafc5b609354284649a0522d4c6926990c93",
+                "sha256:51dbebb0514ea73ef37773d8c644d5b655af5389991e8e4a7bb1aaccbb042f1a",
+                "sha256:a004df1183d5298371e75eaf4046e2e4b1816193bbd585be3613f58a4769e946",
+                "sha256:5d88c12f6c903396c6d28feeea1746093c80d9075b68753866d521048c759d3b",
+                "sha256:62bf9a9186f15dec46e89384ac5ca9720d669750de54c55db8c2c6b781f093ac",
+                "sha256:27ae3998e811feaff6a81006a4002b120b9ae5ea55ce4e88e80aaf45563f41ea",
+                "sha256:836ed573209f4a6887999c798155bd11fe4591f74578a0d13fe00c5232f6d58f",
+                "sha256:a8989c37832eb33a2f017eee307b180f3c090cecd8fcbc0a1255e1e188bd91e2"
+              ]
+            }
+          },
+          "elapsed_seconds": 107.44,
+          "checks": [
+            {
+              "check": "Unauthenticated broker access rejected",
+              "passed": true
+            },
+            {
+              "check": "Missing task target policy rejected",
+              "passed": true
+            },
+            {
+              "check": "Normal RPC requires trusted run identity",
+              "passed": true
+            },
+            {
+              "check": "Close control rejects executable request fields",
+              "passed": true
+            },
+            {
+              "check": "Lease cannot create a worker",
+              "passed": true
+            },
+            {
+              "check": "Tool subprocess has UID10001, all capabilities empty and no-new-privileges",
+              "passed": true
+            },
+            {
+              "check": "API/broker credentials and service environment are absent",
+              "passed": true
+            },
+            {
+              "check": "Worker has no Docker socket or broker secret mount",
+              "passed": true
+            },
+            {
+              "check": "Private worker filesystems execute local CLI artifacts without added privilege",
+              "passed": true
+            },
+            {
+              "check": "Explicit synthetic target is reachable",
+              "passed": true
+            },
+            {
+              "check": "Unprivileged Nmap scanning discovers the approved synthetic target port",
+              "passed": true
+            },
+            {
+              "check": "Denied-address positive control reaches the same target",
+              "passed": true
+            },
+            {
+              "check": "Adjacent unapproved synthetic address is denied",
+              "passed": true
+            },
+            {
+              "check": "Docker host gateway is denied",
+              "passed": true
+            },
+            {
+              "check": "Worker cannot weaken its firewall",
+              "passed": true
+            },
+            {
+              "check": "Worker cannot renew the privileged watchdog",
+              "passed": true
+            },
+            {
+              "check": "Worker cannot signal the root watchdog",
+              "passed": true
+            },
+            {
+              "check": "Same-task sibling has a different private filesystem",
+              "passed": true
+            },
+            {
+              "check": "Different task filesystem is isolated",
+              "passed": true
+            },
+            {
+              "check": "Same run retains its own workspace",
+              "passed": true
+            },
+            {
+              "check": "Other-task cleanup succeeds",
+              "passed": true
+            },
+            {
+              "check": "closed-run: detached double-fork positive control",
+              "passed": true
+            },
+            {
+              "check": "surviving-sibling: detached double-fork positive control",
+              "passed": true
+            },
+            {
+              "check": "Actual Docker exec RPC client has UID10001 and all capability sets empty",
+              "passed": true
+            },
+            {
+              "check": "PID1 watchdog is root with all capability sets empty",
+              "passed": true
+            },
+            {
+              "check": "Lease works while foreground scan holds execution gate",
+              "passed": true
+            },
+            {
+              "check": "Urgent close bypasses foreground execution gate",
+              "passed": true,
+              "detail": "{'status': 200, 'elapsed_seconds': 0.105, 'response': {'snapshot_complete': False, 'result': {'Content': None, 'IsError': False, 'Extra': None}}}"
+            },
+            {
+              "check": "Urgent close cancels the active foreground request",
+              "passed": true
+            },
+            {
+              "check": "Closed run cannot be replayed",
+              "passed": true
+            },
+            {
+              "check": "Lease cannot resurrect a closed run",
+              "passed": true
+            },
+            {
+              "check": "Close stops unmanaged setsid/double-fork network descendants",
+              "passed": true
+            },
+            {
+              "check": "Closing one run preserves the sibling scan",
+              "passed": true
+            },
+            {
+              "check": "orphan: detached double-fork positive control",
+              "passed": true
+            },
+            {
+              "check": "Unrenewed orphan container exits within the bounded watchdog lease",
+              "passed": true,
+              "detail": "observed 90.2s after initial RPC"
+            },
+            {
+              "check": "Watchdog exit stops orphan double-fork network descendants",
+              "passed": true
+            },
+            {
+              "check": "Renewed idle sibling survives the orphan timeout",
+              "passed": true
+            },
+            {
+              "check": "Expired orphan can be explicitly retired",
+              "passed": true
+            },
+            {
+              "check": "Surviving sibling cleanup succeeds",
+              "passed": true
+            },
+            {
+              "check": "Real tmpfs snapshots preserve and merge all sibling artifacts",
+              "passed": true
+            },
+            {
+              "check": "All snapshot siblings are paused",
+              "passed": true
+            },
+            {
+              "check": "Preservation failure can resume all paused siblings",
+              "passed": true
+            },
+            {
+              "check": "Task retirement removes every sibling container",
+              "passed": true
+            },
+            {
+              "check": "Conflicting sibling artifacts explicitly refuse preservation",
+              "passed": true
+            },
+            {
+              "check": "Failed sibling snapshot resumes both runtimes",
+              "passed": true
+            },
+            {
+              "check": "Conflicting task can be explicitly discarded",
+              "passed": true
+            },
+            {
+              "check": "Oversized tmpfs preservation fails explicitly",
+              "passed": true
+            },
+            {
+              "check": "Oversized task can be explicitly discarded",
+              "passed": true
+            },
+            {
+              "check": "Crash fixture leaves an orphan for startup cleanup",
+              "passed": true
+            },
+            {
+              "check": "Broker restart reaps its owner-labeled orphan",
+              "passed": true
+            },
+            {
+              "check": "Persistent ledger rejects a previously active identity after crash",
+              "passed": true
+            },
+            {
+              "check": "Persistent ledger retains already-closed tombstones after crash",
+              "passed": true
+            },
+            {
+              "check": "Fresh identity works without stale workspace after restart",
+              "passed": true
+            },
+            {
+              "check": "Fresh replacement cleanup succeeds",
+              "passed": true
+            },
+            {
+              "check": "All fixture containers, aliases, network and state volume removed",
+              "passed": true,
+              "detail": ""
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "limitations": [
+    "Exported symbol names/SONAME checks do not prove every ABI semantic.",
+    "Compiled mount/nsenter regressions simulate privileged kernel boundaries; live isolation checks verify actual confinement separately.",
+    "The upstream selected suite retains permission and unsupported-kernel-feature skips.",
+    "A strict zero-active gate still blocks the94rawUbuntu records; reviewed mode is an expiring operator risk decision."
+  ]
+}

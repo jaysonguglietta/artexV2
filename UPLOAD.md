@@ -12,11 +12,14 @@ rehearsal, then reached main through a fast-forward. The final post-edit source
 snapshot/credential scan remains separate in [validation](docs/VALIDATION.md).
 No version tag, formal release, package or enabling variable was created.
 
-The jq/util-linux remediation authorized after the `3062e9c…` baseline is in
-progress. Its fresh builds, native scans, worker regressions and source/archive
-verification must complete before a new upload copy is labeled validated. Older
-85 Medium/9 Low and `375b2c3…` results are historical. See
-[worker security packages](docs/WORKER-SECURITY-PATCHES.md).
+The jq/util-linux remediation passed all eight native reviewed-image gates,
+eight tool groups and 54 worker checks on each architecture, all six Go jobs and
+documentation at `a99aee434daae69da284f5546b1d9a2a748f8899`. Fresh raw inventory
+still reports 85 Medium/9 Low per worker; source evidence distinguishes 34
+source-remediated Medium records from the other 60 individually reviewed records.
+Final documentation descendants require their own CI and final source/archive
+receipt before a new upload copy is labeled validated. No final-main publication
+is claimed here. See [worker security packages](docs/WORKER-SECURITY-PATCHES.md).
 
 The prepared source copy excludes Git history, installed dependencies, compiled
 binaries, local configuration, private keys, database state and runtime captures.

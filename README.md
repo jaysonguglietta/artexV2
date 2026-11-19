@@ -145,13 +145,20 @@ Use a dedicated assessment VM and retain the AGPL license and upstream attributi
 
 ### jq and util-linux follow-up
 
-The operator authorized actual jq upgrading and a reviewed util-linux security upgrade
-against the `3062e9c…` publication baseline. New package builds, both native
-architecture scans and isolation/scanning regressions are **pending**. Earlier
-`375b2c3…` passes and 85 Medium/9 Low counts remain scoped historical evidence;
-they do not validate this change. A missing Ubuntu `FixedVersion` is not proof
-that no upstream fix exists. See [worker security packages](docs/WORKER-SECURITY-PATCHES.md)
-for honest packaging and the required fresh evidence.
+The authorized upgrade now installs genuine jq **1.8.2** and util-linux **2.42.4**
+native packages. Both native amd64/arm64 workers passed **eight tool groups each**
+(including jq 17, util-linux 17 and real Chromium) and **54 worker boundary checks each**,
+including an approved synthetic-port Nmap scan, root-to-task credential drop,
+zero capabilities, egress, watchdog, cancellation and replay checks.
+Fresh native Trivy inventory on each architecture still reports **85 Medium/9 Low records (49 CVEs)**:
+eight source-fixed CVEs account for 34 Medium package/advisory records; the other
+60 records retain their individual reviewed dispositions. This is not a claim
+that all 94 scanner records are confirmed exploitable vulnerabilities.
+All eight native component gates passed in reviewed mode with zero blocking at
+`a99aee434daae69da284f5546b1d9a2a748f8899`; all six Go jobs and documentation
+also passed. Tool/isolation reports match the scanned images by ID and rootfs.
+Earlier `375b2c3…` results remain historical. See [worker security packages](docs/WORKER-SECURITY-PATCHES.md)
+for package provenance and verified evidence.
 
 ### Release and evidence controls
 
@@ -172,20 +179,21 @@ workflow, protected tag, commit and run. Two active
 [release-tag rulesets](docs/RELEASE-TAG-PROTECTION.md) restrict creation to the
 personal owner and forbid updates/deletions without bypass. Publication also
 requires explicit opt-in and all gates. A main-only rehearsal uses real OIDC
-without publishing. [Earlier native image gates](docs/VALIDATION.md) passed all
-**eight amd64/arm64 components** at `375b2c3…`, with zero blocking and 94 exact
+without publishing. [Current native image gates](docs/VALIDATION.md) passed all
+**eight amd64/arm64 components** at `a99aee4…`, with zero blocking and 94 exact
 expiring reviews per platform. Worker raw findings remain 85 Medium/9 Low each;
 other components report zero. [Evidence](security/image-followup-evidence.json)
-binds every recorded baseline image/config/rootfs and all 16 verified report/SBOM hashes.
-All six hosted Go jobs and documentation passed at the same source, including
-client11/tools6/worker53/Compose17/disk16/migration7/backup22.
-[Runtime evidence](security/postgres-runtime-evidence.json) preserves the downloaded
-checks and source/report hashes. `main` was fast-forwarded to tested `375b2c3…`
-without force. The [real main OIDC rehearsal](https://github.com/jaysonguglietta/artexV2/actions/runs/44542433712)
-also passed at that exact source, including eight tamper/identity negatives.
-Production jobs were skipped; no release variable, tag, package or formal release
-was created. The prepared source is credential-scanned and compared with Git and
-the ZIP by bytes, modes and paths; the companion archive receipt records that result.
+binds all image/config/rootfs identities and 16 verified report/SBOM hashes.
+Both native workers passed eight tool groups and 54 boundary checks, with exact
+scanned-image identity matches. All six hosted Go jobs and documentation passed
+at the same source, including client 11/tools 8/worker 54/Compose 17/disk 16/
+migration 7/backup 22. [Runtime evidence](security/postgres-runtime-evidence.json)
+preserves the six downloaded reports totaling 127 checks and source/report hashes.
+The [earlier main OIDC rehearsal](https://github.com/jaysonguglietta/artexV2/actions/runs/44542433712)
+passed at `375b2c3…`, including eight tamper/identity negatives; it does not attest
+the new source. Later documentation/evidence descendants need their own CI and
+final source/ZIP receipt. No final-main publication, production release variable,
+version tag, package or formal release is claimed here.
 
 [Evidence storage](docs/EVIDENCE-STORAGE.md) defines independent admission budgets
 for evidence, traffic and workspace files, 30-day raw retention and whole-bucket

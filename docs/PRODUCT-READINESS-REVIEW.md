@@ -7,13 +7,13 @@ The separately requested image, tag-protection, database/log capacity and backup
 work was in progress at the reviewed baseline and is identified below rather than
 counted as missing work.
 
-**19 November follow-up:** those four authorized workstreams now have implemented
+**Earlier 19 November baseline (before jq/util-linux):** those four authorized workstreams now have implemented
 controls and scoped local proof: active hosted tag rules; physical database/log
 bounds; authenticated encrypted backups with a 22-check disposable restore; and
 actual package-manager remediation plus stricter image/publication policy. See
 [validation](VALIDATION.md), [capacity/backups](POSTGRES-BACKUP.md),
 [tag protection](RELEASE-TAG-PROTECTION.md) and [image security](IMAGE-SECURITY.md).
-The actual final ARM64 reviewed-findings scan passed with 94 exact reviews and
+At that baseline, the actual final ARM64 reviewed-findings scan passed with 94 exact reviews and
 zero blocking: raw worker inventory retains 85 Medium/9 Low active records, while
 the other images report zero. These explicit contained, expiring reviews accept
 residual risk; they are not fixes or a zero-active result. High/Critical/Unknown
@@ -22,7 +22,7 @@ and fixable findings remain blocking. The final rebuilt implementation passed
 backup/restore checks** and a fresh isolation race run in 8.176 seconds, including
 the concurrent-removal and adjacent cleanup-failure fix. Host activation/rotation,
 17 Compose checks and 26 image-policy tests have their own recorded passes.
-The current 188 reviews cover 94 exact native records per platform and expire
+At that baseline, 188 reviews covered 94 exact native records per platform and expire
 `2026-12-19T12:00:00Z`; amd64 entries followed actual hosted inventory verification.
 
 The earlier `375b2c3…` subsequently passed all six hosted Go jobs, all eight native
@@ -41,13 +41,20 @@ No complete browser-to-assessment workflow is newly certified.
 
 ## jq/util-linux follow-up status
 
-The operator authorized actual jq upgrading and a reviewed util-linux security upgrade
-against the `3062e9c…` publication baseline. New package builds, both native
-architecture scans and isolation/scanning regressions are **pending**. Earlier
-`375b2c3…` passes and 85 Medium/9 Low counts remain scoped historical evidence;
-they do not validate this change. A missing Ubuntu `FixedVersion` is not proof
-that no upstream fix exists. See [worker security packages](WORKER-SECURITY-PATCHES.md)
-for honest packaging and the required fresh evidence.
+The authorized upgrade now installs genuine jq **1.8.2** and util-linux **2.42.4**
+native packages. Both native amd64/arm64 workers passed **eight tool groups each**
+(including jq 17, util-linux 17 and real Chromium) and **54 worker boundary checks each**,
+including an approved synthetic-port Nmap scan, root-to-task credential drop,
+zero capabilities, egress, watchdog, cancellation and replay checks.
+Fresh native Trivy inventory on each architecture still reports **85 Medium/9 Low records (49 CVEs)**:
+eight source-fixed CVEs account for 34 Medium package/advisory records; the other
+60 records retain their individual reviewed dispositions. This is not a claim
+that all 94 scanner records are confirmed exploitable vulnerabilities.
+All eight native component gates passed in reviewed mode with zero blocking at
+`a99aee434daae69da284f5546b1d9a2a748f8899`; all six Go jobs and documentation
+also passed. Tool/isolation reports match the scanned images by ID and rootfs.
+Earlier `375b2c3…` results remain historical. See [worker security packages](WORKER-SECURITY-PATCHES.md)
+for package provenance and verified evidence.
 
 ## 12. Product Review Executive Summary
 
