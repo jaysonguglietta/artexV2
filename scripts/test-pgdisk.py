@@ -10,6 +10,11 @@ import time
 
 from pgdisk import runtime_arguments
 
+POSTGRES_APPARMOR_LABELS = (
+    "docker-default (enforce)",
+    "docker-default//&unconfined (enforce)",
+)
+
 
 def run(arguments, *, check=True, timeout=90):
     result = subprocess.run(['docker', *arguments], capture_output=True, text=True, timeout=timeout)
@@ -56,8 +61,8 @@ def main():
             return (fields.get('Uid') == ['70'] * 4 and fields.get('NoNewPrivs') == ['1']
                     and all(fields.get(cap) == ['0000000000000000'] for cap in ['CapEff','CapPrm','CapInh','CapBnd','CapAmb']))
         check('Supervisor and PostgreSQL are UID70 with all capability sets zero and NNP', all(safe(status) for status in statuses))
-        profiles = [run(['exec', name, 'cat', '/proc/' + pid + '/attr/apparmor/current']).stdout.strip() for pid in ['1', server]]
-        check('Supervisor and PostgreSQL re-enter the enforcing Docker AppArmor profile', profiles == ['docker-default (enforce)'] * 2)
+        profiles = [run(['exec', name, 'cat', '/proc/' + pid + '/attr/apparmor/current']).stdout.removesuffix('\n') for pid in ['1', server]]
+        check('Supervisor and PostgreSQL re-enter the enforcing Docker AppArmor profile', all(profile in POSTGRES_APPARMOR_LABELS for profile in profiles))
         filesystem = run(['exec', name, 'findmnt', '-n', '-o', 'FSTYPE', '--target', '/var/lib/postgresql/bounded']).stdout.strip()
         check('PGDATA is an ext4 filesystem, not an unbounded volume directory', filesystem == 'ext4')
         protected = run(['exec', '--user', 'postgres', name, 'test', '-r', '/var/lib/artex-pgdisk/postgres.ext4'], check=False)

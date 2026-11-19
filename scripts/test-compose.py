@@ -26,6 +26,11 @@ import urllib.request
 SOURCE = Path(__file__).resolve().parents[1]
 NETWORK = "artex-isolated-workers"
 
+POSTGRES_APPARMOR_LABELS = (
+    "docker-default (enforce)",
+    "docker-default//&unconfined (enforce)",
+)
+
 
 class Fixture:
     def __init__(self, directory):
@@ -157,8 +162,8 @@ class Fixture:
                     and all(fields.get(cap) == ["0000000000000000"] for cap in ["CapEff", "CapPrm", "CapInh", "CapBnd", "CapAmb"]))
         self.check("PostgreSQL supervisor and server have nonroot UIDs, zero capabilities and no-new-privileges",
                    expected_uid != "0" and all(unprivileged(status) for status in process_statuses))
-        profiles = [self.run(["docker", "exec", database, "cat", "/proc/" + pid + "/attr/apparmor/current"]).stdout.strip() for pid in ["1", server_pid]]
-        self.check("PostgreSQL supervisor and server re-enter enforcing docker-default after bootstrap", profiles == ["docker-default (enforce)"] * 2)
+        profiles = [self.run(["docker", "exec", database, "cat", "/proc/" + pid + "/attr/apparmor/current"]).stdout.removesuffix("\n") for pid in ["1", server_pid]]
+        self.check("PostgreSQL supervisor and server re-enter enforcing docker-default after bootstrap", all(profile in POSTGRES_APPARMOR_LABELS for profile in profiles))
         filesystem = self.run(["docker", "exec", database, "findmnt", "-n", "-o", "FSTYPE", "--target", "/var/lib/postgresql/bounded"]).stdout.strip()
         backing_bytes = self.run(["docker", "exec", database, "stat", "-c", "%s", "/var/lib/artex-pgdisk/postgres.ext4"]).stdout.strip()
         self.check("PostgreSQL persists on a fixed 512 MiB ext4 backing filesystem", filesystem == "ext4" and backing_bytes == "536870912")

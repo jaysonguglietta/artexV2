@@ -47,6 +47,16 @@ exit and forwards shutdown signals. Container configuration inspection alone sho
 the bootstrap context; inspect the live supervisor and postmaster profiles to
 verify the final process boundary.
 
+On hosts with restricted unprivileged profile transitions, the kernel can retain
+the initial unconfined component while adding Docker confinement. AppArmor
+[stacking intersects permissions](https://www.apparmor.net/advanced/AppArmorStacking/),
+and the [kernel transition implementation](https://github.com/torvalds/linux/commit/08c2f7c8d4b1434cfae006f3daf4d1bce330b57b)
+explains this forced stack when the caller lacks `CAP_MAC_OVERRIDE`. The guard
+therefore accepts exactly `docker-default (enforce)` or
+`docker-default//&unconfined (enforce)`. Bare unconfined, complain/mixed modes,
+unknown stack members and namespace/prefix variations are refused. No additional
+capability or relaxation of no-new-privileges is introduced.
+
 The container root filesystem is read-only; `/tmp` and the socket directory are
 bounded tmpfs mounts. PostgreSQL is never given the Docker socket, API artifacts,
 private signing-key volume or host filesystem. Docker/VM administrators remain

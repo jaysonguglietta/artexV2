@@ -19,6 +19,7 @@ jobs:
       - run: python3 -I scripts/test-backup-crypto.py
       - run: python3 -I scripts/test-backup.py
       - run: python3 -I scripts/test-log-policy.py
+      - run: python3 -I scripts/test-postgres-apparmor.py
   unit:
     runs-on: ubuntu-latest
     steps:

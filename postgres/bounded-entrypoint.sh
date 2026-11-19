@@ -4,6 +4,14 @@ set -eu
 umask 077
 if [ "$#" -eq 0 ]; then set -- postgres; fi
 fail() { echo "[pgdisk] $*" >&2; exit 1; }
+# Stacks enforce the intersection of permissions; unconfined cannot widen
+# docker-default: https://www.apparmor.net/advanced/AppArmorStacking/
+postgres_profile_is_enforcing() {
+  case "$1" in
+    'docker-default (enforce)'|'docker-default//&unconfined (enforce)') return 0;;
+    *) return 1;;
+  esac
+}
 image_dir=/var/lib/artex-pgdisk
 image=$image_dir/postgres.ext4
 metadata=$image_dir/format-v1
@@ -29,7 +37,7 @@ if [ "${1:-}" = --run-postgres ]; then
     elif [ -z "$current_label" ]; then
       fail "cannot read PostgreSQL AppArmor label: path=$profile_path pid=$$"
     fi
-    if [ "$current_label" != 'docker-default (enforce)' ]; then
+    if ! postgres_profile_is_enforcing "$current_label"; then
       bounded_label=$(printf '%.512s' "$current_label")
       fail "PostgreSQL must inherit enforcing docker-default AppArmor: actual=$bounded_label path=$profile_path pid=$$"
     fi

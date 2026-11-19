@@ -68,9 +68,9 @@
     },
     {
       "path": ".github/workflows/ci.yml",
-      "bytes": 3603,
+      "bytes": 3661,
       "mode": "0o644",
-      "sha256": "884d23030b98f6bc932001eb060d106d5b9c1cac396a646644e8add2e4ea68fe"
+      "sha256": "e1ce0fc35c647c8427c3dfd4ec5cdba40b9c4b1ce0ce4f2eff92c6fa2fd4ab86"
     },
     {
       "path": ".github/workflows/detections.yml",
@@ -1754,9 +1754,9 @@
     },
     {
       "path": "docs/POSTGRES-BACKUP.md",
-      "bytes": 18385,
+      "bytes": 19113,
       "mode": "0o644",
-      "sha256": "f58717167cce65c9e4c6be8e6f09989816b82d87bbbd37438828276a10bdca63"
+      "sha256": "d0bd2a75937f0df7bdf9ec01624387f3e7cdb3af184ab5693fef52d45cbcc8e8"
     },
     {
       "path": "docs/PRODUCT-READINESS-REVIEW.md",
@@ -2378,9 +2378,9 @@
     },
     {
       "path": "postgres/bounded-entrypoint.sh",
-      "bytes": 11007,
+      "bytes": 11308,
       "mode": "0o755",
-      "sha256": "2e31a0c21a26d90c05e13b358821a7bfcaa1d32e74e3e771204aa62ab3a9be32"
+      "sha256": "cdf221d8ec9477d85c3af05beae316f621a3b64731af3f5f71fa23127aed7c08"
     },
     {
       "path": "report/findings.go",
@@ -2666,9 +2666,9 @@
     },
     {
       "path": "scripts/test-compose.py",
-      "bytes": 20342,
+      "bytes": 20482,
       "mode": "0o644",
-      "sha256": "d2226cdddcb3c6155fdba732ccb6127591e5a5685a6def573351f952f00faf82"
+      "sha256": "3105a5107b8d9051537d156ddc329206c1a5703100cb8dfed83c9ca32243bcf5"
     },
     {
       "path": "scripts/test-image-security.py",
@@ -2708,15 +2708,21 @@
     },
     {
       "path": "scripts/test-pgdisk.py",
-      "bytes": 7723,
+      "bytes": 7863,
       "mode": "0o755",
-      "sha256": "cae63635f1cbc7b1891b3c7b9cf7a827e2e22b92ab9350cea327b420779d260a"
+      "sha256": "cf888615af28df8cb83eed153e79cc466a1a23c5e4591ba3721b714f643ebf9c"
     },
     {
       "path": "scripts/test-pip-fork.py",
       "bytes": 9423,
       "mode": "0o644",
       "sha256": "c36acc6254dee2d5040f575c16f10c710103cf1884c4ca0b60c58b7bd059e4e0"
+    },
+    {
+      "path": "scripts/test-postgres-apparmor.py",
+      "bytes": 3098,
+      "mode": "0o755",
+      "sha256": "1e852b0223aa2acc6878fe938dc69d7864e225097e8b00415c0683c66e3027b4"
     },
     {
       "path": "scripts/test-prepare-upload.py",
