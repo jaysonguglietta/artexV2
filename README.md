@@ -170,9 +170,9 @@ zero blocking and 94 exact expiring reviews applied: worker inventory still has
 final rebuilt implementation passed **53 worker checks**, **six actual worker/
 browser checks**, the **22-check encrypted backup integration** and a fresh
 isolation race run. Initial native amd64/arm64 standard image scans also passed;
-188 exact reviews now cover 94 records per platform. The separate Go CI failed
-PostgreSQL startup in integration/Compose; full hosted CI is not green. Diagnosis,
-new reviewed-mode hosted/OIDC checks and a fresh source snapshot remain pending
+188 exact reviews now cover 94 records per platform. Earlier Go CI failed
+PostgreSQL startup; current `af9eeb56…` integration/frontend/unit/security/recon
+passed. Worker/Compose and native images, OIDC and a fresh source snapshot remain pending
 in [validation](docs/VALIDATION.md).
 The implementation was pushed to the validation branch; `main` is unchanged at
 this checkpoint. No production release, version tag or enabling variable was created.
@@ -189,14 +189,16 @@ was activated through service restarts and an actual stdout-rotation test; new
 containers inherit finite local logging. These controls do not cap all VM, image
 or backup storage; retain separate capacity and audit policies.
 
-The PostgreSQL profile/client boundary is receiving a further fix after hosted
-AppArmor startup and `pg_ctl` failures. The trusted mount bootstrap temporarily
+The PostgreSQL profile/client boundary is now fixed and verified locally after
+earlier hosted AppArmor startup and `pg_ctl` failures. The trusted mount bootstrap temporarily
 uses `MAC_OVERRIDE` to enter a single enforcing profile, then drops to UID 70 with
 no capabilities before database work. Automatic healthcheck/backup clients must
 now use the fixed entrypoint launcher to drop privileges explicitly; PID1's drop
-alone does not cover them. Earlier
-local/image passes are checkpoints, not proof of this new entrypoint. Final local
-and hosted PostgreSQL checks remain pending in [validation](docs/VALIDATION.md).
+alone does not cover them. Current `af9eeb56…` passed 11 real client-boundary
+checks, a fresh 22-check encrypted restore and 869 PostgreSQL/Go cases (one optional
+provider skip), plus the capacity and regression suites. Hosted integration,
+frontend/unit/security/recon passed; full worker/Compose boundary, exact image
+gates and OIDC remain pending in [validation](docs/VALIDATION.md).
 
 The worker uses Ubuntu 26.04, copied official Python 3.14.10 and Node 24.22.3,
 with explicit [npm](tools/npm/README.md) and [pip](tools/python/README.md) security

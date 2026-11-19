@@ -89,16 +89,22 @@ jobs:
       - run: docker build --target postgres -f Dockerfile.source -t artex-local:postgres .
       - run: python3 scripts/test-postgres-clients.py --report '${{ runner.temp }}/postgres-client-security.json'
       - run: python3 scripts/test-worker-tools.py
-      - run: python3 scripts/test-workers.py
-      - run: python3 scripts/test-compose.py
-      - run: python3 scripts/test-pgdisk.py
-      - run: python3 scripts/test-pgdisk-migration.py
-      - run: python3 scripts/test-backup-integration.py
-      - name: Preserve PostgreSQL client confinement proof
+      - run: python3 scripts/test-workers.py --report '${{ runner.temp }}/worker-security.json'
+      - run: python3 scripts/test-compose.py --report '${{ runner.temp }}/compose-security.json'
+      - run: python3 scripts/test-pgdisk.py --report '${{ runner.temp }}/pgdisk-security.json'
+      - run: python3 scripts/test-pgdisk-migration.py --report '${{ runner.temp }}/pgdisk-migration-security.json'
+      - run: python3 scripts/test-backup-integration.py --report '${{ runner.temp }}/backup-security.json'
+      - name: Preserve runtime security proofs
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: postgres-client-security
-          path: ${{ runner.temp }}/postgres-client-security.json
+          name: runtime-security-evidence
+          path: |
+            ${{ runner.temp }}/postgres-client-security.json
+            ${{ runner.temp }}/worker-security.json
+            ${{ runner.temp }}/compose-security.json
+            ${{ runner.temp }}/pgdisk-security.json
+            ${{ runner.temp }}/pgdisk-migration-security.json
+            ${{ runner.temp }}/backup-security.json
           if-no-files-found: warn
           retention-days: 30

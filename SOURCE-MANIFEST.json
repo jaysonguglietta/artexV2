@@ -68,9 +68,9 @@
     },
     {
       "path": ".github/workflows/ci.yml",
-      "bytes": 4117,
+      "bytes": 4657,
       "mode": "0o644",
-      "sha256": "790d4b9140eeddae861cb7135198e951c84a0916762945ac9b0648c825dfc74c"
+      "sha256": "aec2f3e87ba167a391f6a0992f26fcc3e9f90626b7c3b1d8d4ab08c97bb91447"
     },
     {
       "path": ".github/workflows/detections.yml",
@@ -212,9 +212,9 @@
     },
     {
       "path": "README.md",
-      "bytes": 34147,
+      "bytes": 34357,
       "mode": "0o644",
-      "sha256": "79861aeff94e5ace8eaeab864b069c858bdc05d58547948a877e7c66955212ec"
+      "sha256": "a485d9f2a818df05947215e314948e595fb1cfdc621c64a4e3187fe4e422c5fd"
     },
     {
       "path": "README.zh.md",
@@ -1754,9 +1754,9 @@
     },
     {
       "path": "docs/POSTGRES-BACKUP.md",
-      "bytes": 22344,
+      "bytes": 22985,
       "mode": "0o644",
-      "sha256": "e8ff6df854777f27bac6546a35f39c97284a4594bc2a78948d0deccd1caddd23"
+      "sha256": "2ac0bbe4409de73638768ecb6f57b97aeee316c7c8da2c97d10bb2886e1b0f29"
     },
     {
       "path": "docs/PRODUCT-READINESS-REVIEW.md",
@@ -1778,9 +1778,9 @@
     },
     {
       "path": "docs/SECURE-DEPLOYMENT.md",
-      "bytes": 6179,
+      "bytes": 6317,
       "mode": "0o644",
-      "sha256": "953cd96939bef26b3c6cb398482cc6261d97b5baf435a93a167f0f2e003e2f19"
+      "sha256": "51321032d7a7f472adc7770738291444ed5d01cc1cdc46a480cfcaba1e843eb7"
     },
     {
       "path": "docs/SECURITY-AUDIT.md",
@@ -1790,9 +1790,9 @@
     },
     {
       "path": "docs/SECURITY-REVIEW.md",
-      "bytes": 31610,
+      "bytes": 32315,
       "mode": "0o644",
-      "sha256": "67dab766bef2b9dc56d2c8dc15f53bcfac9b843d0933a8406a590974ee973101"
+      "sha256": "b9bf90428aed7a1d13c62007c8b692840771443d818f4579e22a901df93ab9fc"
     },
     {
       "path": "docs/SIGNED-RELEASES.md",
@@ -1802,9 +1802,9 @@
     },
     {
       "path": "docs/VALIDATION.md",
-      "bytes": 36027,
+      "bytes": 38161,
       "mode": "0o644",
-      "sha256": "e34222bf164f48f339f5a173cb523c79178f894a6a47892ad9e666d757fa46bf"
+      "sha256": "f0ac2d0b43b7156be8cd80dcf3a41a05ccdf3b4d5d5dc054b2801f5980ca3d36"
     },
     {
       "path": "docs/WORKER-ISOLATION.md",
@@ -2702,15 +2702,15 @@
     },
     {
       "path": "scripts/test-pgdisk-migration.py",
-      "bytes": 5817,
+      "bytes": 6926,
       "mode": "0o755",
-      "sha256": "7641127e01375de3934ed719c801fc5dca422433527dbcab6ba1b919174916b8"
+      "sha256": "a4cdcb4e20cd8a4bfa534fbe0aed99070b615263f28d84b20906057fa8106bf0"
     },
     {
       "path": "scripts/test-pgdisk.py",
-      "bytes": 7818,
+      "bytes": 9626,
       "mode": "0o755",
-      "sha256": "a336dc5fe0cd14943bb42c58dc97ab5a9653443e369904bd514f9535a6951639"
+      "sha256": "4fe81693f67f2414c568a7d448ec7a6209066831668391708236a470f1edc739"
     },
     {
       "path": "scripts/test-pip-fork.py",

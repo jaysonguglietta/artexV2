@@ -8,7 +8,7 @@ vulnerability class. The [validation record](VALIDATION.md) records the checked
 snapshot and results; the [worker guide](WORKER-ISOLATION.md) defines deployment
 requirements.
 
-## Later PostgreSQL bootstrap/client boundary — verification pending
+## PostgreSQL bootstrap/client boundary — fixed and verified locally
 
 The current PostgreSQL hardening changes are **not covered** by the earlier
 local backup/Compose/image checkpoints below. Native reviewed-image
@@ -23,7 +23,11 @@ first exec into `setpriv`, which then removes all five capability sets, drops to
 UID 70, clears groups and retains no-new-privileges before database code. It does
 not add `MAC_ADMIN`, `CAP_KILL` or global signal/AppArmor/sysctl exceptions.
 [PostgreSQL operations](POSTGRES-BACKUP.md) explains the primary-source basis and
-tradeoff. New client/bootstrap local and native-hosted proof remains pending.
+tradeoff. Current source `af9eeb56…` passed 11 actual client-boundary checks,
+fresh 22-check encrypted restore, 16/7/3 database capacity checks, 5 AppArmor/15
+backup unit tests and 869 PostgreSQL/Go cases (one optional skip), plus 13 packages.
+Current hosted integration/frontend/unit/security/recon passed; full hosted
+worker/Compose boundary, exact images and OIDC remain pending in [validation](VALIDATION.md).
 
 ### PG-01: Automatic database clients could retain bootstrap authority
 
@@ -48,7 +52,7 @@ root/mount/device authority in that container. No such exploitable client defect
 was demonstrated. Docker/VM administrators are already trusted and can deliberately
 exec arbitrary privileged commands; the fix does not claim to restrict them.
 
-**Implemented fix; runtime verification pending:**
+**Fixed and verified locally; full hosted completion pending:**
 [bounded-entrypoint.sh](../postgres/bounded-entrypoint.sh) now shares `exec_confined`
 and the guarded `--run-client` branch with the server boundary. The Compose
 healthcheck is fixed `CMD /usr/local/bin/artex-postgres-entrypoint --healthcheck`.
@@ -58,9 +62,13 @@ does too. The launcher enters the single enforcing profile before `setpriv`,
 then the common guard requires UID 70, cleared groups, all five capability sets
 zero and `NoNewPrivs=1`. Only afterward may a known absolute client or `/bin/sh`
 run. SQL/client output is never interpreted by the privileged stage. This fixes
-the source routing gap; live process/integration proof remains pending.
+the source routing gap. The actual 11-check client proof verified a real Docker
+healthcheck and blocked live `psql` process, not just a launcher/config string.
+It confirmed UID/GID 70, all five capability sets zero, no-new-privileges and the
+single enforcing label, plus real SQL completion and guarded-branch bypass refusal.
+The fresh encrypted backup/restore suite passed all 22 with current watched hashes.
 
-**Validation required:** inspect live server, supervisor, readiness/healthcheck
+**Validation and repeat-test guidance:** inspect live server, supervisor, readiness/healthcheck
 and backup client processes independently; verify exact AppArmor label, UID,
 all capability sets and no-new-privileges. Exercise actual authenticated SQL,
 dump/restore, initialization `pg_ctl` signaling, graceful stop/restart and refusal

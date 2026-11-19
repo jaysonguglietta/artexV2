@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 import secrets
 import subprocess
+import sys
 import tempfile
 import time
 
@@ -44,7 +45,7 @@ def main():
         logs = run(['logs', '--tail', '15', name], check=False)
         raise RuntimeError('PostgreSQL fixture startup failed: ' + logs.stdout + logs.stderr)
     def sql(query, check=True):
-        return run(['exec', '--user', 'postgres', name, 'psql', '-U', 'fixture', '-d', 'fixture', '-At', '-v', 'ON_ERROR_STOP=1', '-c', query], check=check)
+        return run(['exec', '--user', 'postgres', name, 'psql', '-U', 'fixture', '-d', 'fixture', '-At', '-v', 'ON_ERROR_STOP=1', '-v', 'VERBOSITY=verbose', '-c', query], check=check)
     try:
         run(['run', '--rm', '--network', 'none', '--read-only', '--cap-drop', 'ALL', '--security-opt', 'no-new-privileges:true', '--entrypoint', '/bin/true', args.image])
         run(['volume', 'create', '--label', 'artex.purpose=pgdisk-security-test', volume])
@@ -80,8 +81,17 @@ def main():
         check('The kernel refuses additional writes at the fixed filesystem boundary', filled.returncode == 0)
         size = run(['exec', name, 'stat', '-c', '%s', '/var/lib/artex-pgdisk/postgres.ext4']).stdout.strip()
         check('Disk exhaustion does not enlarge the persistent backing image', size == '536870912')
-        growth = sql("CREATE TABLE quota_growth_probe AS SELECT repeat('x',8192) AS value FROM generate_series(1,100)", check=False)
-        check('PostgreSQL refuses new persistent database growth at disk exhaustion', growth.returncode != 0)
+        # Short 32-byte digest values stay inline (no TOAST compression). Four
+        # million rows require 128MiB of payload plus heap/WAL, exceeding leftover
+        # fragments and recycled WAL after the 1MiB fill probe reaches ENOSPC.
+        growth = sql("SET lc_messages = 'C'; CREATE TABLE quota_growth_probe AS SELECT md5(value::text) AS payload FROM generate_series(1,4194304) AS source(value)", check=False)
+        postgres_error = growth.stdout + growth.stderr
+        if growth.returncode != 0 and 'No space left on device' not in postgres_error:
+            # WAL exhaustion may terminate the backend before it sends SQLSTATE.
+            logs = run(['logs', '--tail', '30', name], check=False)
+            postgres_error += logs.stdout + logs.stderr
+        check('PostgreSQL refuses new persistent database growth at disk exhaustion',
+              growth.returncode != 0 and ('No space left on device' in postgres_error or '53100' in postgres_error))
         # A full WAL filesystem may stop PostgreSQL. Recover only this explicitly
         # created test marker offline; never delete database/WAL files to reclaim.
         run(['stop', '--time', '20', name], check=False)
@@ -98,7 +108,20 @@ def main():
         absent = run(['exec', name, 'test', '-e', '/var/lib/postgresql/bounded/.artex-recovery-reserve'], check=False)
         check('Released recovery space is never recreated automatically on restart', absent.returncode != 0)
     except Exception as error:
-        failure = str(error)
+        failure = str(error).replace('synthetic-disposable-only', '[REDACTED]')[:4096]
+        print('FAILED: ' + failure, file=sys.stderr, flush=True)
+        try:
+            state = run(['inspect', name, '--format', 'exit={{.State.ExitCode}} oom={{.State.OOMKilled}} error={{json .State.Error}}'], check=False, timeout=10)
+            logs = run(['logs', '--tail', '60', name], check=False, timeout=10)
+            if state.returncode == 0:
+                diagnostic = 'PostgreSQL fixture state: ' + state.stdout.strip() + '\nPostgreSQL fixture log tail:\n'
+                tail = (logs.stdout + logs.stderr).replace('synthetic-disposable-only', '[REDACTED]')
+                diagnostic += '\n'.join(tail.splitlines()[-60:])[-32768:]
+                diagnostic = diagnostic.replace('synthetic-disposable-only', '[REDACTED]')
+                failure += '\n' + diagnostic
+                print(diagnostic, file=sys.stderr, flush=True)
+        except Exception:
+            print('PostgreSQL fixture diagnostics unavailable before cleanup.', file=sys.stderr, flush=True)
     finally:
         cleanup = run(['rm', '-f', name], check=False).returncode == 0
         if created:

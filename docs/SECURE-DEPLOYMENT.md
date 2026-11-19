@@ -57,9 +57,11 @@ same fixed entrypoint `--healthcheck`/`--client` launcher and common guard, with
 only known absolute clients or `/bin/sh` executed after the drop.
 Do not replace that boundary with a direct root `pg_isready`, `psql`, `pg_dump` or
 `pg_restore` invocation. Docker/VM administrators remain trusted and can bypass
-in-container wrappers manually. The new client/bootstrap changes require fresh
-local and hosted proof; [validation](VALIDATION.md) lists the current PostgreSQL
-startup failures and pending reruns. Follow [PostgreSQL operations](POSTGRES-BACKUP.md)
+in-container wrappers manually. The revised client/bootstrap passed 11 actual
+process/healthcheck checks and a fresh 22-check encrypted restore locally, together
+with the database/Go suites. [Validation](VALIDATION.md) separates those current
+passes from the earlier startup failures and pending hosted boundary/image/OIDC
+completion. Follow [PostgreSQL operations](POSTGRES-BACKUP.md)
 for the single-profile requirement and backup limits.
 
 ## Sessions and remote access

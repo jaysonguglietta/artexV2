@@ -72,7 +72,21 @@ def main():
         logs = docker(['logs', '--tail', '10', new], False)
         check('A durable pending marker blocks database startup after interrupted migration', running == 'false' and 'incomplete migration' in logs.stderr + logs.stdout)
     except Exception as error:
-        failure = str(error)
+        failure = str(error).replace('synthetic-fixture-only', '[REDACTED]')[:4096]
+        print('FAILED: ' + failure, file=sys.stderr, flush=True)
+        for container in [old, new]:
+            try:
+                state = docker(['inspect', container, '--format', 'exit={{.State.ExitCode}} oom={{.State.OOMKilled}} error={{json .State.Error}}'], False)
+                logs = docker(['logs', '--tail', '30', container], False)
+                if state.returncode == 0:
+                    diagnostic = 'Migration fixture state (' + container + '): ' + state.stdout.strip() + '\nPostgreSQL log tail:\n'
+                    tail = (logs.stdout + logs.stderr).replace('synthetic-fixture-only', '[REDACTED]')
+                    diagnostic += '\n'.join(tail.splitlines()[-30:])[-16384:]
+                    diagnostic = diagnostic.replace('synthetic-fixture-only', '[REDACTED]')
+                    failure += '\n' + diagnostic
+                    print(diagnostic, file=sys.stderr, flush=True)
+            except Exception:
+                print('Migration fixture diagnostics unavailable before cleanup.', file=sys.stderr, flush=True)
     finally:
         cleanup = docker(['rm', '-f', old, new], False).returncode == 0
         for volume in [legacy, target]:

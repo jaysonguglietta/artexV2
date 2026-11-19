@@ -70,9 +70,9 @@ and [AppArmor stacking semantics](https://www.apparmor.net/advanced/AppArmorStac
 Temporary bootstrap `MAC_OVERRIDE` is an explicit tradeoff for that transition;
 it is dropped with every other capability before database work. The design does
 not add `MAC_ADMIN`, `CAP_KILL`, a permissive signal rule or a global kernel/sysctl
-relaxation. The new bootstrap/client changes still require their own complete
-local and hosted validation; older backup/image passes below do not prove this
-revised entrypoint.
+relaxation. The revised bootstrap/client source passed its fresh local privilege and
+backup/integration checks below. Full native hosted boundary/image completion
+and current-source OIDC remain pending; older image IDs do not become new scans.
 
 ### Automatic readiness, SQL and backup clients
 
@@ -109,9 +109,16 @@ bypasses the complete profile/capability transition. Docker/VM administrators
 remain trusted and can deliberately bypass wrappers; this controls automatic
 application/maintenance paths, not an administrator's Docker authority.
 
-The client fix is source-implemented, but live healthcheck/SQL-process identity,
-backup/restore, startup/shutdown and native hosted PostgreSQL reruns are pending.
-Do not carry an older backup hash or passed image scan forward to this revision.
+The final local client fix is verified: **11 live checks** passed for the actual
+Docker healthcheck and an active SQL process with UID/GID 70, all five capability
+sets zero, no-new-privileges and the single enforcing profile. The revised source
+also passed **22 backup/restore**, **16 disk-full**, **7 migration**, **3 reserve**,
+**5 pure AppArmor** and **15 backup unit** checks, plus **869 PostgreSQL/Go cases**
+with one optional provider skip and 13 additional packages. The fresh backup report
+SHA256 is `90370aaf077e6f6379b1c5213cab5c889931d283aaf34975d503d30a74c49eb7`;
+all seven watched sources match. See [validation](VALIDATION.md) for tested
+`af9eeb56…`, exact client proof and the still-pending full hosted boundary/images.
+Runtime-equivalent rebuilds are not automatically new-index vulnerability scans.
 
 The container root filesystem is read-only; `/tmp` and the socket directory are
 bounded tmpfs mounts. PostgreSQL is never given the Docker socket, API artifacts,
