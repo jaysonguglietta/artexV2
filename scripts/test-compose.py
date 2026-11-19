@@ -217,6 +217,26 @@ print('worker probe passed')
                                             "{{json .NetworkSettings.Networks}}"]).stdout)
         self.check("API is never attached to the worker bridge", NETWORK not in api_networks)
 
+    def postgres_failure_diagnostics(self):
+        """Read only this fixture's PG state/log tail before cleanup removes it."""
+        if not self.compose_attempted:
+            return ""
+        try:
+            identities = self.run(self.command + ["ps", "-a", "-q", "postgres"], timeout=10).stdout.split()
+            if len(identities) != 1:
+                return "PostgreSQL fixture diagnostics: no unique container exists."
+            identity = identities[0]
+            state = self.run(["docker", "inspect", identity, "--format",
+                              "exit={{.State.ExitCode}} oom={{.State.OOMKilled}} error={{json .State.Error}}"], timeout=10)
+            logs = self.run(["docker", "logs", "--tail", "60", identity], timeout=10)
+            # Redact before clipping so a boundary cannot expose part of a secret.
+            tail = self.redact(logs.stdout + logs.stderr).splitlines()[-60:]
+            tail = "\n".join(tail)[-32768:]
+            status = self.redact(state.stdout.strip())[:4096]
+            return "PostgreSQL fixture state: " + status + "\nPostgreSQL fixture log tail:\n" + (tail or "(no container logs)")
+        except Exception as error:
+            return self.redact("PostgreSQL fixture diagnostics unavailable: " + str(error))[:4096]
+
     def cleanup(self):
         errors = []
         if self.compose_attempted:
@@ -296,6 +316,11 @@ def main():
     except Exception as error:
         failure = fixture.redact(str(error))
     finally:
+        if failure:
+            diagnostic = fixture.postgres_failure_diagnostics()
+            if diagnostic:
+                failure += "\n" + diagnostic
+            print("FAILED: " + failure, file=sys.stderr, flush=True)
         cleanup_errors = fixture.cleanup()
         summary = {"schema_version": 1,
                    "passed": completed and failure is None and not cleanup_errors and all(item["passed"] for item in fixture.checks),
@@ -310,8 +335,12 @@ def main():
             json.dump(summary, output, indent=2)
             output.write("\n")
     passed = sum(item["passed"] for item in summary["checks"])
-    print(f'{passed}/{len(summary["checks"])} Compose checks passed; report: {report}', flush=True)
-    if not summary["passed"]:
+    if summary["passed"]:
+        print(f'{passed}/{len(summary["checks"])} Compose checks passed; report: {report}', flush=True)
+    else:
+        print(f'FAILED: {passed}/{len(summary["checks"])} recorded checks passed, but the complete workflow or cleanup failed; report: {report}', file=sys.stderr, flush=True)
+        if cleanup_errors:
+            print("Cleanup failure: " + "; ".join(cleanup_errors), file=sys.stderr, flush=True)
         raise SystemExit(1)
 
 

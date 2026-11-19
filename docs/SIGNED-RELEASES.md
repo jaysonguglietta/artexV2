@@ -86,17 +86,23 @@ raw counts and independently verified withdrawal proof remain in the signed
 summary; nothing is silently dropped. See [image security](IMAGE-SECURITY.md).
 
 No production version-tag release has been published. The November 19 follow-up
-has local 7 tag-policy, 15 signing and 15 publication tests passing; final image
-scans and new hosted image/OIDC runs remain pending in [validation](VALIDATION.md).
+has local 7 tag-policy, 15 signing and 15 publication tests passing. The actual
+final four-image ARM64 reviewed gate passed with 94 exact reviews/zero blocking;
+the initial native amd64/arm64 standard inventory run also passed. The new
+reviewed-mode native run, PostgreSQL startup diagnosis and OIDC remain pending
+in [validation](VALIDATION.md); full hosted CI is not green.
 Two actual tag rulesets are active, but that configuration does not bypass the
 reviewed-findings gate or enable release publication. The operator authorized
 this narrow residual-risk allowance, not a version tag, enabling variable or
-actual release. Fresh exact-image/architecture proof for the new policy remains
-pending; an ARM64 review cannot approve a different platform. Accepted residual
+actual release. Local exact-image ARM64 reviewed proof and initial hosted two-architecture
+standard inventory passed separately. An ARM64 review cannot approve another
+platform. Accepted residual
 findings remain visible and are not fixed or a zero-active result. The current
-94 reviews cover linux/arm64 only, reviewed `2026-11-19T13:04:35.549172Z`, expiring
-`2026-12-19T12:00:00Z`; amd64 requires its own real hosted inventory and review.
-The 26 image-policy tests passed, but fresh final-image policy scans are pending.
+188 reviews cover 94 exact records per platform, after actual native inventory
+verification. ARM64 review: `2026-11-19T13:04:35.549172Z`; amd64 review:
+`2026-11-19T13:19:24.496638+00:00`; all expire `2026-12-19T12:00:00Z`.
+The 26 image-policy tests and actual final ARM64 policy scan passed; this is
+residual-risk acceptance, not a claim of repaired packages or production publication.
 Local scanning remains available.
 
 Image publication uses only version/architecture tags and signed immutable index

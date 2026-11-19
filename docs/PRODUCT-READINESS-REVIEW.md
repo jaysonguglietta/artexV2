@@ -13,25 +13,29 @@ bounds; authenticated encrypted backups with a 22-check disposable restore; and
 actual package-manager remediation plus stricter image/publication policy. See
 [validation](VALIDATION.md), [capacity/backups](POSTGRES-BACKUP.md),
 [tag protection](RELEASE-TAG-PROTECTION.md) and [image security](IMAGE-SECURITY.md).
-Final ARM64 standard scans passed with 85 Medium/9 Low active worker records and
-zero in the other images. That earlier checkpoint applied no risk review; the
-independent strict diagnostic correctly refused all 94. The operator subsequently
-authorized exact, expiring contained worker Ubuntu OS vendor-unfixed Medium/Low
-reviews for publication; this accepts residual risk, not a fix or zero-active
-result. High/Critical/Unknown and fixable findings remain blocking. Six real
-worker/browser checks, 17 Compose checks and host service activation/rotation
-passed at their recorded checkpoints. The urgent-close fix then passed **53/53
-live worker checks**, six actual rebuilt-worker tool/browser checks and a fresh
-isolation race run; the backup integration passed all 22 again. A subsequent
-adjacent cleanup-failure patch passed its race check in 8.176 seconds and needs
-final rebuilt-image live acceptance. The 26 image-policy tests passed; the frozen
-94 reviews cover ARM64 only and expire `2026-12-19T12:00:00Z`. Fresh
-reviewed-policy scans, native amd64 evidence, hosted runs and the source credential scan remain
-pending. The feature inventory,
-in-progress labels and PR-01–PR-09 entries below
-are the `e30fe09` product-review baseline; the nine backlog proposals were not
-implemented by this security follow-up. For operational portions of PR-06/07/08,
-consult the newer evidence rather than assuming their original gap still exists.
+The actual final ARM64 reviewed-findings scan passed with 94 exact reviews and
+zero blocking: raw worker inventory retains 85 Medium/9 Low active records, while
+the other images report zero. These explicit contained, expiring reviews accept
+residual risk; they are not fixes or a zero-active result. High/Critical/Unknown
+and fixable findings remain blocking. The final rebuilt implementation passed
+**53 live worker checks**, **six actual worker/browser checks**, **22 encrypted
+backup/restore checks** and a fresh isolation race run in 8.176 seconds, including
+the concurrent-removal and adjacent cleanup-failure fix. Host activation/rotation,
+17 Compose checks and 26 image-policy tests have their own recorded passes.
+The current 188 reviews cover 94 exact native records per platform and expire
+`2026-12-19T12:00:00Z`; amd64 entries followed actual hosted inventory verification.
+
+Initial native amd64/arm64 standard image scans passed. The Go run failed
+PostgreSQL startup in integration/Compose, although worker53/tool6 and frontend/
+unit/security/recon passed. Full hosted CI is not green. Diagnosis, the new
+reviewed-mode hosted run, OIDC and a post-documentation source credential scan
+remain pending. The implementation was pushed on a
+validation branch while `main` remained unchanged; no version tag, enabling
+variable or release was created. The feature inventory, in-progress labels and
+PR-01–PR-09 entries below remain the `e30fe09` product-review baseline; those nine
+backlog proposals were not implemented by this security follow-up. For operational
+portions of PR-06/07/08, consult the new evidence rather than assuming the original
+gap still exists.
 No complete browser-to-assessment workflow is newly certified.
 
 ## 12. Product Review Executive Summary

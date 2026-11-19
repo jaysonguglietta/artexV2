@@ -45,6 +45,12 @@ docker run -d --name "$container" --label artex.purpose=isolated-tests \
 startup_failed() {
   docker logs "$container" > "$log_dir/postgres-startup.log" 2>&1 || true
   echo "PostgreSQL failed to start; private synthetic-fixture diagnostics: $log_dir/postgres-startup.log" >&2
+  if [ "${GITHUB_ACTIONS:-}" = true ]; then
+    # This container always uses the disposable credential above. Keep hosted
+    # startup failures reviewable after its runner is destroyed; never dump env.
+    tail -n 60 "$log_dir/postgres-startup.log" | sed 's/local-test-only/[REDACTED]/g' >&2
+    docker inspect "$container" --format 'exit={{.State.ExitCode}} oom_killed={{.State.OOMKilled}} error={{json .State.Error}}' >&2 || true
+  fi
   exit 1
 }
 attempt=0

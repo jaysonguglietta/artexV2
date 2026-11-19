@@ -163,19 +163,19 @@ workflow, protected tag, commit and run. Two active
 personal owner and forbid updates/deletions without bypass. Publication also
 requires explicit opt-in and all gates. A main-only rehearsal uses real OIDC
 without publishing. Earlier hosted passes apply to their recorded November 18
-commit. November 19 local ARM64 standard scans passed, retaining 85 Medium and
-9 Low active worker records with no listed fix; the other three images had zero
-reported findings. Full [residual evidence](security/image-followup-evidence.json)
-remains visible. The lifecycle-fixed source subsequently passed **53 worker
-checks**, six actual worker/browser checks and a fresh isolation race run; the
-22-check backup integration also passed again. The earlier 17-check Compose
-acceptance remains a separate checkpoint.
-The earlier independent strict diagnostic refused all 94 records with zero
-scanner errors. The newly authorized reviewed-findings policy requires its own
-exact-image proof. A later cleanup-failure fix passed its isolation race check;
-its final rebuilt-image live run, fresh scans and new hosted checks remain
-pending in [validation](docs/VALIDATION.md). A local worker pass
-does not approve a production release.
+commit. Final November 19 local ARM64 **reviewed-findings** scans passed with
+zero blocking and 94 exact expiring reviews applied: worker inventory still has
+85 Medium/9 Low active records; the other three images report zero. Full
+[residual evidence](security/image-followup-evidence.json) remains visible. The
+final rebuilt implementation passed **53 worker checks**, **six actual worker/
+browser checks**, the **22-check encrypted backup integration** and a fresh
+isolation race run. Initial native amd64/arm64 standard image scans also passed;
+188 exact reviews now cover 94 records per platform. The separate Go CI failed
+PostgreSQL startup in integration/Compose; full hosted CI is not green. Diagnosis,
+new reviewed-mode hosted/OIDC checks and a fresh source snapshot remain pending
+in [validation](docs/VALIDATION.md).
+The implementation was pushed to the validation branch; `main` is unchanged at
+this checkpoint. No production release, version tag or enabling variable was created.
 
 [Evidence storage](docs/EVIDENCE-STORAGE.md) defines independent admission budgets
 for evidence, traffic and workspace files, 30-day raw retention and whole-bucket

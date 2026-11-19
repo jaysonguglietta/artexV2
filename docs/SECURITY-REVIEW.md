@@ -29,47 +29,47 @@ The original audit findings and November 18 checkpoints remain historical.
   newly authorized `--require-reviewed-findings` publication mode additionally
   blocks every unreviewed active record. Only exact, expiring contained worker
   Ubuntu OS vendor-unfixed Medium/Low reviews are eligible. Mode-boundary tests
-  passed; fresh final-image proof remains pending.
+  passed; the actual final ARM64 four-image reviewed gate passed with zero blocking.
 - Explicit [npm](../tools/npm/README.md) and [pip](../tools/python/README.md) forks
   each passed 3 static and 10 installed source-runtime checks. They change actual
   dependency/code bytes, retain honest local versions and preserve inventory.
 
-Final local ARM64 **standard** image gates passed. Worker inventory still has
-**85 Medium + 9 Low active package/advisory records**, all without a listed fixed
-version; the other three images report zero at every severity. No risk acceptance,
-exception or withdrawal was used at that earlier checkpoint. [Full residual evidence](../security/image-followup-evidence.json)
-preserves all 94 records and authenticated image/DB/report/SBOM identities.
-Six actual tools/browser checks passed on that exact worker after the final pip
-correction, and Compose passed **17/17**. Host Docker/journal settings were
-activated and tested with real log rotation on the dedicated VM. The embedded
-frontend rebuild passed without UI source changes.
+The actual final ARM64 **reviewed-findings** image gate passed with **zero
+blocking and 94 exact reviews applied**. Worker raw inventory still has **85
+Medium + 9 Low active records**, all without a listed fixed version; the other
+three images report zero at every severity. This is authorized contained residual
+risk, not a patch, zero-active claim or guarantee of non-exploitability.
+[Full residual evidence](../security/image-followup-evidence.json) retains every
+active finding/review, exact image identity and authenticated DB/report/SBOM hashes.
 
-The independent strict diagnostic refused all 94 active records with zero scanner
-errors under the earlier policy. It remains available as a zero-active diagnostic;
-that result is not proof for the new reviewed publication allowance. The operator
-has authorized exact, expiring review of contained vendor-unfixed worker Ubuntu
-OS Medium/Low records, matching CVE/package/version/severity/platform and primary
-Ubuntu reference. High/Critical/Unknown and fixable findings cannot be waived.
+The final rebuilt images passed **53/53 live worker checks**, **6/6 actual tool/
+browser checks** and the **22-check encrypted backup/restore integration**. The
+latest isolation race run passed in **8.176 seconds**, including concurrent
+close/removal and adjacent cleanup-failure behavior. Callers wait for acknowledged
+removal or confirmed absence; a Docker removal conflict is not success. The
+backup report and all seven watched source hashes remain unchanged. The separate
+17-check Compose checkpoint, host log activation/rotation and embedded frontend
+build also passed with their recorded scope.
 
-After the urgent-close fix, rebuilt images passed **53/53 live worker checks**
-and **6/6 actual tool/browser checks**. Concurrent callers wait for the same
-acknowledged removal/confirmed absence; a Docker removal conflict is not accepted
-as proof of cleanup. A subsequent adjacent cleanup-failure fix passed the latest
-isolation race run in **8.176 seconds**; final rebuilt-image live acceptance is
-pending. The 22-check exact-source backup integration passed again with unchanged
-source hashes. The prior 53 pass is retained as its exact checkpoint.
+The current 188 reviews cover 94 exact records per architecture, with matching
+severity and `fixed_version: null`. ARM64 review: `2026-11-19T13:04:35.549172Z`;
+amd64 review: `2026-11-19T13:19:24.496638+00:00`, after actual native inventory
+verification. All expire `2026-12-19T12:00:00Z`. High/Critical/Unknown and
+fixable findings cannot be waived. The older strict diagnostic's 94-record
+refusal remains historical proof, not the current reviewed publication criterion.
 
-The frozen policy contains 94 exact ARM64 reviews, with matching severity and
-`fixed_version: null`, reviewed `2026-11-19T13:04:35.549172Z` and expiring
-`2026-12-19T12:00:00Z`. No amd64 review is present; native hosted evidence must
-precede any exact amd64 entries. Publication requires reviewed mode in the
-summary and each image.
+Initial hosted native amd64/arm64 standard image scans passed, with identical
+94 worker OS identities/versions per platform and all 16 report/SBOM hashes
+verified. The separate Go run failed PostgreSQL startup in integration and Compose;
+worker53/tool6 and frontend/unit/security/recon passed. Full hosted CI is not green.
 
-**Pending:** final rebuilt-image live acceptance and fresh scans under the reviewed policy,
-a source credential scan and new hosted CI/image/OIDC runs. [Validation](VALIDATION.md) owns
-final statuses. Reviewed findings remain residual risk, not a package fix or
-zero-active result. No enabling variable, version tag or production release was
-authorized by this policy choice. Local authorized scanning is preserved.
+**Pending:** PostgreSQL diagnosis/rerun, hosted reviewed-mode/OIDC and a source credential snapshot
+after these documentation/evidence edits. A prior 953-file source snapshot had
+six individually reviewed synthetic matches and zero unresolved; it is not the
+fresh updated-source scan. [Validation](VALIDATION.md) records the checkpoint
+hash, tested implementation `a2b0c63…` and all current identities. The validation
+branch was pushed while `main` remained unchanged. No enabling variable, version
+tag or production release was authorized or created by these checks.
 
 ## Architecture and threat model
 
@@ -274,10 +274,9 @@ strict diagnostic still blocks all active records. Withdrawn classifications
 require separate fresh primary proof and are not accepted active risks.
 Earlier November 18 local/hosted passes and raw counts remain in
 [validation](VALIDATION.md), bound to those exact source/image/DB identities.
-The current ARM64 standard results are recorded above, with all 94 active
-worker records visible. Their subsequent authorized narrow risk reviews need
-fresh actual-image/architecture proof. New hosted/amd64 follow-up remains pending;
-there is no all-CVE clean or zero-active claim.
+The actual current ARM64 reviewed-mode result is recorded above, with all 94
+active worker records and their reviews visible. Initial native amd64/arm64 standard scans passed, while the new reviewed-mode
+hosted run remains pending; there is no all-CVE clean or zero-active claim.
 
 Production cannot enable the retained unsigned updater: apply/rollback routes
 always refuse, the legacy flag is rejected, and production bootstrap/staging does

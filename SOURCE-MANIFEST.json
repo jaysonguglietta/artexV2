@@ -92,9 +92,9 @@
     },
     {
       "path": ".github/workflows/image-security.yml",
-      "bytes": 2496,
+      "bytes": 2524,
       "mode": "0o644",
-      "sha256": "b4849ea6aa462e0e57e60a1a392bc8cae0ea893bbb0bdab87a312a317d511695"
+      "sha256": "d107cf7922ab1a1ce40f3d6b49536fcf5b2066289bf6b5a12e287001e2a90c32"
     },
     {
       "path": ".github/workflows/release.yml",
@@ -212,9 +212,9 @@
     },
     {
       "path": "README.md",
-      "bytes": 33411,
+      "bytes": 33474,
       "mode": "0o644",
-      "sha256": "95c0e3b13f79fbf7941b2b42c33912bd67c3395cceaac228b33c0b32c58a8769"
+      "sha256": "49e9591dceb0023bb338e68d3b90f738d999e57a9cd3294e8eafd4f97ad3fe9a"
     },
     {
       "path": "README.zh.md",
@@ -242,9 +242,9 @@
     },
     {
       "path": "UPLOAD.md",
-      "bytes": 6181,
+      "bytes": 6767,
       "mode": "0o644",
-      "sha256": "d0fb5f1a500809bef74f7b80537a2a9b9b8b8736f197a228a14c603dc7e910a3"
+      "sha256": "b889a0fd015391c2ec9c1765c9e84bcd9b08cea4418adb6fc879f93d30cc8161"
     },
     {
       "path": "agent/assembly.go",
@@ -1742,9 +1742,9 @@
     },
     {
       "path": "docs/IMAGE-SECURITY.md",
-      "bytes": 19322,
+      "bytes": 19759,
       "mode": "0o644",
-      "sha256": "da772e633eb4b39a4ef4c6abdc391df606377cd0f76df60b3ca709622fbec1d4"
+      "sha256": "a30007a8180589c2ea93a9508e4329b9627c6ac49e73b5cfe2babc698c813eed"
     },
     {
       "path": "docs/OPERATIONS.md",
@@ -1754,21 +1754,21 @@
     },
     {
       "path": "docs/POSTGRES-BACKUP.md",
-      "bytes": 18252,
+      "bytes": 18385,
       "mode": "0o644",
-      "sha256": "1d3bb2873085457e31b9cdfdf78d414eea1c8e7ac81dc03e24ff72daec020685"
+      "sha256": "f58717167cce65c9e4c6be8e6f09989816b82d87bbbd37438828276a10bdca63"
     },
     {
       "path": "docs/PRODUCT-READINESS-REVIEW.md",
-      "bytes": 56958,
+      "bytes": 57189,
       "mode": "0o644",
-      "sha256": "f1fa2b1fde4e13ff540fe9e1bee54a5e1e71e16124bed08556c4db9ff82bca88"
+      "sha256": "a1e9cfd278d9d8bfec04d6451f5a46f26b6021bc8af0dace920597a2a4ddc267"
     },
     {
       "path": "docs/README.md",
-      "bytes": 4166,
+      "bytes": 4615,
       "mode": "0o644",
-      "sha256": "302827195036821986b7def2245b83f266c8ac7d34cd8e0d201236c76bd80a58"
+      "sha256": "46f51bdb2a099743b93765748e55fab85afb86349b5b25377de16e2a3b40e4f7"
     },
     {
       "path": "docs/RELEASE-TAG-PROTECTION.md",
@@ -1784,27 +1784,27 @@
     },
     {
       "path": "docs/SECURITY-AUDIT.md",
-      "bytes": 68321,
+      "bytes": 68792,
       "mode": "0o644",
-      "sha256": "4d021730c2f0960672bec057e998c8ce9de4d9b01e9c56a3967c60d9e7627e19"
+      "sha256": "bf13b15fb9b219ab3931ce39db6972b103de126ff16a08828eff398e34d54a9a"
     },
     {
       "path": "docs/SECURITY-REVIEW.md",
-      "bytes": 27482,
+      "bytes": 27514,
       "mode": "0o644",
-      "sha256": "7e0da601e232f3ada7811f8c1b8526f02d7930637d699fc03fdcb97ccc851582"
+      "sha256": "637eab0f674d2c3dcf42d99a37e5e1806cac8f1977dbd21b7dcce774ec0f5168"
     },
     {
       "path": "docs/SIGNED-RELEASES.md",
-      "bytes": 15403,
+      "bytes": 15789,
       "mode": "0o644",
-      "sha256": "cb15d004d320ba35c43a11704b6383f2a967a100b17e9a48dcfffcafc07b7717"
+      "sha256": "c4ba6a8020dea1e59486ad2e4f1a7ad4c1f6abf537918ec5880a806ce49e393f"
     },
     {
       "path": "docs/VALIDATION.md",
-      "bytes": 31620,
+      "bytes": 34327,
       "mode": "0o644",
-      "sha256": "eb5746f983f38871e9a0a4d84ce54157220609e3f027573c6b76194d53f10eb9"
+      "sha256": "b9a93a3bf32a3d51bb9f1d0ecceed4f6b34284d52bafcb62200f9ea77b135454"
     },
     {
       "path": "docs/WORKER-ISOLATION.md",
@@ -2654,9 +2654,9 @@
     },
     {
       "path": "scripts/test-backup-integration.py",
-      "bytes": 5008,
+      "bytes": 5197,
       "mode": "0o755",
-      "sha256": "722b4d4980caf1b9414d6d6c14331fd8363bbde9681014ace7f5506aa3140533"
+      "sha256": "b64f8b03c0e21c4e5b4876cde941b530e2dd955ca12265429116f6d4c7b2edb5"
     },
     {
       "path": "scripts/test-backup.py",
@@ -2666,9 +2666,9 @@
     },
     {
       "path": "scripts/test-compose.py",
-      "bytes": 18528,
+      "bytes": 20342,
       "mode": "0o644",
-      "sha256": "b9c2654fea24ec75cf9cbafa7e0be9bb3c02f70b60fbc40fe4254fccbb783ea6"
+      "sha256": "d2226cdddcb3c6155fdba732ccb6127591e5a5685a6def573351f952f00faf82"
     },
     {
       "path": "scripts/test-image-security.py",
@@ -2678,9 +2678,9 @@
     },
     {
       "path": "scripts/test-isolated.sh",
-      "bytes": 3645,
+      "bytes": 4083,
       "mode": "0o755",
-      "sha256": "dea61b451ac97c48e5cb22996992f358cbae0964d1ccd2df29449cb0308f08c1"
+      "sha256": "e918c3cffaf31e29add7916a4d35d65fff939fa0a5c665eb08ecec5b98817417"
     },
     {
       "path": "scripts/test-keyless-release.py",
@@ -2768,15 +2768,15 @@
     },
     {
       "path": "security/image-followup-evidence.json",
-      "bytes": 54716,
+      "bytes": 612721,
       "mode": "0o644",
-      "sha256": "bdac38a71aa089e18b988253099f52060cf3d91ced090222989b350acbd9856a"
+      "sha256": "813938e0d73b672b3aa8372dde3b471f1dfbe206c9668cf87158d63e01697d8d"
     },
     {
       "path": "security/image-policy.json",
-      "bytes": 75915,
+      "bytes": 151317,
       "mode": "0o644",
-      "sha256": "db741d5854ea9ab35a09bfe250a3d7e7bff153b581a40175ed0718f5fc7a5698"
+      "sha256": "21649a8477f1a8e73456b1f3350ca6e8db2d97d23628c2b4aa5ead4c3c93f738"
     },
     {
       "path": "security/npm-fork-validation.json",

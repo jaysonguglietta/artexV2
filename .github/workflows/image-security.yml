@@ -42,7 +42,7 @@ jobs:
           python3 scripts/scan-images.py --output '${{ runner.temp }}/image-security-reports' \
             --trivy '${{ runner.temp }}/artex-trivy-0.76.2' \
             --cache-dir '${{ runner.temp }}/artex-trivy-db' \
-            --platform '${{ matrix.platform }}' \
+            --platform '${{ matrix.platform }}' --require-reviewed-findings \
             --image application=artex-security:application \
             --image worker=artex-security:worker \
             --image broker=artex-security:broker \

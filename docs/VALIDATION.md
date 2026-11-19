@@ -14,6 +14,13 @@ and encrypted backups verified by a disposable restore. Their scope and tests
 are below. The separate product review's nine-item backlog remains a proposal;
 these changes do not establish the full browser assessment journey.
 
+Final local implementation evidence below covers commit
+`a2b0c63f6fa1aa632e0cf727835bfd0943d8a530` on
+`security/storage-image-hardening`. That validation branch was pushed; `main`
+was unchanged at this checkpoint. Native hosted CI and architecture results are
+reported separately when complete. Later documentation edits require a fresh
+source credential snapshot even when implementation remains identical.
+
 | Current follow-up check | Observed result / remaining scope |
 |---|---|
 | Disposable PostgreSQL and Go integration | **869 passed, 0 failed, 1 optional live-provider skipped**, plus **13 additional tested suites**. No live-provider pass is claimed. |
@@ -23,19 +30,22 @@ these changes do not establish the full browser assessment journey.
 | Backup/log regressions | **15 backup unit + 8 cryptographic + 4 log-policy** tests passed. |
 | Live release-tag policy | Two active rulesets verified: personal-owner creation only; updates/deletions have an empty bypass list. [Evidence](../security/release-tag-policy-evidence.json) records owner and read-only checks; no tag was created or mutated. **7 policy tests** passed. |
 | Signing/publication regressions | **15 signing + 15 publication** tests passed locally. This is not a new hosted OIDC or production-release result. |
-| Image policy regressions | **26 passed**, including exact review severity/`fixed_version: null`, mode boundaries and expired/stale behavior. Saved-report evaluation gives 94 reviewed/0 blocking in reviewed mode and 94 blocking/0 reviewed in the independent strict diagnostic. Fresh final-image scans remain pending. |
+| Image policy regressions | **26 passed**, including exact review severity/`fixed_version: null`, mode boundaries and expired/stale behavior. Saved-report evaluation distinguishes reviewed acceptance from the independent strict diagnostic. The actual final four-image reviewed scan also passed, with 94 reviewed/0 blocking records. |
 | Explicit npm fork | **3 static + 10 installed behavior/security** checks passed; [fixture evidence](../security/npm-fork-validation.json) authenticates source/lock/test identity. This is a source-runtime fixture, not the final full worker image. |
 | Explicit pip fork | **3 static + 10 installed behavior/security** checks passed, including corrected actual-code/SBOM inventory and offline venv/ensurepip. [Fixture evidence](../security/pip-fork-validation.json) records the current patch/test hashes. |
 | Embedded frontend | Current embedded build passed; no UI source change in this follow-up. The earlier 26 tests/3,086-key/typecheck results below retain their recorded scope. |
-| Actual copied worker tools | **6/6 passed on the rebuilt lifecycle-fixed ARM64 worker** `sha256:4c77f3514bdcbe3b1aac5a63f3a1a18468831820560b1acd321eda3cd2427e02`: patched Python/native modules, patched venv pip, npm dependency fix, retained tools, unused software removal and real Chromium rendering/interaction/PNG capture. Its fresh reviewed-policy image scan is pending; earlier scanned IDs below remain historical. |
-| Final images and advisory counts | Four exact ARM64 images passed **standard** policy. Worker retains **85 Medium + 9 Low active package/advisory records**, all without a listed fixed version; application/broker/PostgreSQL have zero at every severity. No risk exception or withdrawal disposition was used. This is **not** production-publication approval; full inventory and identity proof are below. |
-| Live worker acceptance | **53/53 passed at the lifecycle-fixed checkpoint**, including urgent close, descendants, watchdog expiry and cleanup. A subsequent adjacent cleanup-failure patch needs its final rebuilt-image 53-check run; that final run is pending. Concurrent close waits for acknowledged Docker removal or confirmed absence. |
-| Concurrent-removal race validation | Latest `go test -race ./isolation` passed in **8.176 seconds**, including the adjacent cleanup-failure fix and concurrent-close/removal regressions. This does not substitute for the pending final rebuilt-image live run. |
+| Actual copied worker tools | **6/6 passed on the final rebuilt ARM64 worker** `sha256:859d81ed57517566bfde55f03f02137c4c50b7c29a855c1c131d416922b3f9b2`: patched Python/native modules, patched venv pip, npm dependency fix, retained tools, unused software removal and real Chromium rendering/interaction/PNG capture. This is the exact worker in the reviewed image scan below. |
+| Final images and advisory counts | Four exact final ARM64 images passed **reviewed-findings** policy: **0 blocking, 94 exact reviews applied**. Worker raw inventory retains **85 Medium + 9 Low active records**, all without a listed fixed version; application/broker/PostgreSQL have zero at every severity. This is explicit authorized residual-risk acceptance, not a zero-active scan or release publication. |
+| Live worker acceptance | **53/53 passed on the final rebuilt images**, including the adjacent cleanup-failure fix, urgent close, descendants, watchdog expiry and cleanup. Concurrent close waits for acknowledged Docker removal or confirmed absence. |
+| Concurrent-removal race validation | Latest `go test -race ./isolation` passed in **8.176 seconds**, including the adjacent cleanup-failure fix and concurrent-close/removal regressions. The final rebuilt-image 53-check live run also passed separately. |
 | Final Compose acceptance | **17/17 passed**, including bounded PostgreSQL startup/confinement/restart persistence, static API contents, isolated tool execution, log rotation, network separation and cleanup. This is separate from the 22-check backup integration. |
-| Independent strict diagnostic | **Earlier expected refusal verified**: the real `--require-no-active-findings` scan of the same worker checkpoint blocked **94 active records**, with zero scanner errors. This remains historical zero-active-policy negative proof; it does not test or approve the new reviewed-findings publication policy. |
-| Reviewed-findings publication policy | **94 exact ARM64 reviews configured**, 85 Medium/9 Low, with severity and `fixed_version: null`; reviewed `2026-11-19T13:04:35.549172Z`, expiry `2026-12-19T12:00:00Z`. No amd64 review is present; it requires actual hosted evidence and separate exact entries. Only worker Ubuntu 26.04 OS vendor-unfixed Medium/Low is eligible, with a primary Ubuntu CVE reference and concrete containment. No High/Critical/Unknown or fixable waiver. New final-image reviewed scans remain pending. |
+| Independent strict diagnostic | **Earlier expected refusal verified**: the real `--require-no-active-findings` scan of the earlier `8e4ca64…` worker checkpoint blocked **94 active records**, with zero scanner errors. This remains historical zero-active-policy negative proof; it does not test or approve the new reviewed-findings publication policy. |
+| Reviewed-findings publication policy | **188 exact reviews configured**, 94 per platform (85 Medium/9 Low each), with severity and `fixed_version: null`. ARM64 review `2026-11-19T13:04:35.549172Z`; amd64 review `2026-11-19T13:19:24.496638+00:00` follows actual native report verification. All expire `2026-12-19T12:00:00Z`. Only worker Ubuntu 26.04 OS vendor-unfixed Medium/Low is eligible, with a primary Ubuntu CVE reference and concrete containment. No High/Critical/Unknown or fixable waiver. The actual final ARM64 four-image reviewed scan passed with 94 reviews applied and zero blocking; hosted amd64/arm64 standard inventory passed separately; the new reviewed-mode hosted rerun is pending. |
 | Host daemon and journal policy | **Activated and tested** on the dedicated `colima-artex-test` VM: Docker and journald restarted/active; a new container inherited `local`, `10m × 3`, compression. A 41,779,200-byte stdout fixture rotated to 3,188,369 bytes while retaining its final marker. Journal configured at 256 MiB persistent/64 MiB runtime/7 days; measured usage 16.0 MiB. This does not retrofit unrelated existing containers or cap all host storage. |
-| Hosted follow-up and source credential scan | **Pending** new source push/CI/image/OIDC results and fresh prepared-source scan. Existing linked November 18 passes apply only to that commit. |
+| Hosted native image checkpoint | [Run44531004586 passed](https://github.com/jaysonguglietta/artexV2/actions/runs/44531004586) on native amd64 and arm64, four components each, source `a2b0c63`. This was **standard mode**, not a new reviewed-mode publication result. All 16 report/SBOM hashes were verified. |
+| Hosted Go/PostgreSQL checkpoint | [Run44531004483 failed](https://github.com/jaysonguglietta/artexV2/actions/runs/44531004483) at PostgreSQL startup in integration and Compose. Hosted 53 worker and six tool checks passed, along with frontend/unit/security/recon; full hosted CI is **not green**. Diagnosis and rerun are pending. |
+| Hosted reviewed-mode/OIDC follow-up | **Pending** after adding exact amd64 reviews and configuring CI with `--require-reviewed-findings`. `main` remains unchanged; no release was enabled or published. |
+| Prepared-source credential checkpoint | Gitleaks reviewed a **953-file snapshot** (952 source files plus manifest): six individually reviewed synthetic fixture matches, zero unresolved. Snapshot SHA256 `7e2368cf228aea3fa4c55bc7804198b6b35fd0114eb72534d8687589ea94814b`. This predates these documentation/evidence edits; **a fresh snapshot scan is required**, and this is not labeled the final updated-source pass. |
 | Production version-tag release | **Not enabled or published.** The operator authorized the narrow review allowance, not a release-enabling variable, tag or publication. Publication still requires protected-tag identity, explicit opt-in, complete tests and `--require-reviewed-findings` on every exact image/platform. Accepted residual risk is not a package fix or zero-active result. |
 
 The exact backup integration report SHA256 is
@@ -47,60 +57,73 @@ See [database/log/backup operations](POSTGRES-BACKUP.md),
 [image policy](IMAGE-SECURITY.md), [signed releases](SIGNED-RELEASES.md) and
 [product readiness](PRODUCT-READINESS-REVIEW.md) for controls and limits.
 
-## November 19 local ARM64 image checkpoint
+## November 19 final local ARM64 reviewed-image evidence
 
-[Sanitized image evidence](../security/image-followup-evidence.json) retains all
-**94 active package/advisory records (49 unique vulnerability IDs)**, exact
-installed versions/targets/statuses, image/config/rootfs bindings, scanner/DB
-identity and hashes of all eight full reports/SBOMs. Every artifact hash was
-verified when producing this record. No image environment or credentials are
-included. These counts are observations from this DB, not claims that every
-native/runtime vulnerability is detected.
+[Sanitized image evidence](../security/image-followup-evidence.json) records the
+actual final `reviewed-findings` result and retains all **94 active package/advisory
+records (49 unique vulnerability IDs)**, their exact risk-review records,
+image/config/rootfs identity, scanner/DB/policy hashes and all eight full report/
+SBOM hashes. Every report/SBOM hash and applied review was verified when refreshing
+this record. Image environment and credentials are omitted. This is accepted
+contained residual risk, not a repair or claim that every vulnerability is known.
 
-| Component | Critical | High | Medium | Low | Unknown | Standard blocking | Risk exceptions |
+| Component | Critical | High | Medium | Low | Unknown | Reviewed-mode blocking | Exact reviews applied |
 |---|---:|---:|---:|---:|---:|---:|---:|
 | application | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| worker | 0 | 0 | 85 | 9 | 0 | 0 | 0 |
+| worker | 0 | 0 | 85 | 9 | 0 | 0 | 94 |
 | broker | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
 | postgres | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
 
-All 94 residual records are active Ubuntu worker OS findings with no
-`FixedVersion` in this database. At this recorded standard-mode checkpoint no
-risk exception or withdrawal was applied. The independent strict diagnostic
-correctly blocked all 94 with zero scanner errors. The operator subsequently
-authorized exact, expiring contained vendor-unfixed worker Medium/Low reviews
-for `--require-reviewed-findings`; the earlier strict refusal does not test that
-new allowance. Fresh policy/architecture proof is pending. No formal release has
-been enabled or published. Local authorized assessment workflows are preserved,
-with the latest full worker acceptance recorded above.
+All 94 active Ubuntu worker OS records have no `FixedVersion` in this DB and
+match exact authorized reviews: CVE/package/version/severity/platform, explicit
+`fixed_version: null`, primary Ubuntu reference and concrete containment. Reviews
+expire `2026-12-19T12:00:00Z`. No withdrawn classification was used. There is no
+amd64 acceptance inferred from this local run; the separate hosted standard
+checkpoint and subsequent exact amd64 reviews are recorded below. The independent strict diagnostic's older
+94-record refusal on worker `8e4ca64…` is retained in a separate historical field;
+it is not a current-image strict result or failure of reviewed publication.
 
 Trivy **0.76.2** used schema-2 DB
 `UpdatedAt=2026-11-19T07:06:49.809946527Z`, SHA256
 `ebba0a2f709d971b1b49f06569bb7cded629f9f87a5cf71bb5cb8dec015a07c0`.
-The scan completed at `2026-11-19T12:47:55.947825+00:00`. These are local ARM64
-exports, not published GHCR release digests or current amd64 scan results.
+The actual reviewed scan completed at `2026-11-19T13:09:24.514387+00:00`.
+These are local ARM64 export identities, not published GHCR release digests.
 
 | Component | Original Docker image ID | Authenticated config digest |
 |---|---|---|
-| application | `sha256:2c20953329d957475e244f41969978ab151fde9caa1f70360693143ad4685c21` | `sha256:8fa9252d9e03fe738b6155152ac90af10214a65e5d5adbe8e2bc77b2bcc36533` |
-| worker | `sha256:8e4ca64cb715d078a32be08debd2ae7327014bee6723bfb52c373f456d3816dc` | `sha256:7183871c33d677fe6b7d355560db8d36e3c84f4898243b364d7e235e8bd57cd0` |
-| broker | `sha256:8742cdd6129de92fc9a01e2e54a9c3aaa98544e4f69981b8fe325d0f3e044eaa` | `sha256:8e61713fd6964da9e2ee15f24d4a1a43fed0fec891e5dc3317078888dadba7af` |
+| application | `sha256:b0ce94112ea7e348582de3076fe5d8ff0c7fbe432f175bfc57f8f50425f386f2` | `sha256:73809ff89c70d17ee16311384ffeacaed99a7abf9b012e685a339fcedfed5e6e` |
+| worker | `sha256:859d81ed57517566bfde55f03f02137c4c50b7c29a855c1c131d416922b3f9b2` | `sha256:c523ea87cbe6c4b5542c4ab713b4cbec832070ff843835af365faaacab488b54` |
+| broker | `sha256:5abefcb7ca1c436f4cb0591688d62ddc723f812c3f0e962b39dbcc01c6122c9c` | `sha256:ba2d310ba7520038e39b470b0e4d4872dff7c1a0740978e15e4d6d43897934f2` |
 | postgres | `sha256:2f4821fbaa775953457ef2b557292d1ef006b8e4cc06018569d78d9467afe8db` | `sha256:b38b0fc77ade8e3d4d7a10601c72d7086472be0e6068c0affa80f7bd1c708fed` |
 
-These IDs are the checked pre-lifecycle-fix and pre-reviewed-policy checkpoint.
-The urgent-close fix has rebuilt source images and passed 53 live worker checks
-and a fresh isolation race run. A later adjacent cleanup-failure patch has passed
-its own race run but needs final rebuilt-image live acceptance. Reviewed-policy
-scans remain pending before
-these image IDs can be replaced by current-source scan evidence. No earlier scan
-is silently carried forward.
+The final implementation passed **53 live worker checks**, **six actual worker/
+browser checks** on the worker above and the **22-check encrypted backup/restore
+integration**. The backup report remains byte-identical at the hash above and all
+seven watched source hashes match. The evidence JSON binds these local report
+hashes without publishing private backup data. Initial native architecture standard scans subsequently passed; new reviewed-mode
+hosted verification, PostgreSQL startup diagnosis and a fresh source credential
+scan after documentation changes remain separate pending work. No production-release variable, version tag or publication was enabled.
 
-The six actual worker/browser checks ran on the worker ID above after the final
-pip code/SBOM correction. This is stronger integration evidence than the separate
-source-runtime npm/pip fixtures, but it does not replace full lifecycle acceptance
-or a native amd64 run. The later lifecycle-fixed worker passed another six tool
-checks plus the full 53-check suite; its new scan identity remains pending. Later
-source/image/DB changes need fresh verification.
+## November 19 initial hosted native image checkpoint
+
+[Image run44531004586](https://github.com/jaysonguglietta/artexV2/actions/runs/44531004586)
+checked `a2b0c63f6fa1aa632e0cf727835bfd0943d8a530`. Both native architectures
+passed **standard** scans with identical 94 worker OS identities/installed versions:
+85 Medium/9 Low per platform, zero High/Critical/Unknown; the other components
+reported zero. This run predates the 94 new amd64 policy entries and reviewed-mode
+CI configuration; it is not silently reclassified as reviewed-mode proof.
+
+The hosted DB updated at `2026-11-19T13:02:29.533007734Z`, SHA256
+`923c9ac4d894e62da8020926c64e7bbff80f2562944708ac6804388eb1debec9`.
+[Evidence](../security/image-followup-evidence.json) adds both platform image/config/
+rootfs bindings, scanner/DB identities and all 16 verified report/SBOM hashes, while
+preserving the earlier local reviewed pass. The subsequent policy has 188 exact
+reviews; differing checkpoint/current policy hashes are expected.
+
+[Go run44531004483](https://github.com/jaysonguglietta/artexV2/actions/runs/44531004483)
+failed PostgreSQL startup in integration and Compose; it is **not an all-green
+result**. Hosted 53 worker/six tools and frontend/unit/security/recon passed.
+Diagnosis, the new reviewed-mode native rerun and OIDC follow-up remain pending.
 
 ## November 18 targeted follow-up checkpoint
 

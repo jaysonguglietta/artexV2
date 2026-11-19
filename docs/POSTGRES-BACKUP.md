@@ -162,7 +162,9 @@ to a 3,188,369-byte log directory and retained its final marker. The journal use
 activation on that VM, not every install or retroactive changes to old containers.
 
 The exact-source encrypted backup/independent bounded-restore integration passed
-22/22; a later final Compose acceptance run passed 17/17. The physical capacity
+22/22, and the final rebuilt-image repeat passed all 22 again with the same
+report hash and all seven watched source hashes unchanged. The separate final
+Compose acceptance run passed 17/17. The physical capacity
 suites passed 16 disk-full, seven migration and three recovery-reserve checks,
 plus 15 backup unit, eight cryptographic and four log-policy regressions.
 [Validation](VALIDATION.md) records source scope, hashes and remaining worker/image/

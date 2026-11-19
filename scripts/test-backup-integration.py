@@ -57,6 +57,10 @@ def main():
         completed = True
     except Exception as error:
         failure = fixture.redact(str(error))
+        diagnostic = fixture.postgres_failure_diagnostics()
+        if diagnostic:
+            failure += "\n" + diagnostic
+        print("FAILED: " + failure, file=sys.stderr, flush=True)
     finally:
         errors = fixture.cleanup()
     after = {name: hashlib.sha256((SOURCE / name).read_bytes()).hexdigest() for name in watched}

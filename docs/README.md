@@ -56,9 +56,15 @@ API image has no assessment toolchain; those tools belong in isolated workers.
 Production in-process update/rollback is unavailable. Hosted signing/publication
 status and final integrated checks are reported separately in the validation record.
 The November 19 follow-up has local storage, restore, tag-policy and package-manager
-proof; final images/live worker checks and new hosted runs remain pending. Signed
+proof. Final local ARM64 reviewed-image gates, 53 worker checks, six real tool/
+browser checks and 22 backup checks passed. Initial native standard image scans
+also passed on both platforms; Go CI failed PostgreSQL startup in integration/
+Compose. Diagnosis, new reviewed-mode/OIDC runs and a fresh credential snapshot
+remain pending; full hosted CI is not green. Signed
 publication requires exact, expiring reviews for any remaining vendor-unfixed
 Medium/Low worker Ubuntu OS record. No High/Critical/Unknown or fixable finding
 can be waived; this is residual-risk acceptance, not a clean-scan claim. The new
-policy's exact-image and hosted proof is recorded separately in validation.
+policy's actual local ARM64 pass and pending native hosted proof are recorded
+separately in validation. After actual native inventory verification, 188 exact
+reviews cover 94 records per platform; reviewed-mode hosted rerun is pending.
 This does not disable local authorized assessment workflows.

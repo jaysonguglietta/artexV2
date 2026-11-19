@@ -25,33 +25,39 @@ No version-only fix or finding suppression is claimed.
 
 The **26 image-gate regressions**, 15 signing tests, 15 publication tests and both
 package-manager source-runtime suites passed. The release driver requires
-`reviewed-findings` on both the top-level summary and every component image;
-a standard or strict-diagnostic summary cannot authorize publication. Final local ARM64 standard scans passed for all four exact image IDs.
-The worker retains **85 Medium + 9 Low active package/advisory records**, all
-without `FixedVersion`; application/broker/PostgreSQL have zero reported findings
-at every severity. That standard-mode checkpoint used no risk exception or
-withdrawn classification. It predates the reviewed-publication policy.
+`reviewed-findings` on the top-level summary and every image; standard and
+strict-diagnostic summaries cannot authorize publication.
+
+The actual final four-image **ARM64 reviewed-findings scan passed**, with zero
+blocking and 94 exact risk reviews applied. Worker raw inventory remains
+**85 Medium + 9 Low active records**, all without `FixedVersion`; application,
+broker and PostgreSQL have zero reported findings at every severity. The operator
+explicitly accepted the contained, expiring worker residual risk; it is not fixed
+or a zero-active result. No withdrawal classification was used.
 [Sanitized evidence](../security/image-followup-evidence.json) retains all 94
-records (49 unique IDs), exact installed versions and authenticated artifact
-hashes. The DB updated at `2026-11-19T07:06:49.809946527Z`, SHA256
+records (49 unique IDs), applied reviews and authenticated image/DB/report/SBOM
+identity. The DB updated at `2026-11-19T07:06:49.809946527Z`, SHA256
 `ebba0a2f709d971b1b49f06569bb7cded629f9f87a5cf71bb5cb8dec015a07c0`.
 
-The lifecycle-fixed rebuilt worker subsequently passed **53/53** live checks,
-**6/6** actual worker/browser checks. An adjacent cleanup-failure fix then passed
-a fresh isolation race run in **8.176 seconds**; its final rebuilt-image 53-check
-run is pending. Concurrent close waits for acknowledged removal or confirmed absence. The independent
-strict scan of the earlier image checkpoint blocked all 94 active records with
-zero scanner errors. Fresh reviewed-policy scans of the rebuilt images, new
-hosted architecture/OIDC results and source credential scan remain pending in
-[validation](VALIDATION.md). Earlier scan IDs/counts and hosted runs remain
-scoped to their recorded checkpoints.
-The independent strict diagnostic remains available, but it is not the newly
-authorized release criterion. `--require-reviewed-findings` permits only exact
-reviewed vendor-unfixed Medium/Low worker Ubuntu OS records under the rules below.
-Fresh actual-image proof for that policy remains pending. Active findings remain
-risks even when reviewed; local assessment/scanning is preserved. A local worker
-pass does not establish the new image policy or native amd64 results. No release
-was enabled or published.
+The final rebuilt implementation passed **53/53 live worker checks**, **6/6 actual
+worker/browser checks**, the **22-check backup integration** and a fresh isolation
+race run in **8.176 seconds**, including the concurrent-removal/cleanup-failure
+fix. The six tools/browser checks used the exact scanned worker
+`sha256:859d81ed57517566bfde55f03f02137c4c50b7c29a855c1c131d416922b3f9b2`.
+The earlier strict diagnostic refusal on the older `8e4ca64…` worker remains
+separate historical proof; it is not the current-image reviewed-mode result.
+
+The initial native amd64/arm64 [image run](https://github.com/jaysonguglietta/artexV2/actions/runs/44531004586)
+also passed standard-mode inventory: the same 94 worker OS records/versions on
+each platform, other components zero, all 16 artifact hashes verified. Its newer
+DB identity and exact images are retained separately in the evidence JSON. This
+is not a hosted reviewed-mode pass. The [Go run](https://github.com/jaysonguglietta/artexV2/actions/runs/44531004483)
+failed PostgreSQL startup in integration/Compose despite passing worker/tool and
+frontend/unit/security/recon checks. Diagnosis, reviewed-mode native rerun, OIDC
+and a fresh source credential snapshot remain pending in [validation](VALIDATION.md).
+These results do not authorize enabling or publishing a release. No enabling
+variable, version tag or production release was created. Local scanning remains
+available under the documented supported boundary.
 
 ## Local use
 
@@ -217,12 +223,13 @@ authorized narrowly reviewed vendor-unfixed Medium/Low **worker Ubuntu 26.04 OS*
 records; this accepts residual risk within documented containment rather than
 claiming those vulnerabilities are repaired. No other class is eligible.
 
-The current JSON contains **94 exact linux/arm64 reviews**: 85 Medium and 9 Low,
-reviewed at `2026-11-19T13:04:35.549172Z` and expiring at
-`2026-12-19T12:00:00Z` (less than 30 days). Every record explicitly has
-`fixed_version: null` and matching severity. **No amd64 review is present**; it
-requires actual native hosted-report evidence and its own exact entries. These
-reviews and saved-report re-evaluation are not a fresh final-image scan.
+The current JSON contains **188 exact reviews: 94 per native platform**, each
+with 85 Medium/9 Low. ARM64 was reviewed `2026-11-19T13:04:35.549172Z`; amd64 was
+added only after actual hosted inventory verification, reviewed
+`2026-11-19T13:19:24.496638+00:00`. All expire `2026-12-19T12:00:00Z`, within
+30 days, and explicitly match severity and `fixed_version: null`. The initial
+hosted standard reports and local reviewed report keep their earlier policy
+hash; fresh reviewed-mode hosted CI is pending after this configuration change.
 Publication has not been enabled and no release/tag was created.
 
 Each review must include `fixed_version: null` and name one exact CVE, package,
