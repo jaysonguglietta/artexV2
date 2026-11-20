@@ -303,7 +303,7 @@
       "findingDetail": "Finding details"
     },
     "tabs": {
-      "sessions": "Sessions",
+      "sessions": "Execution details",
       "overview": "Overview",
       "graph": "Exploration path",
       "broadcast": "Broadcast",
@@ -2710,7 +2710,7 @@
       "uploadDone": "Uploaded {count} files and appended their absolute paths to the end of the description (editable)",
       "uploadIdle": "You can select multiple files. On upload, their absolute paths are appended to the description so the worker can open them with Read/Bash",
       "goalLabel": "Goal",
-      "goalPlaceholder": "What to achieve. e.g. Gain admin page access, gain server access",
+      "goalPlaceholder": "What would you like to verify? Include the expected evidence and testing limits.",
       "sourceLabel": "Linked tasks",
       "sourceHint": "You can link up to {max} tasks. The new task inherits the selected tasks' persistent blackboard, asset scope, and related traffic as live read-only, and writes to its own independent blackboard.",
       "companyLabel": "Linked company asset scope",
@@ -2727,7 +2727,7 @@
       "heartbeatLabel": "Planner heartbeat (minutes)",
       "heartbeatPlaceholder": "Default 10",
       "heartbeatHint": "If this much time passes since the last planning finished or the task started with no trigger in between, one planning round runs automatically (to prevent stalls and resume supervision of running workers). The minimum is 10 minutes.",
-      "seedLabel": "Dispatch the first intent immediately (description + goal)",
+      "seedLabel": "Start the first work item immediately",
       "seedHint": "When on, right after creation it dispatches \"description + goal\" as a single intent so the worker starts immediately without waiting for the first planning round; when it finishes, the planner takes over to assess and follow up. Recommended for cases usually solved by a single work, like CTF; when off, it follows the standard flow of planning first, then executing.",
       "coverageLabel": "Asset coverage feature",
       "coverageHint": "On by default. It calculates and displays test coverage, shows testing progress on the situation map, and automatically accumulates the tested scope. When off, coverage is no longer calculated or displayed, the situation map shows only assets without progress, and the agent no longer receives scope-related tools. Turning it off does not affect \"Linked company asset scope\".",

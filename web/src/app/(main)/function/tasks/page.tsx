@@ -3,6 +3,7 @@
 import * as React from "react";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import {
   DndContext,
@@ -46,6 +47,7 @@ import { toast } from "sonner";
 import { useTranslations } from "use-intl";
 
 import { AssetInterceptRulesEditor } from "@/components/asset-intercept-rules-editor";
+import { GuidedAssessmentForm } from "@/components/guided-assessment-form";
 import { StatusBadge } from "@/components/status-badge";
 import { TablePagination } from "@/components/table-pagination";
 import { TaskLLMProfileChain } from "@/components/task-llm-profile-chain";
@@ -3142,6 +3144,9 @@ function CreateTaskSheet({
   onCategoriesChanged: () => void;
 }) {
   const t = useTranslations("tasksPage");
+  const router = useRouter();
+  const [mode, setMode] = React.useState("guided");
+  const [profilesLoading, setProfilesLoading] = React.useState(true);
   const [open, setOpen] = React.useState(false);
   const [name, setName] = React.useState("");
   const [categoryID, setCategoryID] = React.useState<number | undefined>(undefined);
@@ -3166,17 +3171,20 @@ function CreateTaskSheet({
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const sheetContentRef = React.useRef<HTMLDivElement>(null);
 
-  // load LLM profiles once for the create-task profile picker.
+  // Reload when the editor opens so newly configured providers appear.
   React.useEffect(() => {
+    if (!open) return;
+    setProfilesLoading(true);
     api
       .llmProfiles()
       .then(setProfiles)
-      .catch(() => setProfiles([]));
+      .catch(() => setProfiles([]))
+      .finally(() => setProfilesLoading(false));
     api
       .companies()
       .then(setCompanies)
       .catch(() => setCompanies([]));
-  }, []);
+  }, [open]);
 
   // pickFiles uploads the chosen files into this draft's staging dir and appends their
   // absolute paths to the description; the task's agents open them by path via Read/Bash.
@@ -3259,7 +3267,7 @@ function CreateTaskSheet({
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <Button size="sm">
-          <PlusIcon /> {t("create.newTask")}
+          <PlusIcon /> New assessment
         </Button>
       </SheetTrigger>
       {/* The right drawer uses 45vw on desktop and full width on narrow screens. Header/footer stay fixed while the form body scrolls independently across the full viewport height. */}
@@ -3269,198 +3277,236 @@ function CreateTaskSheet({
         className="w-full! max-w-none! gap-0 p-0 sm:w-[45vw]! sm:max-w-[45vw]!"
       >
         <SheetHeader className="border-b p-6">
-          <SheetTitle>{t("create.newTask")}</SheetTitle>
-          <SheetDescription>{t("create.description")}</SheetDescription>
+          <SheetTitle>New assessment</SheetTitle>
+          <SheetDescription>Start with a website check, or use the full task editor.</SheetDescription>
         </SheetHeader>
 
         <div className="flex-1 overflow-y-auto p-6">
-          <div className="grid gap-5">
-            <TaskTemplateControls
-              description={description}
-              goal={goal}
-              categoryID={categoryID}
-              interceptRules={interceptRules}
-              selectedTemplateID={selectedTemplateID}
-              onSelectedTemplateIDChange={setSelectedTemplateID}
-              onApply={(template) => {
-                setDescription(template.description);
-                setGoal(template.goal);
-                setCategoryID(template.category_id ?? undefined);
-                setInterceptRules(template.intercept_rules ?? []);
-                setUploadCount(0);
+          <Tabs value={mode} onValueChange={setMode} className="mb-6">
+            <TabsList className="w-full">
+              <TabsTrigger value="guided" className="flex-1">
+                Website check
+              </TabsTrigger>
+              <TabsTrigger value="advanced" className="flex-1">
+                Advanced task
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+          {mode === "guided" ? (
+            <GuidedAssessmentForm
+              profiles={profiles}
+              loading={profilesLoading}
+              busy={creating}
+              onSave={async (assessment, profileID) => {
+                setCreating(true);
+                try {
+                  const task = await api.createTask({
+                    ...assessment,
+                    llmProfileIds: [profileID],
+                    timeoutSeconds: 900,
+                    seedFirstIntent: false,
+                    startPaused: true,
+                  });
+                  toast.success("Assessment saved. Review setup before starting.");
+                  setOpen(false);
+                  onCreated();
+                  router.push(`/function/tasks/detail?id=${encodeURIComponent(task.id)}&tab=overview`);
+                } finally {
+                  setCreating(false);
+                }
               }}
-              portalContainer={sheetContentRef}
             />
-            <div className="grid gap-2">
-              <Label htmlFor="name">{t("create.nameLabel")}</Label>
-              <Input
-                id="name"
-                placeholder={t("create.namePlaceholder")}
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
-            </div>
-            <Field>
-              <FieldLabel htmlFor="task-category">{t("create.categoryLabel")}</FieldLabel>
-              <CategoryPicker
-                categories={categories}
-                value={categoryID}
-                onValueChange={setCategoryID}
-                onCategoryCreated={onCategoriesChanged}
+          ) : (
+            <div className="grid gap-5">
+              <TaskTemplateControls
+                description={description}
+                goal={goal}
+                categoryID={categoryID}
+                interceptRules={interceptRules}
+                selectedTemplateID={selectedTemplateID}
+                onSelectedTemplateIDChange={setSelectedTemplateID}
+                onApply={(template) => {
+                  setDescription(template.description);
+                  setGoal(template.goal);
+                  setCategoryID(template.category_id ?? undefined);
+                  setInterceptRules(template.intercept_rules ?? []);
+                  setUploadCount(0);
+                }}
                 portalContainer={sheetContentRef}
               />
-              <FieldDescription>{t("create.categoryHint")}</FieldDescription>
-            </Field>
-            <div className="grid gap-2">
-              <Label htmlFor="description">{t("create.descLabel")}</Label>
-              <Textarea
-                id="description"
-                className="min-h-32"
-                placeholder={t("create.descPlaceholder")}
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-              />
-              {/* Stage multiple attachments and append paths for subsequent worker inspection. */}
-              <div className="flex flex-wrap items-center gap-2">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  multiple
-                  className="hidden"
-                  onChange={(e) => void pickFiles(e.target.files)}
+              <div className="grid gap-2">
+                <Label htmlFor="name">{t("create.nameLabel")}</Label>
+                <Input
+                  id="name"
+                  placeholder={t("create.namePlaceholder")}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
                 />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={uploading}
-                >
-                  {uploading ? <Loader2Icon className="animate-spin" /> : <PaperclipIcon />}
-                  {t("create.uploadButton")}
-                </Button>
-                <span className="text-muted-foreground text-xs">
-                  {uploadCount > 0 ? t("create.uploadDone", { count: uploadCount }) : t("create.uploadIdle")}
-                </span>
               </div>
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="goal">{t("create.goalLabel")}</Label>
-              <Textarea
-                id="goal"
-                className="min-h-32"
-                placeholder={t("create.goalPlaceholder")}
-                value={goal}
-                onChange={(e) => setGoal(e.target.value)}
-              />
-            </div>
-            <Field>
-              <FieldLabel htmlFor="source-tasks">{t("create.sourceLabel")}</FieldLabel>
-              <SourceTaskPicker
-                tasks={tasks}
-                value={sourceTaskIDs}
-                onValueChange={setSourceTaskIDs}
-                portalContainer={sheetContentRef}
-              />
-              <FieldDescription>{t("create.sourceHint", { max: MAX_SOURCE_TASKS })}</FieldDescription>
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="task-companies">{t("create.companyLabel")}</FieldLabel>
-              <CompanyPicker
-                companies={companies}
-                value={companyIDs}
-                onValueChange={setCompanyIDs}
-                portalContainer={sheetContentRef}
-              />
-              <FieldDescription>{t("create.companyHint")}</FieldDescription>
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="task-intercept-rules">{t("create.interceptLabel")}</FieldLabel>
-              <AssetInterceptRulesEditor value={interceptRules} onChange={setInterceptRules} />
-              <FieldDescription>{t("create.interceptHint")}</FieldDescription>
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="llm-profiles">{t("create.llmLabel")}</FieldLabel>
-              <TaskLLMProfileChain
-                profiles={profiles}
-                value={llmProfileIDs}
-                onValueChange={setLLMProfileIDs}
-                inputId="llm-profiles"
-                portalContainer={sheetContentRef}
-              />
-              <FieldDescription>{t("create.llmHint")}</FieldDescription>
-            </Field>
+              <Field>
+                <FieldLabel htmlFor="task-category">{t("create.categoryLabel")}</FieldLabel>
+                <CategoryPicker
+                  categories={categories}
+                  value={categoryID}
+                  onValueChange={setCategoryID}
+                  onCategoryCreated={onCategoriesChanged}
+                  portalContainer={sheetContentRef}
+                />
+                <FieldDescription>{t("create.categoryHint")}</FieldDescription>
+              </Field>
+              <div className="grid gap-2">
+                <Label htmlFor="description">{t("create.descLabel")}</Label>
+                <Textarea
+                  id="description"
+                  className="min-h-32"
+                  placeholder={t("create.descPlaceholder")}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                />
+                {/* Stage multiple attachments and append paths for subsequent worker inspection. */}
+                <div className="flex flex-wrap items-center gap-2">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    multiple
+                    className="hidden"
+                    onChange={(e) => void pickFiles(e.target.files)}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploading}
+                  >
+                    {uploading ? <Loader2Icon className="animate-spin" /> : <PaperclipIcon />}
+                    {t("create.uploadButton")}
+                  </Button>
+                  <span className="text-muted-foreground text-xs">
+                    {uploadCount > 0 ? t("create.uploadDone", { count: uploadCount }) : t("create.uploadIdle")}
+                  </span>
+                </div>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="goal">{t("create.goalLabel")}</Label>
+                <Textarea
+                  id="goal"
+                  className="min-h-32"
+                  placeholder={t("create.goalPlaceholder")}
+                  value={goal}
+                  onChange={(e) => setGoal(e.target.value)}
+                />
+              </div>
+              <Field>
+                <FieldLabel htmlFor="source-tasks">{t("create.sourceLabel")}</FieldLabel>
+                <SourceTaskPicker
+                  tasks={tasks}
+                  value={sourceTaskIDs}
+                  onValueChange={setSourceTaskIDs}
+                  portalContainer={sheetContentRef}
+                />
+                <FieldDescription>{t("create.sourceHint", { max: MAX_SOURCE_TASKS })}</FieldDescription>
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="task-companies">{t("create.companyLabel")}</FieldLabel>
+                <CompanyPicker
+                  companies={companies}
+                  value={companyIDs}
+                  onValueChange={setCompanyIDs}
+                  portalContainer={sheetContentRef}
+                />
+                <FieldDescription>{t("create.companyHint")}</FieldDescription>
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="task-intercept-rules">{t("create.interceptLabel")}</FieldLabel>
+                <AssetInterceptRulesEditor value={interceptRules} onChange={setInterceptRules} />
+                <FieldDescription>{t("create.interceptHint")}</FieldDescription>
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="llm-profiles">{t("create.llmLabel")}</FieldLabel>
+                <TaskLLMProfileChain
+                  profiles={profiles}
+                  value={llmProfileIDs}
+                  onValueChange={setLLMProfileIDs}
+                  inputId="llm-profiles"
+                  portalContainer={sheetContentRef}
+                />
+                <FieldDescription>{t("create.llmHint")}</FieldDescription>
+              </Field>
 
-            {/* Collapse advanced timeout/heartbeat/seed-intent settings by default to keep common creation concise. */}
-            <Collapsible>
-              <CollapsibleTrigger className="group flex w-full items-center gap-2 border-t pt-4 text-sm font-medium">
-                <ChevronRightIcon className="text-muted-foreground size-4 transition-transform group-data-[state=open]:rotate-90" />
-                {t("create.advanced")}
-                <span className="text-muted-foreground ml-auto text-xs font-normal">{t("create.advancedSub")}</span>
-              </CollapsibleTrigger>
-              <CollapsibleContent className="grid gap-5 pt-5">
-                <div className="grid gap-2">
-                  <Label htmlFor="timeout-min">{t("create.timeoutLabel")}</Label>
-                  <Input
-                    id="timeout-min"
-                    type="number"
-                    min={0}
-                    className="w-40"
-                    placeholder={t("create.timeoutPlaceholder")}
-                    value={timeoutMin}
-                    onChange={(e) => setTimeoutMin(e.target.value)}
-                  />
-                  <p className="text-muted-foreground text-xs">{t("create.timeoutHint")}</p>
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="heartbeat-min">{t("create.heartbeatLabel")}</Label>
-                  <Input
-                    id="heartbeat-min"
-                    type="number"
-                    min={10}
-                    className="w-40"
-                    placeholder={t("create.heartbeatPlaceholder")}
-                    value={heartbeatMin}
-                    onChange={(e) => setHeartbeatMin(e.target.value)}
-                  />
-                  <p className="text-muted-foreground text-xs">{t("create.heartbeatHint")}</p>
-                </div>
-                <div className="grid gap-2">
-                  <label htmlFor="seed-first-intent" className="flex items-center gap-2 text-sm">
-                    <Checkbox
-                      id="seed-first-intent"
-                      checked={seedFirstIntent}
-                      onCheckedChange={(v) => setSeedFirstIntent(!!v)}
+              {/* Collapse advanced timeout/heartbeat/seed-intent settings by default to keep common creation concise. */}
+              <Collapsible>
+                <CollapsibleTrigger className="group flex w-full items-center gap-2 border-t pt-4 text-sm font-medium">
+                  <ChevronRightIcon className="text-muted-foreground size-4 transition-transform group-data-[state=open]:rotate-90" />
+                  {t("create.advanced")}
+                  <span className="text-muted-foreground ml-auto text-xs font-normal">{t("create.advancedSub")}</span>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="grid gap-5 pt-5">
+                  <div className="grid gap-2">
+                    <Label htmlFor="timeout-min">{t("create.timeoutLabel")}</Label>
+                    <Input
+                      id="timeout-min"
+                      type="number"
+                      min={0}
+                      className="w-40"
+                      placeholder={t("create.timeoutPlaceholder")}
+                      value={timeoutMin}
+                      onChange={(e) => setTimeoutMin(e.target.value)}
                     />
-                    {t("create.seedLabel")}
-                  </label>
-                  <p className="text-muted-foreground text-xs">{t("create.seedHint")}</p>
-                </div>
-                <div className="grid gap-2">
-                  <label htmlFor="coverage-enabled" className="flex items-center gap-2 text-sm">
-                    <Checkbox
-                      id="coverage-enabled"
-                      checked={coverageEnabled}
-                      onCheckedChange={(v) => setCoverageEnabled(!!v)}
+                    <p className="text-muted-foreground text-xs">{t("create.timeoutHint")}</p>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="heartbeat-min">{t("create.heartbeatLabel")}</Label>
+                    <Input
+                      id="heartbeat-min"
+                      type="number"
+                      min={10}
+                      className="w-40"
+                      placeholder={t("create.heartbeatPlaceholder")}
+                      value={heartbeatMin}
+                      onChange={(e) => setHeartbeatMin(e.target.value)}
                     />
-                    {t("create.coverageLabel")}
-                  </label>
-                  <p className="text-muted-foreground text-xs">{t("create.coverageHint")}</p>
-                </div>
-              </CollapsibleContent>
-            </Collapsible>
-          </div>
+                    <p className="text-muted-foreground text-xs">{t("create.heartbeatHint")}</p>
+                  </div>
+                  <div className="grid gap-2">
+                    <label htmlFor="seed-first-intent" className="flex items-center gap-2 text-sm">
+                      <Checkbox
+                        id="seed-first-intent"
+                        checked={seedFirstIntent}
+                        onCheckedChange={(v) => setSeedFirstIntent(!!v)}
+                      />
+                      {t("create.seedLabel")}
+                    </label>
+                    <p className="text-muted-foreground text-xs">{t("create.seedHint")}</p>
+                  </div>
+                  <div className="grid gap-2">
+                    <label htmlFor="coverage-enabled" className="flex items-center gap-2 text-sm">
+                      <Checkbox
+                        id="coverage-enabled"
+                        checked={coverageEnabled}
+                        onCheckedChange={(v) => setCoverageEnabled(!!v)}
+                      />
+                      {t("create.coverageLabel")}
+                    </label>
+                    <p className="text-muted-foreground text-xs">{t("create.coverageHint")}</p>
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+            </div>
+          )}
         </div>
 
-        <SheetFooter className="flex-row justify-end gap-2 border-t p-4">
-          <SheetClose asChild>
-            <Button variant="outline">{t("create.cancel")}</Button>
-          </SheetClose>
-          <Button onClick={createTask} disabled={creating || uploading}>
-            {creating && <Spinner data-icon="inline-start" />}
-            {creating ? t("create.creating") : t("create.create")}
-          </Button>
-        </SheetFooter>
+        {mode === "advanced" && (
+          <SheetFooter className="flex-row justify-end gap-2 border-t p-4">
+            <SheetClose asChild>
+              <Button variant="outline">{t("create.cancel")}</Button>
+            </SheetClose>
+            <Button onClick={createTask} disabled={creating || uploading}>
+              {creating && <Spinner data-icon="inline-start" />}
+              {creating ? t("create.creating") : t("create.create")}
+            </Button>
+          </SheetFooter>
+        )}
       </SheetContent>
     </Sheet>
   );

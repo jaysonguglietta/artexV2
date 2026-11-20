@@ -736,6 +736,7 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("POST /api/auth/change-password", s.authChangePassword)
 
 	mux.HandleFunc("GET /api/health", s.health)
+	mux.HandleFunc("GET /api/setup/readiness", s.setupReadiness)
 	mux.HandleFunc("GET /api/stats", s.stats)
 	mux.HandleFunc("GET /api/logs", s.getLogs)
 	mux.HandleFunc("GET /api/logs/history", s.getLogsHistory)
@@ -1509,6 +1510,7 @@ func truncateReply(s string) string {
 }
 
 type createTaskReq struct {
+	StartPaused          bool     `json:"start_paused,omitempty"`
 	DraftID              string   `json:"draft_id,omitempty"` // Explicit staging-upload namespace; never inferred from prose.
 	Name                 string   `json:"name,omitempty"`     // Optional task name; omission/empty means untitled.
 	CategoryID           *int64   `json:"category_id,omitempty"`
@@ -1594,7 +1596,7 @@ func (s *Server) createTask(w http.ResponseWriter, r *http.Request) {
 	// Keep scheduler admission behind the bounded attachment copy as well.
 	s.concMu.Lock()
 	t, err := s.m.CreateTaskWithOptions(req.Description, req.Goal, db.TaskCreateOptions{
-		Name: strings.TrimSpace(req.Name), CategoryID: req.CategoryID,
+		Name: strings.TrimSpace(req.Name), CategoryID: req.CategoryID, StartPaused: req.StartPaused,
 		SourceTaskIDs: sourceIDs, CompanyIDs: req.CompanyIDs, LLMProfileIDs: req.LLMProfileIDs,
 		TimeoutSeconds: req.TimeoutSeconds, PlanHeartbeatSeconds: req.PlanHeartbeatSeconds,
 		CoverageEnabled: req.CoverageEnabled,
@@ -1633,7 +1635,11 @@ func (s *Server) createTask(w http.ResponseWriter, r *http.Request) {
 	s.concMu.Unlock()
 	log.Printf("[task] created task #%s \"%s\" goal: %s", t.ID, req.Description, req.Goal)
 	// Share asynchronous launchTask with spawn_task: seed, optional first intent, visible goal decomposition, then engine.Run.
-	s.launchTask(t, req.Description+" "+req.Goal, req.SeedFirstIntent != nil && *req.SeedFirstIntent)
+	if req.StartPaused {
+		s.seed(t, req.Description+" "+req.Goal)
+	} else {
+		s.launchTask(t, req.Description+" "+req.Goal, req.SeedFirstIntent != nil && *req.SeedFirstIntent)
+	}
 	writeJSON(w, 201, taskDTO(t, s.resolvedTaskStatus(t)))
 }
 
@@ -3937,7 +3943,16 @@ func (s *Server) getReport(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 404, "no active task")
 		return
 	}
-	findings, _ := t.Store.ListByKind(db.KindFinding, 1000) // Only findings enter reports; facts have their own node kind.
+	findings, err := t.Store.ListByKind(db.KindFinding, 1000)
+	if err != nil {
+		writeErr(w, 503, "Could not load findings; report unavailable")
+		return
+	}
+	facts, err := t.Store.ListByKind(db.KindFact, 50)
+	if err != nil {
+		writeErr(w, 503, "Could not load observations; report unavailable")
+		return
+	}
 	counts := map[string]int{}
 	for _, ty := range []string{"root_domain", "ip", "subdomain", "app", "service", "endpoint"} {
 		ns, _ := s.m.Assets().QueryByType(ty, 100000, 0)
@@ -3947,7 +3962,7 @@ func (s *Server) getReport(w http.ResponseWriter, r *http.Request) {
 	}
 	md := report.Markdown(report.Input{
 		Title: t.Description, Goal: t.Goal, GeneratedAt: time.Now(),
-		AssetCounts: counts, Findings: findings,
+		AssetCounts: counts, Findings: findings, Facts: facts, TaskStatus: s.resolvedTaskStatus(t),
 	})
 	w.Header().Set("Content-Type", "text/markdown; charset=utf-8")
 	w.WriteHeader(200)

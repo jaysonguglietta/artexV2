@@ -11,6 +11,7 @@ assessment VM and test only authorized targets.
 | Goal | Guide |
 |---|---|
 | Understand features and architecture | [Project overview](../README.md) and [system architecture](../README.md#system-architecture) |
+| Create a website assessment without writing a task prompt | [Guided website checks](GUIDED-ASSESSMENTS.md) |
 | Install on macOS/Linux and complete first run | [Installation guide](INSTALLATION.md) |
 | Start the local UI and database | [Secure local deployment](SECURE-DEPLOYMENT.md) |
 | Enable scanning with explicit target rules | [Isolated task execution](WORKER-ISOLATION.md) |

@@ -73,6 +73,11 @@ func brokerCall(ctx context.Context, req Request, path string, client *http.Clie
 		return out, errors.New("worker broker token is unavailable or too short")
 	}
 	var bodyValue any = req
+	if path == "/v1/readiness" {
+		bodyValue = struct {
+			Session string `json:"session"`
+		}{req.Session}
+	}
 	if path == "/v1/close" || path == "/v1/lease" {
 		bodyValue = struct {
 			Session string `json:"session"`

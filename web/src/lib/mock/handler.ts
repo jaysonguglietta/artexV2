@@ -1198,6 +1198,8 @@ function route(m: string, path: string, seg: string[], q: URLSearchParams, b: Re
   }
 
   // ── tasks ──
+  if (path === "/setup/readiness") return { worker: "not_configured", target_approved: false };
+
   if (path === "/tasks" && m === "GET") {
     sortMockTasks();
     return { tasks: mockTasks.map(publicMockTask), active: mockActiveTask };
@@ -1226,7 +1228,7 @@ function route(m: string, path: string, seg: string[], q: URLSearchParams, b: Re
       status: "created",
       created_at: now.toISOString(),
       created_unix: Math.floor(now.getTime() / 1000),
-      paused: false,
+      paused: b.start_paused === true,
       active: true,
       in_flight: 0,
       findings: { critical: 0, high: 0, medium: 0, low: 0 },

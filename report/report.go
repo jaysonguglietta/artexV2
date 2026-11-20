@@ -19,6 +19,8 @@ type Input struct {
 	GeneratedAt time.Time
 	AssetCounts map[string]int
 	Findings    []*db.Node
+	Facts       []*db.Node
+	TaskStatus  string
 }
 
 type findingView struct {
@@ -69,6 +71,33 @@ func Markdown(in Input) string {
 	}
 	b.WriteString("\n\n")
 
+	fmt.Fprintf(&b, "## Testing status and limitations\n\n")
+	if in.TaskStatus != "" {
+		fmt.Fprintf(&b, "- Recorded task status: %s\n", in.TaskStatus)
+	}
+	b.WriteString("A completed task and zero confirmed findings do not establish that testing succeeded or that the target is secure. Review execution details for successful target responses and any blocked operations.\n\n")
+	if len(in.Facts) == 0 {
+		b.WriteString("No recorded observations were available for this report. Testing coverage is unverified.\n\n")
+	} else {
+		b.WriteString("### Recorded observations\n\nThe following are agent-recorded summaries, not independent verification. They may describe blocked or incomplete checks. Up to 50 observations are included.\n\n")
+		for _, fact := range in.Facts {
+			var payload struct {
+				Summary string `json:"summary"`
+			}
+			if json.Unmarshal(fact.Payload, &payload) == nil && strings.TrimSpace(payload.Summary) != "" {
+				summary := strings.ReplaceAll(payload.Summary, "\n", " ")
+				summary = strings.ReplaceAll(summary, "\r", " ")
+				summary = strings.ReplaceAll(summary, "&", "&amp;")
+				summary = strings.ReplaceAll(summary, "<", "&lt;")
+				summary = strings.ReplaceAll(summary, ">", "&gt;")
+				for _, c := range []string{"\\", "`", "*", "_", "[", "]", "#"} {
+					summary = strings.ReplaceAll(summary, c, "\\"+c)
+				}
+				fmt.Fprintf(&b, "- %s\n", summary)
+			}
+		}
+		b.WriteString("\n")
+	}
 	// findings
 	fmt.Fprintf(&b, "## Findings\n\n")
 	if len(in.Findings) == 0 {

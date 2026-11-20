@@ -153,6 +153,17 @@ func (b *Broker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "not found", 404)
 		return
 	}
+	if r.URL.Path == "/v1/readiness" {
+		select {
+		case b.slots <- struct{}{}:
+			defer func() { <-b.slots }()
+		default:
+			http.Error(w, "worker admission limit", 429)
+			return
+		}
+		b.serveReadiness(w, r)
+		return
+	}
 	if r.URL.Path == "/v1/lease" {
 		b.serveLease(w, r)
 		return

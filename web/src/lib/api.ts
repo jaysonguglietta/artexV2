@@ -242,6 +242,11 @@ export const api = {
   // Backend application version, injected with ldflags in releases; defaults to dev.
   health: () => get<{ ok: boolean; service: string; version: string }>("/health"),
 
+  setupReadiness: (task?: string) =>
+    get<{ worker: "connected" | "not_configured" | "unavailable"; target_approved: boolean }>(
+      `/setup/readiness${tq(task)}`,
+    ),
+
   // ---- auth ----
   authStatus: () => get<{ initialized: boolean; setup_token_required?: boolean }>("/auth/status"),
   login: (username: string, password: string) => post<{ token: string }>("/auth/login", { username, password }),
@@ -270,6 +275,7 @@ export const api = {
     companyIds?: number[];
     timeoutSeconds?: number;
     seedFirstIntent?: boolean;
+    startPaused?: boolean;
     planHeartbeatSeconds?: number;
     coverageEnabled?: boolean;
     interceptRules?: AssetInterceptRuleInput[];
@@ -285,6 +291,7 @@ export const api = {
       company_ids: input.companyIds ?? [],
       timeout_seconds: input.timeoutSeconds ?? 0,
       seed_first_intent: input.seedFirstIntent ?? false,
+      start_paused: input.startPaused ?? false,
       plan_heartbeat_seconds: input.planHeartbeatSeconds ?? 0, // Zero is normalized by the backend to the default 600 seconds.
       coverage_enabled: input.coverageEnabled ?? true, // Coverage is on by default; false disables the feature.
       intercept_rules: input.interceptRules ?? [], // Task-level asset block/allow rules.

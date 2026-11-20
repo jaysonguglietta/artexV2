@@ -38,6 +38,7 @@ type Descriptor struct {
 	Schema      map[string]any `json:"schema"`
 }
 type Response struct {
+	PolicyApproved   bool              `json:"policy_approved,omitempty"`
 	SnapshotComplete bool              `json:"snapshot_complete"`
 	Result           actool.Result     `json:"result"`
 	Tools            []Descriptor      `json:"tools,omitempty"`

@@ -162,3 +162,10 @@ func TestFindingsCSVLocalized(t *testing.T) {
 		}
 	}
 }
+
+func TestZeroFindingsCannotImplyVerifiedCoverage(t *testing.T) {
+	text := Markdown(Input{TaskStatus: "done"})
+	if !strings.Contains(text, "Testing coverage is unverified") || !strings.Contains(text, "zero confirmed findings do not establish") {
+		t.Fatal("report omitted testing limitations", text)
+	}
+}
